@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Auto Poster Driver",
+    "slug": "auto-poster-driver",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "scheme": "autoposter",
+    "newArchEnabled": true,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.autoposter.driver"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.autoposter.driver"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}

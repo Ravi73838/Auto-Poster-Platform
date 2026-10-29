@@ -1,0 +1,9 @@
+{
+  "VALIDATION_ERROR": "The provided data is invalid. Please check your inputs.",
+  "UNAUTHORIZED": "Authentication required. Please sign in to proceed.",
+  "FORBIDDEN": "You do not have permission to perform this action.",
+  "NOT_FOUND": "The requested resource was not found.",
+  "CONFLICT": "A conflict occurred with existing resource state.",
+  "RATE_LIMITED": "Too many requests. Please slow down and try again shortly.",
+  "INTERNAL_ERROR": "An unexpected server error occurred. Please try again later."
+}

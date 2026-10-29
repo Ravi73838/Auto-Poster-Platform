@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-background: #FFFFFF;
+  --color-surface: #F7F9FC;
+  --color-surfaceAlt: #EEF2F6;
+  --color-textPrimary: #111827;
+  --color-textSecondary: #4B5563;
+  --color-primary: #2E5597;
+  --color-primaryText: #FFFFFF;
+  --color-border: #E5E7EB;
+  --color-success: #15803D;
+  --color-warning: #B45309;
+  --color-danger: #B91C1C;
+  --color-info: #1D4ED8;
+}
+
+.dark {
+  --color-background: #0F172A;
+  --color-surface: #1E293B;
+  --color-surfaceAlt: #334155;
+  --color-textPrimary: #F1F5F9;
+  --color-textSecondary: #94A3B8;
+  --color-primary: #7AA2F7;
+  --color-primaryText: #0F172A;
+  --color-border: #334155;
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #38BDF8;
+}
+
+body {
+  font-family: Inter, 'Noto Sans Devanagari', 'Noto Sans Gujarati', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-textPrimary);
+}
