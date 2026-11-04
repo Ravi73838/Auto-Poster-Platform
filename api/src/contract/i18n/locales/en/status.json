@@ -1,0 +1,73 @@
+{
+  "account": {
+    "PENDING": "Pending Approval",
+    "NEED_MORE_INFO": "Need More Information",
+    "APPROVED": "Approved",
+    "REJECTED": "Rejected",
+    "SUSPENDED": "Suspended",
+    "BLOCKED": "Blocked"
+  },
+  "campaign": {
+    "DRAFT": "Draft",
+    "SUBMITTED": "Submitted",
+    "UNDER_REVIEW": "Under Review",
+    "APPROVED": "Approved",
+    "AWAITING_PAYMENT": "Awaiting Payment",
+    "LIVE": "Live",
+    "RUNNING": "Running",
+    "COMPLETED": "Completed",
+    "SETTLED": "Settled",
+    "REJECTED": "Rejected",
+    "EXPIRED": "Expired",
+    "CANCELLED": "Cancelled"
+  },
+  "assignment": {
+    "RESERVED": "Reserved",
+    "INSTALLING": "Installing",
+    "INSTALL_SUBMITTED": "Installation Submitted",
+    "INSTALL_APPROVED": "Installation Approved",
+    "INSTALL_REJECTED": "Installation Rejected",
+    "RUNNING": "Running",
+    "COMPLETED": "Completed",
+    "PAID": "Paid",
+    "TERMINATED": "Terminated",
+    "RESERVATION_EXPIRED": "Reservation Expired"
+  },
+  "dailyPhoto": {
+    "PENDING_CHECK": "Pending Verification",
+    "VERIFIED": "Verified",
+    "MANUAL_REVIEW": "Manual Review",
+    "REJECTED": "Rejected"
+  },
+  "roles": {
+    "DRIVER": "Auto Driver",
+    "COMPANY": "Advertising Company",
+    "SUPER_ADMIN": "Super Admin",
+    "MODERATOR": "Moderator",
+    "FINANCE": "Finance Officer"
+  },
+  "dispute": {
+    "OPEN": "Open",
+    "UNDER_REVIEW": "Under Review",
+    "RESOLVED": "Resolved",
+    "REJECTED": "Rejected",
+    "WITHDRAWN": "Withdrawn"
+  },
+  "strike": {
+    "ACTIVE": "Active",
+    "REVOKED": "Revoked",
+    "EXPIRED": "Expired",
+    "CONSUMED": "Consumed"
+  },
+  "posterFix": {
+    "OPEN": "Action Required",
+    "RESOLVED": "Resolved",
+    "STRIKED": "Deadline Expired",
+    "CANCELLED": "Cancelled"
+  },
+  "ban": {
+    "TEMPORARY": "Temporary Ban",
+    "PERMANENT": "Permanent Block"
+  }
+}
+

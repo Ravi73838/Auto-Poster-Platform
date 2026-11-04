@@ -1,0 +1,42 @@
+{
+  "reasons": {
+    "POSTER_CONTENT_POLICY": "Poster violates content safety policy (prohibited/offensive content)",
+    "POSTER_LOW_QUALITY": "Poster resolution or quality is too low for physical auto printing",
+    "POSTER_MISLEADING": "Poster contains false, deceptive or misleading claims",
+    "PRICE_TOO_LOW": "Offered rent or printing allowance is below fair platform standards",
+    "DETAILS_UNCLEAR": "Campaign title, description, or print instructions are ambiguous",
+    "UNSUPPORTED_AREA": "Targeted city or zones do not currently have sufficient driver coverage",
+    "START_DATE_TOO_SOON": "Campaign start date is too soon to permit printing and installation",
+    "OTHER": "Other administrative reason (see detailed note)"
+  },
+  "materials": {
+    "FLEX": "Flex Banner",
+    "VINYL_STICKER": "Vinyl Sticker (High Durability)",
+    "OTHER": "Other Material"
+  },
+  "sorts": {
+    "NEWEST": "Newest",
+    "HIGHEST_RENT": "Highest Rent",
+    "STARTING_SOON": "Starting Soon"
+  },
+  "checklist": {
+    "policyCompliant": "Poster contains no adult, illegal, political or hate speech content",
+    "highResolution": "Image is clear, sharp and meets minimum resolution requirements",
+    "driverSafety": "Design does not obstruct rear window, lights, or license plate visibility",
+    "accurateDates": "Dates provide adequate lead time for printing and distribution"
+  },
+  "status": {
+    "DRAFT": "Draft",
+    "SUBMITTED": "Submitted",
+    "UNDER_REVIEW": "Under Review",
+    "APPROVED": "Approved",
+    "AWAITING_PAYMENT": "Awaiting Payment",
+    "LIVE": "Live & Enrolling",
+    "RUNNING": "Running",
+    "COMPLETED": "Completed",
+    "SETTLED": "Settled",
+    "REJECTED": "Changes Requested",
+    "EXPIRED": "Payment Expired",
+    "CANCELLED": "Cancelled"
+  }
+}

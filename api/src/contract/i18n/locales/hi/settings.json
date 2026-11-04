@@ -1,0 +1,13 @@
+{
+  "title": "सेटिंग्स",
+  "theme": "दिखावट",
+  "themeLight": "हल्का (Light)",
+  "themeDark": "गहरा (Dark)",
+  "themeSystem": "सिस्टम डिफ़ॉल्ट",
+  "language": "भाषा",
+  "apiHealth": "बैकएंड एपीआई स्थिति",
+  "systemStatus": "सिस्टम स्थिति",
+  "operational": "सभी प्रणालियाँ चालू हैं",
+  "version": "संस्करण"
+}
+
