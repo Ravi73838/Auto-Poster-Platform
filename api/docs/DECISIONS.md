@@ -1,9 +1,9 @@
 # Architectural Decision Records (ADRs)
 
-## ADR-001: Monorepo Package Manager & Metro Hoisting
+## ADR-001: Monorepo Package Manager & Metro Hoisting (Superseded by ADR-031)
 - **Decision**: Use `pnpm` workspaces with `node-linker=hoisted` in `.npmrc`.
 - **Context**: Expo / React Native Metro bundler expects dependencies to be discoverable in flat `node_modules` and struggles with symlinks in pnpm's default symlink-based isolated node_modules structure.
-- **Consequences**: Enables zero-friction React Native compilation while retaining pnpm's fast downloads and Turborepo workspace orchestration.
+- **Consequences**: Enables zero-friction React Native compilation while retaining pnpm's fast downloads and Turborepo workspace orchestration. *(Superseded by ADR-031: migrated to 3 independent npm projects with contract sync).*
 
 ## ADR-002: TypeScript Compiler Strictness Configuration
 - **Decision**: Enable `strict: true`, `noUncheckedIndexedAccess: true`, `noImplicitOverride: true`, `forceConsistentCasingInFileNames: true`, and `skipLibCheck: true`. Set `exactOptionalPropertyTypes: false`.
@@ -11,7 +11,7 @@
 - **Consequences**: Rock-solid strict types across the whole codebase without library typing incompatibilities.
 
 ## ADR-003: Single Web App with Dual Lazy-Loaded Portals
-- **Decision**: Host both Advertiser (Company) and Administrator portals in `apps/web` under a unified Vite setup with `React.lazy()` route splitting.
+- **Decision**: Host both Advertiser (Company) and Administrator portals in `web` under a unified Vite setup with `React.lazy()` route splitting.
 - **Context**: Reduces operational overhead and simplifies deployment while keeping the portals isolated at the bundle and code boundary levels.
 - **Consequences**: Vite splits `CompanyPortalRoutes` and `AdminPortalRoutes` into distinct chunks. Portal boundary violations are banned via ESLint rules.
 
@@ -51,7 +51,7 @@
 - **Consequences**: Compromised database snapshots cannot expose sensitive bank account numbers. Key rotation is supported through the version prefix.
 
 ## ADR-011: Strict Enum Parity Between Prisma Schema and Shared Constants
-- **Decision**: Synchronize all database enums with `@ap/shared-constants` using a comprehensive CI test (`apps/api/src/__tests__/enums-sync.test.ts`).
+- **Decision**: Synchronize all database enums with `@ap/shared-constants` using a comprehensive CI test (`api/src/__tests__/enums-sync.test.ts`).
 - **Context**: Drift between database enums and client-side TypeScript types causes runtime validation errors and query failures.
 - **Consequences**: Changes to statuses, roles, or document types require intentional updates across both layers and fail CI immediately upon drift.
 
@@ -149,6 +149,16 @@
 - **Decision**: Centralize all platform alerts into a declarative `NotificationRegistry` catalog with strongly typed keys, categorized urgency, and multi-channel dispatch rules (In-App, Push via Expo, SMS via DLT, Email via SMTP/MailHog). Enforce an Indian Standard Time quiet-hours window (22:00 to 07:00 IST) where non-urgent push and SMS are held, while critical security alerts and OTPs bypass immediately. Implement daily push rate limits to prevent driver fatigue.
 - **Context**: Scattered notifications lead to duplicate alerts, missed regulatory communications, spamming drivers late at night, and unmanageable dispatch logic across diverse channels.
 - **Consequences**: Unified channel orchestration; regulatory DLT compliance; driver-friendly alerting during working hours; guaranteed delivery of critical security and financial events.
+
+## ADR-031: Migration from Turborepo/pnpm Monorepo to Three Independent Folders (api, web, mobile) with Contract Sync
+- **Decision**: Restructure the repository from a Turborepo/pnpm monorepo into three standalone, independent folders: `api`, `web`, and `mobile`. Each folder manages its own `package.json`, isolated `node_modules`, lockfile, and deployment target with standard `npm`. Place all shared interfaces, enums, validation schemas, tokens, and the unified API client in `api/src/contract/` as the single source of truth, and generate copies into `web/src/shared/` and `mobile/src/shared/` using a deterministic sync script (`npm run sync:shared`).
+- **Context**: The previous Turborepo monorepo setup introduced excessive complexity: workspace linking issues, Metro bundler symlink conflicts, hoisting quirks in `.npmrc`, heavy cross-project build-time coupling, and cumbersome multi-service deployment configurations. Hosting targets naturally divide into independent platforms: API on Node VPS/container runners, Web on static SPA hosts (Vercel/Cloudflare Pages), and Mobile on Expo EAS.
+- **Consequences**:
+  - Independent project lifecycles: each folder can be installed, linted, tested, and built in complete isolation with zero cross-project dependency pollution.
+  - Simplified, fast hosting workflows: standard Dockerfile for API/worker, zero-config SPA deployment for Web, standard EAS build for Mobile.
+  - Zero run-time or build-time symlinks: Expo Metro and Vite run on standard local folders.
+  - Contract synchronization is verified via CI (`.github/workflows/shared.yml`) and pre-commit git hooks, guaranteeing type safety and contract parity across all platforms.
+
 
 
 

@@ -1,0 +1,13 @@
+{
+  email {$ACME_EMAIL:admin@example.com}
+}
+
+api.{$DOMAIN} {
+  reverse_proxy api:4000
+}
+
+{$DOMAIN} {
+  root * /srv/web
+  file_server
+  try_files {path} /index.html
+}

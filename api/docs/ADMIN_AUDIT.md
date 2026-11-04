@@ -2,7 +2,7 @@
 
 ## 1. Executive Summary
 
-This audit comprehensively catalogs all existing administrative API endpoints, frontend portal pages, security mechanisms, data tables, and operational workflows across `apps/api` and `apps/web`.
+This audit comprehensively catalogs all existing administrative API endpoints, frontend portal pages, security mechanisms, data tables, and operational workflows across `api` and `web`.
 
 The platform currently provides foundational admin features implemented in Phases 1–9 (Team management, Campaigns review, Daily photo review, Escrow/settlements/payouts finance portal, Discipline/strikes/bans, Disputes workspace, Announcements). However, significant gaps exist in unified information architecture, security hardening (step-up OTP, PII masking, idle timeout, IP allowlist), standardized data tables with saved views, 360-degree driver/company profiles, central reports registry with background export jobs, content management (legal versions and help articles), system health/job monitoring, and settings two-person approval.
 
@@ -112,7 +112,7 @@ The platform currently provides foundational admin features implemented in Phase
 ## 4. Key Inconsistencies & Architecture Gaps
 
 1. **Table Implementations**:
-   - `DataTable.tsx` in `apps/web/src/shared/components/DataTable.tsx` is an elementary non-paginated table without server filters, sorting, column toggles, row selection, or saved views.
+   - `DataTable.tsx` in `web/src/shared/components/DataTable.tsx` is an elementary non-paginated table without server filters, sorting, column toggles, row selection, or saved views.
    - `PaymentsPage`, `DisciplinePage`, `DisputesPage`, and `PayoutsPage` implement ad-hoc pagination, sorting, and filter bars with duplicated UI states.
 2. **Date & Currency Formatting**:
    - `PayoutsPage.tsx` defines an inline `formatINR(paiseStr)`.

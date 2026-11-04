@@ -1,0 +1,47 @@
+name: Mobile CI
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'mobile/**'
+      - 'api/src/contract/**'
+      - '.github/workflows/mobile.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'mobile/**'
+      - 'api/src/contract/**'
+      - '.github/workflows/mobile.yml'
+
+jobs:
+  test:
+    name: Mobile Lint, Typecheck, Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci
+
+      - name: Lint
+        working-directory: mobile
+        run: npm run lint
+
+      - name: Typecheck
+        working-directory: mobile
+        run: npm run typecheck
+
+      - name: Run Tests
+        working-directory: mobile
+        run: npm test

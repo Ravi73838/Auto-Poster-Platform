@@ -1,0 +1,51 @@
+name: Web CI
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'web/**'
+      - 'api/src/contract/**'
+      - '.github/workflows/web.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'web/**'
+      - 'api/src/contract/**'
+      - '.github/workflows/web.yml'
+
+jobs:
+  test:
+    name: Web Lint, Typecheck, Test, Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Lint
+        working-directory: web
+        run: npm run lint
+
+      - name: Typecheck
+        working-directory: web
+        run: npm run typecheck
+
+      - name: Run Tests
+        working-directory: web
+        run: npm test
+
+      - name: Build SPA Bundle
+        working-directory: web
+        run: npm run build

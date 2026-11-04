@@ -1,6 +1,22 @@
 # Coding Standards & Conventions
 
-## 1. Feature Folder Architecture Pattern
+## 1. Project Organization & Package Management
+- **Standard NPM**: The project uses standard `npm` (Node.js 22+). No pnpm, yarn, or Turborepo.
+- **Three Independent Folders**: The repository contains three self-contained folders: `api`, `web`, and `mobile`. Each has its own `package.json`, isolated `node_modules`, and lockfile.
+- **Running Scripts**:
+  - Run directly in folder: `cd api && npm test`, `cd web && npm run build`, `cd mobile && npm test`
+  - Or use root convenience scripts: `npm run test:all`, `npm run lint:all`, `npm run typecheck:all`, `npm run build:all`
+- **Shared Code Workflow**:
+  - `api/src/contract` is the **single source of truth** for all shared types, schemas, tokens, constants, and the API client.
+  - To add or modify shared code: **always edit `api/src/contract/`**, then run `npm run sync:shared` (in `api` or `npm run sync` from root).
+  - Never edit `web/src/shared/` or `mobile/src/shared/` directly; they are strictly generated copies.
+- **Architecture Boundaries**:
+  - Zero imports crossing between `api`, `web`, and `mobile`.
+  - Inside `web/src/portals/company`, files must NOT import from `web/src/portals/admin`.
+  - Inside `web/src/portals/admin`, files must NOT import from `web/src/portals/company`.
+  - Enforced via CI, ESLint, and `npm run check:boundaries`.
+
+## 2. Feature Folder Architecture Pattern
 Every backend and frontend module follows a strict architectural separation:
 ```
 module-name/
@@ -16,9 +32,9 @@ module-name/
 ### Invariants:
 1. **Controllers have NO business logic**. They parse input with Zod, invoke services, and respond with the standard envelope.
 2. **Repositories hold ALL database queries**. Services never call `prisma.*` directly.
-3. **Money changes only through a ledger**. In Phase 2+, direct balance mutations are forbidden; all financial transactions require immutable double-entry ledger entries.
+3. **Money changes only through a ledger**. Direct balance mutations are forbidden; all financial transactions require immutable double-entry ledger entries.
 
-## 2. Internationalization (i18n) Rules
+## 3. Internationalization (i18n) Rules
 - **Key Naming Convention**: `namespace:feature.section.meaning` (e.g. `settings:themeLight`, `common:dashboard`).
 - **No Hardcoded Strings in JSX**:
   All user-facing text must be rendered through `t('...')`.
@@ -28,7 +44,7 @@ module-name/
   - Hindi -> "हिन्दी"
   - Gujarati -> "ગુજરાતી"
 
-## 3. Styling & Token Rules
+## 4. Styling & Token Rules
 - **No Raw Hex Values in UI**:
   Components must only use semantic color classes (e.g., `text-primary`, `bg-surface`, `border-border`, `text-danger`).
 - **Logical CSS Properties**:
@@ -36,7 +52,7 @@ module-name/
 - **Contrast Ratios**:
   All text and background pairs must maintain >= 4.5:1 WCAG AA contrast ratio.
 
-## 4. API Versioning & Error Envelopes
+## 5. API Versioning & Error Envelopes
 - All API routes are prefixed under `/api/v1/`.
 - Success responses strictly format as:
   ```json
@@ -59,7 +75,7 @@ module-name/
   ```
 - No stack traces or internal infrastructure errors are exposed in production.
 
-## 5. Database Conventions & Standards
+## 6. Database Conventions & Standards
 - **Naming Conventions**:
   - Tables and database columns are strictly `snake_case` in PostgreSQL, mapped using Prisma `@map` and `@@map`.
   - Prisma models and client properties are strictly `PascalCase` and `camelCase`.
@@ -73,16 +89,16 @@ module-name/
   - Floating point numbers are **strictly forbidden** for monetary figures.
   - All amounts are stored and calculated as **integer paise** (100 paise = 1 INR).
   - Per-unit configuration fields (rates, allowances) use `Int`; all balances, payments, payouts, and ledger entries use `BigInt`.
-  - `BigInt` values are serialized safely as strings via `apps/api/src/shared/money` JSON serialization.
+  - `BigInt` values are serialized safely as strings via `api/src/shared/money` JSON serialization.
   - Campaign pricing and rent calculations use pure functions with half-up rounding.
 - **Audit Logging Rule**:
   - Sensitive fields (passwords, PINs, tokens, encryption keys, raw bank details, UPI handles) must be redacted before recording into `audit_logs`.
   - Audit logs record shallow diffs (`oldValues` and `newValues`) and are append-only.
 
-## 6. Authentication & Authorization Conventions
+## 7. Authentication & Authorization Conventions
 - **Secrets & Token Handling**:
   - Raw passwords, plaintext OTPs, and refresh tokens are **strictly forbidden from appearing in logs**.
-  - All passwords must be hashed using Argon2id (`apps/api/src/modules/auth/password.service.ts`).
+  - All passwords must be hashed using Argon2id (`api/src/modules/auth/password.service.ts`).
   - Refresh tokens are hashed with SHA-256 before database lookup.
 - **Route Authorization Pipeline**:
   - Global middleware `authenticate` parses Bearer access tokens, validates active session in DB, and populates `req.user`, `req.session`, and `req.permissions`.
@@ -96,7 +112,7 @@ module-name/
 - **Client Refresh Invariant**:
   - Front-end API clients (`@ap/api-client`) must employ single-flight refresh token locking. Concurrent 401s must wait on the primary refresh operation and replay with the new token.
 
-## 7. Campaign & Scheduling Conventions
+## 8. Campaign & Scheduling Conventions
 - **Dates vs Timestamps**:
   - `startDate` and `endDate` are Indian Standard Time (`Asia/Kolkata`) calendar date boundaries. Never apply UTC timezone conversion to start/end calendar dates.
   - All audit times (`liveAt`, `approvedAt`, `createdAt`, `updatedAt`) are UTC ISO 8601 timestamps.
@@ -105,7 +121,7 @@ module-name/
 - **Slot Allocation Concurrency**:
   - Drivers enrolling into a campaign MUST use row-level pessimistic locking (`SELECT FOR UPDATE`) via `SlotsService.reserveSlot`.
 
-## 8. Discipline, Disputes & Notification Conventions (Phase 9)
+## 9. Discipline, Disputes & Notification Conventions
 - **Driver PII Masking**:
   - Companies must NEVER receive driver personal information (full name, phone number, vehicle registration number). Controllers and repositories must mask driver details as `Driver #<shortId>` or `Auto #<shortPlate>`.
 - **Dispute Thread Visibility**:
@@ -116,7 +132,3 @@ module-name/
   - `DISCIPLINE` and critical `SYSTEM` notifications have `isMandatory: true` and cannot be opted out of by users.
 - **Quiet Hours Invariant**:
   - Notifications dispatchers must evaluate IST quiet hours (22:00 to 07:00 IST). Non-urgent messages must not fire noisy push or SMS alerts during this window.
-
-
-
-

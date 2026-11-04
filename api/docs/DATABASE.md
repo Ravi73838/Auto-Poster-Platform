@@ -20,10 +20,10 @@ This document describes the database design, schema models, constraints, double-
   - Zero floating-point numbers. All monetary amounts are stored as **integer paise** (1 INR = 100 paise).
   - Per-unit configuration values (e.g. daily rent rate, printing allowance) are stored as standard `Int` (up to ~2.14 crore paise / ₹2,14,748).
   - Cumulative totals, payments, payouts, and ledger entries use `BigInt` (mapped to PostgreSQL `BIGINT`).
-  - Safe serialization: a central JSON prototype override (`apps/api/src/shared/money`) serializes all `BigInt` values as strings before transmission over HTTP.
+  - Safe serialization: a central JSON prototype override (`api/src/shared/money`) serializes all `BigInt` values as strings before transmission over HTTP.
 - **Strict Enum Parity**:
   - All 26 database enums in `schema.prisma` mirror `@ap/shared-constants` identically.
-  - An automated CI test (`apps/api/src/__tests__/enums-sync.test.ts`) verifies parity across every enum key and value.
+  - An automated CI test (`api/src/__tests__/enums-sync.test.ts`) verifies parity across every enum key and value.
 
 ---
 
@@ -119,7 +119,7 @@ erDiagram
 
 ## 4. Lifecycle State Machines
 
-All status transitions are governed by pure state machine graphs (`apps/api/src/shared/state-machine`) that validate valid next states and throw typed `InvalidStateTransitionError` on illegal mutations.
+All status transitions are governed by pure state machine graphs (`api/src/shared/state-machine`) that validate valid next states and throw typed `InvalidStateTransitionError` on illegal mutations.
 
 ### 4.1 Campaign Lifecycle
 ```mermaid
@@ -184,7 +184,7 @@ stateDiagram-v2
 ### 5.1 Storage & Units
 1. **Never use floating point numbers** for financial data.
 2. All figures in code, database, and calculations are in **integer paise** (1 INR = 100 paise).
-3. JSON output automatically serializes `BigInt` as string via `apps/api/src/shared/money`.
+3. JSON output automatically serializes `BigInt` as string via `api/src/shared/money`.
 
 ### 5.2 Campaign Pricing Formula
 Given:
@@ -357,13 +357,13 @@ Integration tests execute against `autoposter_test` (port 5432) defined in `.env
 When introducing schema modifications:
 
 1. **Modify Schema**:
-   Edit `apps/api/prisma/schema.prisma`.
+   Edit `api/prisma/schema.prisma`.
 2. **Generate Migration**:
    ```bash
    pnpm --filter @ap/api prisma migrate dev --name <descriptive_name> --create-only
    ```
 3. **Review & Add Constraints**:
-   Review the generated SQL file in `apps/api/prisma/migrations/`. Add any custom check constraints or triggers if required.
+   Review the generated SQL file in `api/prisma/migrations/`. Add any custom check constraints or triggers if required.
 4. **Apply Migration**:
    ```bash
    pnpm --filter @ap/api prisma migrate dev

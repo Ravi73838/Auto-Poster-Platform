@@ -31,7 +31,7 @@ Money moves in real businesses with real liability. In the Auto Poster Advertisi
 
 ## 3. The 8 Posting Recipes
 
-All ledger postings are strictly restricted to canonical recipe functions located in `apps/api/src/modules/ledger/recipes/`:
+All ledger postings are strictly restricted to canonical recipe functions located in `api/src/modules/ledger/recipes/`:
 
 ### Recipe 1: Company Payment Captured
 - **Trigger**: Payment gateway confirms company deposit for an approved campaign.

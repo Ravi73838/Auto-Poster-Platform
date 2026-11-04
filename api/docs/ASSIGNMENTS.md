@@ -48,7 +48,7 @@ INSTALL_SUBMITTED (submits live photo of installed poster on vehicle)
 
 ### 2.2 Valid State Transitions
 
-Enforced deterministically by `assignmentStateMachine` (`apps/api/src/modules/assignments/assignments.state-machine.ts`):
+Enforced deterministically by `assignmentStateMachine` (`api/src/modules/assignments/assignments.state-machine.ts`):
 
 - `RESERVED` $\to$ `INSTALLING`, `RELEASED`, `RESERVATION_EXPIRED`, `TERMINATED`
 - `INSTALLING` $\to$ `INSTALL_SUBMITTED`, `RELEASED`, `RESERVATION_EXPIRED`, `TERMINATED`
@@ -77,7 +77,7 @@ Enforced deterministically by `assignmentStateMachine` (`apps/api/src/modules/as
 
 ## 4. Automated Photo Verification Library
 
-Located in `apps/api/src/modules/photos/checks/`:
+Located in `api/src/modules/photos/checks/`:
 
 ### 4.1 Perceptual dHash (Difference Hash) & Duplicate Detection
 - Converts uploaded photo buffer to a normalized 9x8 grayscale image via Sharp (`dhash.ts`).

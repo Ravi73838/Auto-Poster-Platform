@@ -1,30 +1,43 @@
-# Multi-stage Dockerfile for @ap/api
-FROM node:22-alpine AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
-
-FROM base AS builder
+# Multi-stage Dockerfile for standalone api
+# Stage 1: Install all dependencies (including dev for building)
+FROM node:22-alpine AS deps
 WORKDIR /app
-COPY pnpm-lock.yaml* package.json pnpm-workspace.yaml turbo.json tsconfig.base.json ./
-COPY packages/ ./packages/
-COPY apps/api/ ./apps/api/
+COPY package.json package-lock.json ./
+RUN npm ci
 
-RUN pnpm install --frozen-lockfile || pnpm install
-RUN pnpm --filter @ap/api db:generate
-RUN pnpm --filter @ap/api build
+# Stage 2: Generate Prisma Client and build bundled distribution
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json package-lock.json tsconfig.json tsup.config.ts ./
+COPY prisma ./prisma
+COPY src ./src
 
+RUN npx prisma generate
+RUN npm run build
+
+# Stage 3: Production runtime runner
 FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 apiapp
 
-COPY --from=builder /app/apps/api/dist ./dist
-COPY --from=builder /app/apps/api/package.json ./package.json
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/apps/api/prisma ./prisma
+# Install production dependencies only
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Copy Prisma schema and generate runtime client
+COPY prisma ./prisma
+RUN npx prisma generate
+
+# Copy built distribution from builder
+COPY --from=builder /app/dist ./dist
 
 USER apiapp
 EXPOSE 4000
-CMD ["node", "dist/main.js"]
 
+ENV PORT=4000
+ENV SERVICE_TYPE=api
+
+# Dispatches to main API server or background worker based on SERVICE_TYPE
+CMD ["sh", "-c", "if [ \"$SERVICE_TYPE\" = \"worker\" ]; then exec node dist/worker.js; else exec node dist/main.js; fi"]

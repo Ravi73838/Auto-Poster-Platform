@@ -1,0 +1,91 @@
+name: API CI
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'api/**'
+      - '.github/workflows/api.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'api/**'
+      - '.github/workflows/api.yml'
+
+jobs:
+  test:
+    name: API Lint, Typecheck, Test, Build
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: autoposter
+          POSTGRES_PASSWORD: autoposter_ci_secret
+          POSTGRES_DB: autoposter_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: api/package-lock.json
+
+      - name: Install dependencies
+        working-directory: api
+        run: npm ci
+
+      - name: Generate Prisma Client
+        working-directory: api
+        run: npm run db:generate
+
+      - name: Run Prisma Migrations
+        working-directory: api
+        env:
+          DATABASE_URL: postgresql://autoposter:autoposter_ci_secret@localhost:5432/autoposter_ci?schema=public
+        run: npx prisma migrate deploy
+
+      - name: Lint
+        working-directory: api
+        run: npm run lint
+
+      - name: Typecheck
+        working-directory: api
+        run: npm run typecheck
+
+      - name: Run Tests
+        working-directory: api
+        env:
+          NODE_ENV: test
+          PORT: 4000
+          DATABASE_URL: postgresql://autoposter:autoposter_ci_secret@localhost:5432/autoposter_ci?schema=public
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: c1_very_secret_jwt_key_that_is_at_least_32_characters_long
+          ENCRYPTION_KEY_32B: 12345678901234567890123456789012
+        run: npm test
+
+      - name: Build Distribution
+        working-directory: api
+        run: npm run build

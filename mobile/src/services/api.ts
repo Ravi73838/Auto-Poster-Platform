@@ -9,11 +9,12 @@ export function setApiLanguage(lang: Language) {
   currentLanguage = lang;
 }
 
-// Android emulator loopback alias is 10.0.2.2, iOS simulator is localhost
+// Support EXPO_PUBLIC_API_URL if set; fallback: Android emulator 10.0.2.2, iOS simulator localhost
 const defaultBaseUrl =
-  Platform.OS === 'android'
+  process.env.EXPO_PUBLIC_API_URL ||
+  (Platform.OS === 'android'
     ? 'http://10.0.2.2:4000/api/v1'
-    : 'http://127.0.0.1:4000/api/v1';
+    : 'http://127.0.0.1:4000/api/v1');
 
 export const apiClient = new ApiClient({
   baseUrl: defaultBaseUrl,
@@ -28,4 +29,3 @@ export const apiClient = new ApiClient({
   getRefreshToken: () => tokenStorage.getRefreshToken(),
   getLanguage: () => currentLanguage,
 });
-
