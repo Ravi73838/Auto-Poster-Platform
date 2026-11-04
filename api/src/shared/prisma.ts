@@ -10,9 +10,7 @@ const isTest =
   Boolean(process.env.VITEST_WORKER_ID);
 
 const effectiveDbUrl = isTest
-  ? (process.env.DATABASE_URL_TEST ||
-     env.DATABASE_URL_TEST ||
-     'postgresql://autoposter:autoposter_local_secret@127.0.0.1:5432/autoposter_test?schema=public')
+  ? (process.env.DATABASE_URL_TEST || env.DATABASE_URL_TEST || env.DATABASE_URL)
   : env.DATABASE_URL;
 
 export const prisma =

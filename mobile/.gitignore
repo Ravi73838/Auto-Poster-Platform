@@ -14,3 +14,8 @@ coverage/
 *.tmp
 *.tsbuildinfo
 test-results/
+.cxx/
+local.properties
+android/.gradle/
+android/build/
+android/app/build/

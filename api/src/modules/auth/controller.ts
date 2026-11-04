@@ -24,10 +24,6 @@ function setRefreshTokenCookie(res: Response, rawRefreshToken: string): void {
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
     sameSite: 'lax',
-    domain:
-      env.COOKIE_DOMAIN && env.COOKIE_DOMAIN !== 'localhost'
-        ? env.COOKIE_DOMAIN
-        : undefined,
     path: '/api/v1/auth/refresh',
     maxAge: env.REFRESH_TOKEN_TTL_DAYS * 86_400_000,
   });
@@ -36,10 +32,6 @@ function setRefreshTokenCookie(res: Response, rawRefreshToken: string): void {
 function clearRefreshTokenCookie(res: Response): void {
   res.clearCookie('ap_refresh', {
     path: '/api/v1/auth/refresh',
-    domain:
-      env.COOKIE_DOMAIN && env.COOKIE_DOMAIN !== 'localhost'
-        ? env.COOKIE_DOMAIN
-        : undefined,
   });
 }
 

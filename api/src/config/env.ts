@@ -24,14 +24,10 @@ const envSchema = z
       .default(
         'postgresql://autoposter:autoposter_local_secret@127.0.0.1:5432/autoposter_dev?schema=public',
       ),
-    DATABASE_URL_TEST: z
-      .string()
-      .default(
-        'postgresql://autoposter:autoposter_local_secret@127.0.0.1:5432/autoposter_test?schema=public',
-      ),
+    DIRECT_URL: z.string().optional(),
+    DATABASE_URL_TEST: z.string().optional(),
     REDIS_URL: z.string().default('redis://127.0.0.1:6379'),
     CORS_ORIGINS: z.string().default('http://localhost:5173,http://localhost:3000'),
-    WEB_ORIGINS: z.string().default('http://localhost:5173,http://localhost:3000'),
     ENCRYPTION_KEY: z
       .string()
       .min(32, { message: 'ENCRYPTION_KEY must be at least 32 characters long' })
@@ -46,13 +42,9 @@ const envSchema = z
       .default('autoposter_jwt_access_secret_min_32_chars_long!'),
     JWT_ACCESS_TTL: z.string().default('15m'),
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
-    OTP_HMAC_SECRET: z
-      .string()
-      .min(32, { message: 'OTP_HMAC_SECRET must be at least 32 characters long' })
-      .default('autoposter_otp_hmac_secret_min_32_chars_dev!'),
+    OTP_HMAC_SECRET: z.string().optional(),
     SMS_PROVIDER: z.enum(['dev', 'none']).default('dev'),
     OTP_DEV_BYPASS_CODE: z.string().optional(),
-    COOKIE_DOMAIN: z.string().optional(),
     S3_ENDPOINT: z.string().default('http://127.0.0.1:9000'),
     S3_REGION: z.string().default('us-east-1'),
     S3_BUCKET: z.string().default('autoposter-uploads'),
@@ -65,7 +57,7 @@ const envSchema = z
     ).default(false),
     PUSH_PROVIDER: z.enum(['expo', 'dev', 'none']).default('dev'),
     EXPO_ACCESS_TOKEN: z.string().optional(),
-    EMAIL_PROVIDER: z.enum(['smtp', 'dev', 'none']).default('dev'),
+    EMAIL_PROVIDER: z.enum(['smtp', 'dev', 'none']).default('smtp'),
     SMTP_HOST: z.string().default('127.0.0.1'),
     SMTP_PORT: z.coerce.number().default(1025),
     SMTP_USER: z.string().optional(),
@@ -110,6 +102,6 @@ if (!parsed.success) {
 export const env = {
   ...parsed.data,
   corsOriginsList: parsed.data.CORS_ORIGINS.split(',').map((origin) => origin.trim()),
-  webOriginsList: parsed.data.WEB_ORIGINS.split(',').map((origin) => origin.trim()),
+  webOriginsList: parsed.data.CORS_ORIGINS.split(',').map((origin) => origin.trim()),
 };
 
