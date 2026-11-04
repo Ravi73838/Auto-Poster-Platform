@@ -1,0 +1,13 @@
+{
+  "title": "Settings",
+  "theme": "Appearance",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "System Default",
+  "language": "Language",
+  "apiHealth": "Backend API Health",
+  "systemStatus": "System Status",
+  "operational": "All Systems Operational",
+  "version": "Version"
+}
+

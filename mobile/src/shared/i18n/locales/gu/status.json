@@ -1,0 +1,73 @@
+{
+  "account": {
+    "PENDING": "મંજૂરી બાકી",
+    "NEED_MORE_INFO": "વધુ માહિતીની જરૂર છે",
+    "APPROVED": "મંજૂર",
+    "REJECTED": "નકારેલ",
+    "SUSPENDED": "મોકૂફ રાખેલ",
+    "BLOCKED": "અવરોધિત"
+  },
+  "campaign": {
+    "DRAFT": "ડ્રાફ્ટ",
+    "SUBMITTED": "સબમિટ કરેલ",
+    "UNDER_REVIEW": "સમીક્ષા હેઠળ",
+    "APPROVED": "મંજૂર",
+    "AWAITING_PAYMENT": "ચુકવણીની રાહમાં",
+    "LIVE": "લાઈવ",
+    "RUNNING": "ચાલુ",
+    "COMPLETED": "પૂર્ણ",
+    "SETTLED": "ચુકવણી પતી ગઈ",
+    "REJECTED": "નકારેલ",
+    "EXPIRED": "સમાપ્ત",
+    "CANCELLED": "રદ કરેલ"
+  },
+  "assignment": {
+    "RESERVED": "અનામત",
+    "INSTALLING": "ઇન્સ્ટોલેશન ચાલુ",
+    "INSTALL_SUBMITTED": "ઇન્સ્ટોલેશન સબમિટ કર્યું",
+    "INSTALL_APPROVED": "ઇન્સ્ટોલેશન મંજૂર",
+    "INSTALL_REJECTED": "ઇન્સ્ટોલેશન અસ્વીકાર",
+    "RUNNING": "સક્રિય",
+    "COMPLETED": "પૂર્ણ",
+    "PAID": "ચૂકવેલ",
+    "TERMINATED": "સમાપ્ત",
+    "RESERVATION_EXPIRED": "અનામત મુદત પૂરી"
+  },
+  "dailyPhoto": {
+    "PENDING_CHECK": "ચકાસણી બાકી",
+    "VERIFIED": "ચકાસાયેલ",
+    "MANUAL_REVIEW": "મેન્યુઅલ સમીક્ષા",
+    "REJECTED": "નકારેલ"
+  },
+  "roles": {
+    "DRIVER": "ઓટો ડ્રાઇવર",
+    "COMPANY": "જાહેરાત કંપની",
+    "SUPER_ADMIN": "સુપર એડમિન",
+    "MODERATOR": "મોડરેટર",
+    "FINANCE": "નાણાકીય અધિકારી"
+  },
+  "dispute": {
+    "OPEN": "ખુલ્લું",
+    "UNDER_REVIEW": "સમીક્ષા હેઠળ",
+    "RESOLVED": "ઉકેલાયેલ",
+    "REJECTED": "નકારેલ",
+    "WITHDRAWN": "પાછું ખેંચાયેલ"
+  },
+  "strike": {
+    "ACTIVE": "સક્રિય",
+    "REVOKED": "રદ કરેલ",
+    "EXPIRED": "મુદત પૂરી",
+    "CONSUMED": "વપરાયેલ"
+  },
+  "posterFix": {
+    "OPEN": "પગલાં જરૂરી",
+    "RESOLVED": "ઉકેલાયેલ",
+    "STRIKED": "સમયમર્યાદા સમાપ્ત",
+    "CANCELLED": "રદ કરેલ"
+  },
+  "ban": {
+    "TEMPORARY": "કામચલાઉ પ્રતિબંધ",
+    "PERMANENT": "કાયમી બ્લોક"
+  }
+}
+
