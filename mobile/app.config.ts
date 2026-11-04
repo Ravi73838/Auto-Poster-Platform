@@ -23,7 +23,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: 'com.autoposter.driver',
   },
-  plugins: ['expo-router'],
+  plugins: ['expo-router', 'expo-asset'],
   extra: {
     apiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000/api/v1',
     eas: {

@@ -15,6 +15,10 @@ export const scheduledQueue = new Queue(QUEUE_NAME, {
   connection: getBullMQRedisOptions() as unknown as ConnectionOptions,
 });
 
+scheduledQueue.on('error', (err) => {
+  logger.warn({ err: err?.message }, '[BullMQ] Queue connection error');
+});
+
 export const JOB_NAMES = {
   PAYMENT_EXPIRY: 'campaign-payment-expiry',
   CAMPAIGN_START: 'campaign-start',
