@@ -5,3 +5,7 @@ dist/
 !.env.example
 coverage/
 *.log
+*.tmp
+*.tsbuildinfo
+test-results/
+playwright-report/

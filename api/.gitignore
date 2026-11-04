@@ -5,3 +5,6 @@ dist/
 !.env.example
 coverage/
 *.log
+*.tmp
+*.tsbuildinfo
+test-results/

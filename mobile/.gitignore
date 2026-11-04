@@ -11,3 +11,6 @@ dist/
 *.mobileprovision
 coverage/
 *.log
+*.tmp
+*.tsbuildinfo
+test-results/

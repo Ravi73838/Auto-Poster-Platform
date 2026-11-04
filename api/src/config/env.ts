@@ -5,7 +5,7 @@ import { z } from 'zod';
 // Load .env if present
 try {
   const cwdEnv = path.resolve(process.cwd(), '.env');
-  const apiEnv = path.resolve(process.cwd(), 'apps/api/.env');
+  const apiEnv = path.resolve(process.cwd(), 'api/.env');
   if (fs.existsSync(apiEnv)) {
     process.loadEnvFile(apiEnv);
   } else if (fs.existsSync(cwdEnv)) {

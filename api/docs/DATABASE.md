@@ -300,7 +300,7 @@ The `trg_ledger_entries_balanced` constraint trigger runs on `COMMIT` of any tra
 
 ## 8. Seed Data Guide
 
-### 8.1 Base Seed (`pnpm db:seed:base`)
+### 8.1 Base Seed (`npm run db:seed:base` in `api/` or from root)
 - **Safety**: Safe to run in production; completely idempotent (`upsert` only).
 - **Contents**:
   - All standard permissions (`CAMPAIGN_CREATE`, `CAMPAIGN_APPROVE`, `PAYOUT_APPROVE`, etc.).
@@ -312,7 +312,7 @@ The `trg_ledger_entries_balanced` constraint trigger runs on `COMMIT` of any tra
     - Email: `superadmin@autoposter.com`
     - Password: `AdminPassword123!`
 
-### 8.2 Demo Seed (`pnpm db:seed:demo`)
+### 8.2 Demo Seed (`npm run db:seed:demo` in `api/`)
 - **Safety**: **Development and staging environments only**.
 - **Contents**:
   - 3 Cities (Ahmedabad, Surat, Vadodara) with geographic zones.
@@ -335,16 +335,17 @@ The `trg_ledger_entries_balanced` constraint trigger runs on `COMMIT` of any tra
 ### Prerequisites
 PostgreSQL and Redis services must be running:
 ```bash
-docker compose -f infra/docker/docker-compose.yml up -d
+docker compose -f api/infra/docker-compose.dev.yml up -d
+# Or from root: npm run db:up
 ```
 
 ### Running Test Suites
 ```bash
-# Run all unit and integration tests across monorepo
-pnpm test
+# Run all unit and integration tests across repository
+npm run test:all
 
-# Run API unit and database integration tests only
-pnpm --filter @ap/api test
+# Or run API unit and database integration tests in api/
+cd api && npm test
 ```
 
 ### Test Database Isolation
@@ -360,24 +361,25 @@ When introducing schema modifications:
    Edit `api/prisma/schema.prisma`.
 2. **Generate Migration**:
    ```bash
-   pnpm --filter @ap/api prisma migrate dev --name <descriptive_name> --create-only
+   cd api && npx prisma migrate dev --name <descriptive_name> --create-only
    ```
 3. **Review & Add Constraints**:
    Review the generated SQL file in `api/prisma/migrations/`. Add any custom check constraints or triggers if required.
 4. **Apply Migration**:
    ```bash
-   pnpm --filter @ap/api prisma migrate dev
+   cd api && npx prisma migrate dev
    ```
 5. **Verify Enum Synchronization**:
    If enums were modified, ensure `@ap/shared-constants` is updated and run:
    ```bash
-   pnpm --filter @ap/api test src/__tests__/enums-sync.test.ts
+   cd api && npm test src/__tests__/enums-sync.test.ts
    ```
 6. **Verify Clean Seed**:
    Test on a fresh database:
    ```bash
-   pnpm --filter @ap/api db:seed:base
-   pnpm --filter @ap/api db:seed:demo
+   cd api
+   npm run db:seed:base
+   npm run db:seed:demo
    ```
 
 ---
