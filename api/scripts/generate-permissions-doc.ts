@@ -1,5 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 interface PermissionSpec {
   key: string;
@@ -308,7 +312,7 @@ flowchart TD
   return md;
 }
 
-const outputPath = path.resolve(process.cwd(), 'docs', 'PERMISSIONS.md');
+const outputPath = path.resolve(__dirname, '..', 'docs', 'PERMISSIONS.md');
 fs.writeFileSync(outputPath, generatePermissionsMarkdown(), 'utf-8');
 console.log(`Generated permissions documentation at: ${outputPath}`);
 

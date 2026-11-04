@@ -106,3 +106,4 @@ All tests were executed against local test services (PostgreSQL 16 on port 5432,
   * **Result**: Zero unauthorized node or server imports in `packages/*`.
   * `ApiClient` requires `baseUrl` as an explicit constructor parameter; does not read environment directly.
   * All packages contain only pure TypeScript, JSON, and `zod`.
+

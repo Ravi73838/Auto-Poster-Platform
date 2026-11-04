@@ -36,7 +36,8 @@ describe('shared/crypto', () => {
       const ciphertext = encrypt('sensitive-bank-account');
       const parts = ciphertext.split(':');
       // Tamper with the encrypted bytes
-      parts[3] = parts[3]!.replace(/[0-9a-f]/, '0');
+      const firstChar = parts[3]![0];
+      parts[3] = (firstChar === 'a' ? 'b' : 'a') + parts[3]!.slice(1);
       const tampered = parts.join(':');
 
       expect(() => decrypt(tampered)).toThrow();

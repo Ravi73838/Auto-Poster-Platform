@@ -427,6 +427,11 @@ describe('Phase 3: Auth & Roles Integration Test Suite (autoposter_test)', () =>
     });
 
     it('updates staff role to FINANCE', async () => {
+      await prisma.session.updateMany({
+        where: { userId: seededAdminId },
+        data: { stepUpVerifiedAt: new Date() },
+      });
+
       const res = await request(app)
         .patch(`/api/v1/admin/team/${createdStaffId}`)
         .set('Authorization', `Bearer ${adminAccessToken}`)
