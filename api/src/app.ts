@@ -51,6 +51,15 @@ export function createApp(): Express {
   app.use(blockSuspendedWrites());
   app.use(maintenanceModeGuard());
 
+  app.get('/', (_req, res) => {
+    res.json({
+      name: 'Auto Poster Platform API',
+      status: 'ok',
+      version: '0.1.0',
+      health: '/api/v1/health',
+    });
+  });
+
   app.use('/api/v1', createApiRouter());
 
   app.use(notFoundHandler);

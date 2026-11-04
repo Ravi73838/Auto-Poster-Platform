@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { initI18n } from '../src/i18n';
 import { MobileThemeProvider, useMobileTheme } from '../src/theme/ThemeProvider';
+import { useMobileAuthStore } from '../src/store/authStore';
 
 function RootNavigation() {
   const { resolvedTheme, colors } = useMobileTheme();
@@ -22,8 +23,10 @@ function RootNavigation() {
           },
         }}
       >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" options={{ title: 'Oops!' }} />
       </Stack>
     </>
   );
@@ -33,7 +36,10 @@ export default function RootLayout() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    initI18n().then(() => setReady(true));
+    Promise.all([
+      initI18n(),
+      useMobileAuthStore.getState().initialize().catch(() => {}),
+    ]).finally(() => setReady(true));
   }, []);
 
   if (!ready) {

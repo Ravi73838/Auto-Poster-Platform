@@ -1,7 +1,7 @@
 import { ApiClient } from '@ap/api-client';
-import { mobileConfig } from '../config/index.js';
-import { useMobileAuthStore } from '../store/authStore.js';
-import i18n from '../i18n/index.js';
+import { mobileConfig } from '../config/index';
+import { useMobileAuthStore } from '../store/authStore';
+import i18n from '../i18n/index';
 import type { Language } from '@ap/shared-constants';
 
 export const apiClient = new ApiClient({
