@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@ap/shared-constants": "workspace:*",
-    "@ap/shared-types": "workspace:*"
+    "@ap/shared-types": "workspace:*",
+    "@ap/shared-validation": "workspace:*"
   },
   "devDependencies": {
     "@ap/tsconfig": "workspace:*",
@@ -21,3 +22,4 @@
     "vitest": "^3.0.7"
   }
 }
+

@@ -6,3 +6,1941 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
+
+// ---------------------------------------------------------
+// ENUMS
+// ---------------------------------------------------------
+
+enum Role {
+  DRIVER
+  COMPANY
+  SUPER_ADMIN
+  MODERATOR
+  FINANCE
+}
+
+enum AccountStatus {
+  PENDING
+  NEED_MORE_INFO
+  APPROVED
+  REJECTED
+  SUSPENDED
+  BLOCKED
+}
+
+enum CampaignStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  AWAITING_PAYMENT
+  LIVE
+  RUNNING
+  COMPLETED
+  SETTLED
+  REJECTED
+  EXPIRED
+  CANCELLED
+}
+
+enum AssignmentStatus {
+  RESERVED
+  INSTALLING
+  INSTALL_SUBMITTED
+  INSTALL_APPROVED
+  INSTALL_REJECTED
+  RUNNING
+  COMPLETED
+  PAID
+  TERMINATED
+  RESERVATION_EXPIRED
+  RELEASED
+}
+
+enum AssignmentReleaseReason {
+  DRIVER_CANCELLED
+  ADMIN_OVERRIDE
+  RESERVATION_TIMEOUT
+  CAMPAIGN_CANCELLED
+}
+
+enum ReviewOwner {
+  PLATFORM
+  COMPANY
+}
+
+enum DailyPhotoStatus {
+  PENDING_CHECK
+  VERIFIED
+  MANUAL_REVIEW
+  REJECTED
+}
+
+enum DocumentType {
+  DRIVING_LICENCE
+  VEHICLE_RC
+  VEHICLE_PHOTO
+  OWNER_PERMISSION
+  ID_PROOF
+  GST_CERTIFICATE
+  BUSINESS_PROOF
+  OTHER
+}
+
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  CREATED
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PayoutType {
+  PRINTING_ALLOWANCE
+  RENT
+  ADJUSTMENT
+  WITHDRAWAL
+}
+
+enum PayoutStatus {
+  PENDING
+  APPROVED
+  PROCESSING
+  PAID
+  FAILED
+  ON_HOLD
+}
+
+enum PayoutMethod {
+  UPI
+  BANK_ACCOUNT
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum DisputeReason {
+  PHOTO_WRONGLY_REJECTED
+  POSTER_MISSING
+  PAYMENT_ISSUE
+  PRINT_QUALITY
+  STRIKE_APPEAL
+  SETTLEMENT_AMOUNT
+  WRONGFUL_TERMINATION
+  INSTALL_WRONGLY_REJECTED
+  FLAG_OUTCOME
+  OTHER
+}
+
+enum StrikeStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+  CONSUMED
+}
+
+enum StrikeSource {
+  AUTO_RULE
+  ADMIN_MANUAL
+  DISPUTE
+}
+
+enum BanType {
+  TEMPORARY
+  PERMANENT
+}
+
+enum PosterFixStatus {
+  OPEN
+  RESOLVED
+  STRIKED
+  CANCELLED
+}
+
+enum DisputeParty {
+  DRIVER
+  COMPANY
+  PLATFORM
+}
+
+enum DisputeResolutionType {
+  UPHELD_FOR_DRIVER
+  UPHELD_FOR_COMPANY
+  PARTIAL
+  NO_ACTION
+}
+
+enum DisputeQueue {
+  MODERATION
+  FINANCE
+}
+
+enum DisputeMessageVisibility {
+  DRIVER
+  COMPANY
+  BOTH
+  INTERNAL
+}
+
+enum NotificationCategory {
+  ACCOUNT_SECURITY
+  VERIFICATION
+  CAMPAIGN_UPDATES
+  DAILY_REMINDERS
+  MONEY
+  DISCIPLINE
+  DISPUTES
+  SYSTEM
+}
+
+enum NotificationPriority {
+  NORMAL
+  URGENT
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  SKIPPED
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  CANCELLED
+}
+
+enum DevicePushProvider {
+  EXPO
+  FCM
+}
+
+enum StrikeReason {
+  FAKE_OR_OLD_PHOTO
+  POSTER_REMOVED
+  POSTER_DAMAGED_NOT_FIXED
+  TOO_MANY_MISSED_DAYS
+  OTHER
+}
+
+enum PhotoKind {
+  INSTALLATION
+  DAILY
+}
+
+enum InstallApprover {
+  PLATFORM
+  COMPANY
+}
+
+enum LedgerAccountType {
+  PLATFORM_REVENUE
+  GST_PAYABLE
+  CAMPAIGN_ESCROW
+  DRIVER_WALLET
+  PAYOUT_IN_TRANSIT
+  COMPANY_REFUND
+  GATEWAY_CLEARING
+  GATEWAY_FEES
+  ADJUSTMENT
+}
+
+enum LedgerRefType {
+  CAMPAIGN_PAYMENT
+  PRINTING_ALLOWANCE
+  RENT_PAYOUT
+  COMMISSION
+  GST
+  REFUND
+  ADJUSTMENT
+  PAYOUT_TRANSFER
+  SETTLEMENT
+  PAYOUT_RESERVE
+  PAYOUT_COMPLETE
+  PAYOUT_REVERSAL
+  CAMPAIGN_CLOSEOUT
+  WALLET_WITHDRAWAL
+}
+
+enum LedgerDirection {
+  DEBIT
+  CREDIT
+}
+
+enum RefundReason {
+  CAMPAIGN_CANCELLED
+  UNFILLED_SLOTS
+  OVERPAYMENT
+  DISPUTE_SETTLEMENT
+  MANUAL_CORRECTION
+}
+
+enum RefundStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+  SUCCEEDED
+  FAILED
+}
+
+enum SettlementStatus {
+  PENDING
+  APPROVED
+  HOLD
+  PAID
+}
+
+enum TaxDocumentType {
+  TAX_INVOICE
+  CREDIT_NOTE
+}
+
+enum AdjustmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXECUTED
+}
+
+enum PayoutProviderName {
+  RAZORPAYX
+  MANUAL_CSV
+  DEV
+}
+
+enum PaymentProviderName {
+  RAZORPAY
+  DEV
+}
+
+enum NotificationChannel {
+  PUSH
+  SMS
+  EMAIL
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+}
+
+enum OtpPurpose {
+  LOGIN
+  REGISTER
+  ADMIN_2FA
+  PAYOUT_CHANGE
+  PASSWORD_RESET
+}
+
+enum ActorType {
+  USER
+  SYSTEM
+}
+
+enum VehicleType {
+  AUTO_RICKSHAW
+}
+
+enum DevicePlatform {
+  ANDROID
+  IOS
+  WEB
+}
+
+enum KycSubmissionStatus {
+  SUBMITTED
+  APPROVED
+  REJECTED
+  NEED_MORE_INFO
+}
+
+enum FilePurpose {
+  KYC_DOCUMENT
+  CAMPAIGN_POSTER
+  INSTALLATION_PHOTO
+  DAILY_PHOTO
+  DISPUTE_EVIDENCE
+  VEHICLE_PHOTO
+}
+
+enum FileStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum ConsentType {
+  TERMS
+  PRIVACY
+  LOCATION
+  CAMERA
+  POSTER_POLICY
+}
+
+enum KycReasonCode {
+  DOCUMENT_UNCLEAR
+  DOCUMENT_EXPIRED
+  DOCUMENT_MISSING
+  NAME_MISMATCH
+  VEHICLE_NUMBER_MISMATCH
+  OWNER_PERMISSION_MISSING
+  DUPLICATE_ACCOUNT
+  INVALID_GST
+  PAYOUT_DETAILS_INVALID
+  OTHER
+}
+
+enum CampaignReviewReason {
+  POSTER_CONTENT_POLICY
+  POSTER_LOW_QUALITY
+  POSTER_MISLEADING
+  PRICE_TOO_LOW
+  DETAILS_UNCLEAR
+  UNSUPPORTED_AREA
+  START_DATE_TOO_SOON
+  OTHER
+}
+
+enum PrintMaterial {
+  FLEX
+  VINYL_STICKER
+  OTHER
+}
+
+enum CampaignSort {
+  NEWEST
+  HIGHEST_RENT
+  STARTING_SOON
+}
+
+enum CampaignReviewDecision {
+  APPROVED
+  REJECTED
+}
+
+enum DayStatus {
+  PENDING
+  UNDER_REVIEW
+  VERIFIED
+  MISSED
+  EXCUSED
+}
+
+enum PhotoReviewSource {
+  AUTO_FLAGGED
+  RANDOM_SAMPLE
+  COMPANY_FLAG
+}
+
+enum InstallRejectReason {
+  POSTER_WRINKLED_OR_DAMAGED
+  NUMBER_PLATE_OBSCURED
+  WRONG_AUTO_OR_PLATE
+  POOR_LIGHTING_OR_BLURRY
+  POSTER_CROPPED_OR_INCOMPLETE
+  SUSPECTED_REUSE_OR_DUPLICATE
+  OTHER
+}
+
+enum DailyRejectReason {
+  PLATE_NOT_VISIBLE
+  POSTER_NOT_VISIBLE
+  POSTER_REMOVED_OR_DAMAGED
+  WRONG_AUTO
+  WRONG_POSTER
+  LOCATION_MISMATCH
+  OLD_OR_REUSED_PHOTO
+  SCREEN_OR_EDITED_PHOTO
+  PHOTO_UNCLEAR
+  OTHER
+}
+
+enum PhotoFlagReason {
+  POSTER_NOT_VISIBLE
+  WRONG_AUTO
+  LOOKS_FAKE
+  OTHER
+}
+
+enum PhotoFlagStatus {
+  OPEN
+  RESOLVED_VALID
+  RESOLVED_INVALID
+}
+
+enum ExportJobStatus {
+  QUEUED
+  RUNNING
+  DONE
+  FAILED
+  EXPIRED
+}
+
+enum SettingChangeRequestStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+}
+
+enum LegalDocumentType {
+  TERMS
+  PRIVACY
+  POSTER_POLICY
+  DRIVER_AGREEMENT
+}
+
+enum LegalDocumentStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum JobRunStatus {
+  SUCCESS
+  FAILED
+  SKIPPED
+}
+
+
+// ---------------------------------------------------------
+// LOCATION
+// ---------------------------------------------------------
+
+model City {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  state     String
+  country   String   @default("IN")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  zones           Zone[]
+  driverProfiles  DriverProfile[]
+  companyProfiles CompanyProfile[]
+  campaigns       Campaign[]
+  dailyMetrics    DailyMetric[]
+
+
+  @@unique([name, state])
+  @@map("cities")
+}
+
+model Zone {
+  id              String   @id @default(uuid()) @db.Uuid
+  cityId          String   @map("city_id") @db.Uuid
+  name            String
+  pinCodes        String[] @default([]) @map("pin_codes")
+  centerLat       Float    @map("center_lat")
+  centerLng       Float    @map("center_lng")
+  radiusMeters    Float    @map("radius_meters")
+  boundaryGeoJson Json?    @map("boundary_geojson")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  city          City           @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  driverZones   DriverZone[]
+  campaignZones CampaignZone[]
+
+  @@index([cityId])
+  @@map("zones")
+}
+
+// ---------------------------------------------------------
+// IDENTITY & ACCESS
+// ---------------------------------------------------------
+
+model User {
+  id                String        @id @default(uuid()) @db.Uuid
+  role              Role
+  mobile            String        @unique
+  email             String?       @unique
+  passwordHash      String?       @map("password_hash")
+  status            AccountStatus @default(PENDING)
+  preferredLanguage String        @default("en") @map("preferred_language")
+  preferredTheme    String        @default("system") @map("preferred_theme")
+  twoFactorEnabled   Boolean       @default(false) @map("two_factor_enabled")
+  mobileVerifiedAt   DateTime?     @map("mobile_verified_at")
+  emailVerifiedAt    DateTime?     @map("email_verified_at")
+  mustChangePassword Boolean       @default(false) @map("must_change_password")
+  passwordChangedAt  DateTime?     @map("password_changed_at")
+  lastLoginAt        DateTime?     @map("last_login_at")
+  deletedAt         DateTime?     @map("deleted_at")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  sessions         Session[]
+  deviceTokens     DeviceToken[]
+  driverProfile    DriverProfile?
+  companyProfile   CompanyProfile?
+  documents        Document[]        @relation("UserDocuments")
+  campaigns        Campaign[]        @relation("CompanyCampaigns")
+  campaignPayments CampaignPayment[]
+  assignments      Assignment[]      @relation("DriverAssignments")
+  photos           Photo[]           @relation("DriverPhotos")
+  strikes          Strike[]          @relation("DriverStrikes")
+  disputesRaised   Dispute[]         @relation("DisputesRaised")
+  ledgerAccounts   LedgerAccount[]
+  payouts          Payout[]          @relation("DriverPayouts")
+  notifications    Notification[]
+  auditLogs        AuditLog[]        @relation("UserAuditLogs")
+  uploadedFiles          UploadedFile[]    @relation("UserUploadedFiles")
+  consentRecords         ConsentRecord[]
+  kycSubmissions         KycSubmission[]   @relation("UserKycSubmissions")
+  assignedKycSubmissions KycSubmission[]   @relation("AssignedKycSubmissions")
+  reviewedKycSubmissions KycSubmission[]   @relation("ReviewedKycSubmissions")
+  assignedCampaigns      Campaign[]        @relation("CampaignReviewer")
+  campaignReviews        CampaignReview[]  @relation("ReviewerCampaignReviews")
+  claimedAssignments    Assignment[]      @relation("ReviewClaimedAssignments")
+  reviewClaimedPhotos    Photo[]           @relation("ReviewClaimedPhotos")
+  excusedDays            AssignmentDay[]   @relation("ExcusedDays")
+  flaggedPhotos          PhotoFlag[]       @relation("UserFlaggedPhotos")
+  resolvedPhotoFlags     PhotoFlag[]       @relation("UserResolvedPhotoFlags")
+  companyRefunds         Refund[]          @relation("CompanyRefunds")
+  requestedRefunds       Refund[]          @relation("RequestedRefunds")
+  approvedRefunds        Refund[]          @relation("ApprovedRefunds")
+  rejectedRefunds        Refund[]          @relation("RejectedRefunds")
+  driverSettlements      AssignmentSettlement[] @relation("DriverSettlements")
+  approvedSettlements    AssignmentSettlement[] @relation("ApprovedSettlements")
+  companyTaxDocuments    TaxDocument[]     @relation("CompanyTaxDocuments")
+  requestedPayouts       Payout[]          @relation("RequestedPayouts")
+  requestedAdjustments   Adjustment[]      @relation("RequestedAdjustments")
+  approvedAdjustments    Adjustment[]      @relation("ApprovedAdjustments")
+  rejectedAdjustments    Adjustment[]      @relation("RejectedAdjustments")
+  revokedStrikes         Strike[]          @relation("RevokedStrikes")
+  bans                   DriverBan[]       @relation("DriverBans")
+  createdBans            DriverBan[]       @relation("CreatedBans")
+  liftedBans             DriverBan[]       @relation("LiftedBans")
+  terminatedAssignments  Assignment[]      @relation("TerminatedAssignments")
+  assignedDisputes       Dispute[]         @relation("AssignedDisputes")
+  reopenRequestedDisputes Dispute[]        @relation("ReopenRequestedDisputes")
+  disputeMessages        DisputeMessage[]  @relation("DisputeMessages")
+  disputeEvents          DisputeEvent[]    @relation("DisputeEvents")
+  notificationPreferences NotificationPreference[] @relation("NotificationPreferences")
+  notificationSettings   UserNotificationSettings?
+  createdAnnouncements   Announcement[]    @relation("CreatedAnnouncements")
+  savedViews             SavedView[]
+  exportJobs             ExportJob[]               @relation("RequestedExportJobs")
+  settingChangeRequestsRequested SettingChangeRequest[] @relation("RequestedSettingChanges")
+  settingChangeRequestsApproved  SettingChangeRequest[] @relation("ApprovedSettingChanges")
+  legalDocumentsCreated  LegalDocument[]           @relation("CreatedLegalDocuments")
+  helpArticlesUpdated    HelpArticle[]             @relation("UpdatedHelpArticles")
+
+  @@map("users")
+}
+
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  description String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String   @id @default(uuid()) @db.Uuid
+  role         Role
+  permissionId String   @map("permission_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([role, permissionId])
+  @@map("role_permissions")
+}
+
+model Session {
+  id                String         @id @default(uuid()) @db.Uuid
+  userId            String         @map("user_id") @db.Uuid
+  tokenHash         String         @unique @map("token_hash")
+  previousTokenHash String?        @map("previous_token_hash")
+  platform          DevicePlatform @default(WEB)
+  userAgent         String?        @map("user_agent")
+  ipAddress         String?        @map("ip_address")
+  appVersion        String?        @map("app_version")
+  expiresAt         DateTime       @map("expires_at")
+  lastUsedAt        DateTime       @default(now()) @map("last_used_at")
+  revokedAt         DateTime?      @map("revoked_at")
+  stepUpVerifiedAt  DateTime?      @map("step_up_verified_at")
+  createdAt         DateTime       @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([previousTokenHash])
+  @@map("sessions")
+}
+
+model OtpRequest {
+  id          String     @id @default(uuid()) @db.Uuid
+  mobile      String
+  purpose     OtpPurpose
+  codeHash    String     @map("code_hash")
+  attempts    Int        @default(0)
+  maxAttempts Int        @default(3) @map("max_attempts")
+  expiresAt   DateTime   @map("expires_at")
+  consumedAt  DateTime?  @map("consumed_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  @@index([mobile, purpose])
+  @@map("otp_requests")
+}
+
+model DeviceToken {
+  id               String             @id @default(uuid()) @db.Uuid
+  userId           String             @map("user_id") @db.Uuid
+  token            String
+  platform         DevicePlatform
+  provider         DevicePushProvider @default(EXPO)
+  appVersion       String?            @map("app_version")
+  disabledAt       DateTime?          @map("disabled_at")
+  lastRegisteredAt DateTime           @default(now()) @map("last_registered_at")
+  lastSeenAt       DateTime           @default(now()) @map("last_seen_at")
+  createdAt        DateTime           @default(now()) @map("created_at")
+
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries NotificationDelivery[]
+
+  @@unique([userId, token])
+  @@index([token])
+  @@map("device_tokens")
+}
+
+// ---------------------------------------------------------
+// PROFILES & ASSETS
+// ---------------------------------------------------------
+
+model Vehicle {
+  id                 String      @id @default(uuid()) @db.Uuid
+  registrationNumber String      @unique @map("registration_number")
+  vehicleType        VehicleType @default(AUTO_RICKSHAW) @map("vehicle_type")
+  ownerName          String?     @map("owner_name")
+  ownerMobile        String?     @map("owner_mobile")
+  rcNumber           String?     @map("rc_number")
+  insuranceExpiry    DateTime?   @map("insurance_expiry")
+  permitExpiry       DateTime?   @map("permit_expiry")
+  fitnessExpiry      DateTime?   @map("fitness_expiry")
+  isVerified         Boolean     @default(false) @map("is_verified")
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+
+  driverProfiles DriverProfile[]
+  documents      Document[]
+  assignments    Assignment[]
+
+  @@map("vehicles")
+}
+
+model DriverProfile {
+  id                         String       @id @default(uuid()) @db.Uuid
+  userId                     String       @unique @map("user_id") @db.Uuid
+  fullName                   String?      @map("full_name")
+  cityId                     String?      @map("city_id") @db.Uuid
+  currentVehicleId           String?      @map("current_vehicle_id") @db.Uuid
+  upiIdEncrypted             String?      @map("upi_id_encrypted")
+  upiIdMasked                String?      @map("upi_id_masked")
+  bankAccountNumberEncrypted String?      @map("bank_account_number_encrypted")
+  bankAccountFingerprint     String?      @map("bank_account_fingerprint") @db.VarChar(64)
+  bankIfsc                   String?      @map("bank_ifsc")
+  bankAccountName            String?      @map("bank_account_name")
+  payoutMethod               PayoutMethod @default(UPI) @map("payout_method")
+  payoutDetailsChangedAt     DateTime?    @map("payout_details_changed_at")
+  isAvailable                Boolean      @default(true) @map("is_available")
+  lifetimeEarningsPaise      BigInt       @default(0) @map("lifetime_earnings_paise")
+  completedCampaignsCount    Int          @default(0) @map("completed_campaigns_count")
+  totalKmDriven              Float        @default(0) @map("total_km_driven")
+  rating                     Float        @default(5.0)
+  strikesCount               Int          @default(0) @map("strikes_count")
+  bannedUntil                DateTime?    @map("banned_until")
+  createdAt                  DateTime     @default(now()) @map("created_at")
+  updatedAt                  DateTime     @updatedAt @map("updated_at")
+
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city           City?        @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  currentVehicle Vehicle?     @relation(fields: [currentVehicleId], references: [id], onDelete: SetNull)
+  driverZones    DriverZone[]
+
+  @@index([cityId])
+  @@index([bankAccountFingerprint])
+  @@map("driver_profiles")
+}
+
+model DriverZone {
+  id        String   @id @default(uuid()) @db.Uuid
+  driverId  String   @map("driver_id") @db.Uuid
+  zoneId    String   @map("zone_id") @db.Uuid
+  isPrimary Boolean  @default(false) @map("is_primary")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  driver DriverProfile @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  zone   Zone          @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@unique([driverId, zoneId])
+  @@map("driver_zones")
+}
+
+model CompanyProfile {
+  id                 String   @id @default(uuid()) @db.Uuid
+  userId             String   @unique @map("user_id") @db.Uuid
+  cityId             String?  @map("city_id") @db.Uuid
+  companyName        String   @map("company_name")
+  brandName          String?  @map("brand_name")
+  legalName          String?  @map("legal_name")
+  gstin              String?  @unique
+  pan                String?
+  billingAddress     Json?    @map("billing_address")
+  website            String?
+  contactPersonName  String   @map("contact_person_name")
+  contactPersonPhone String   @map("contact_person_phone")
+  isVerified         Boolean  @default(false) @map("is_verified")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city City? @relation(fields: [cityId], references: [id], onDelete: SetNull)
+
+  @@index([cityId])
+  @@map("company_profiles")
+}
+
+model Document {
+  id               String         @id @default(uuid()) @db.Uuid
+  userId           String         @map("user_id") @db.Uuid
+  vehicleId        String?        @map("vehicle_id") @db.Uuid
+  uploadedFileId   String?        @map("uploaded_file_id") @db.Uuid
+  documentType     DocumentType   @map("document_type")
+  fileUrl          String?        @map("file_url")
+  mimeType         String         @map("mime_type")
+  fileSizeBytes    Int            @map("file_size_bytes")
+  status           DocumentStatus @default(PENDING)
+  rejectionReason  String?        @map("rejection_reason")
+  rejectReasonCode KycReasonCode? @map("reject_reason_code")
+  isCurrent        Boolean        @default(true) @map("is_current")
+  verifiedAt       DateTime?      @map("verified_at")
+  verifiedByUserId String?        @map("verified_by_user_id")
+  expiresAt        DateTime?      @map("expires_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  user         User          @relation("UserDocuments", fields: [userId], references: [id], onDelete: Cascade)
+  vehicle      Vehicle?      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  uploadedFile UploadedFile? @relation(fields: [uploadedFileId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([vehicleId])
+  @@index([uploadedFileId])
+  @@index([userId, documentType, isCurrent])
+  @@map("documents")
+}
+
+model UploadedFile {
+  id          String      @id @default(uuid()) @db.Uuid
+  ownerUserId String      @map("owner_user_id") @db.Uuid
+  fileKey     String      @unique @map("file_key")
+  purpose     FilePurpose
+  mimeType    String      @map("mime_type")
+  sizeBytes   Int         @map("size_bytes")
+  status      FileStatus  @default(PENDING)
+  sha256       String?     @db.VarChar(64)
+  width        Int?
+  height       Int?
+  thumbnailKey String?     @map("thumbnail_key")
+  previewKey   String?     @map("preview_key")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  confirmedAt  DateTime?   @map("confirmed_at")
+
+  ownerUser User       @relation("UserUploadedFiles", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  documents Document[]
+  campaigns Campaign[] @relation("CampaignPosterFile")
+
+
+  @@index([ownerUserId])
+  @@index([status])
+  @@map("uploaded_files")
+}
+
+model ConsentRecord {
+  id         String      @id @default(uuid()) @db.Uuid
+  userId     String      @map("user_id") @db.Uuid
+  type       ConsentType
+  version    String
+  acceptedAt DateTime    @default(now()) @map("accepted_at")
+  ip         String
+  userAgent  String?     @map("user_agent")
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, version])
+  @@index([userId])
+  @@map("consent_records")
+}
+
+model KycSubmission {
+  id              String              @id @default(uuid()) @db.Uuid
+  userId          String              @map("user_id") @db.Uuid
+  attemptNo       Int                 @default(1) @map("attempt_no")
+  status          KycSubmissionStatus @default(SUBMITTED)
+  submittedAt     DateTime            @default(now()) @map("submitted_at")
+  assignedToId    String?             @map("assigned_to_id") @db.Uuid
+  assignedAt      DateTime?           @map("assigned_at")
+  reviewedById    String?             @map("reviewed_by_id") @db.Uuid
+  reviewedAt      DateTime?           @map("reviewed_at")
+  decisionNote    String?             @map("decision_note")
+  reviewReasons   Json?               @map("review_reasons")
+  profileSnapshot Json                @map("profile_snapshot")
+  duplicateFlags  Json?               @map("duplicate_flags")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  user       User  @relation("UserKycSubmissions", fields: [userId], references: [id], onDelete: Cascade)
+  assignedTo User? @relation("AssignedKycSubmissions", fields: [assignedToId], references: [id], onDelete: SetNull)
+  reviewedBy User? @relation("ReviewedKycSubmissions", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status, submittedAt])
+  @@index([assignedToId, status])
+  @@index([userId])
+  @@map("kyc_submissions")
+}
+
+// ---------------------------------------------------------
+// CAMPAIGNS & DISTRIBUTION
+// ---------------------------------------------------------
+
+model Campaign {
+  id                     String          @id @default(uuid()) @db.Uuid
+  companyId              String          @map("company_id") @db.Uuid
+  title                  String
+  description            String?
+  creativeUrl            String?         @map("creative_url")
+  creativeThumbnailUrl   String?         @map("creative_thumbnail_url")
+  printInstructions      String?         @map("print_instructions")
+  targetVehicleType      VehicleType     @default(AUTO_RICKSHAW) @map("target_vehicle_type")
+  targetAutoCount        Int             @map("target_auto_count")
+  enrolledCount          Int             @default(0) @map("enrolled_count")
+  startDate              DateTime        @map("start_date")
+  endDate                DateTime        @map("end_date")
+  dailyRentPaise         Int             @map("daily_rent_paise")
+  printingAllowancePaise Int             @map("printing_allowance_paise")
+  totalBudgetPaise       BigInt          @map("total_budget_paise")
+  platformFeePaise       BigInt          @map("platform_fee_paise")
+  gstAmountPaise         BigInt          @map("gst_amount_paise")
+  totalChargedPaise      BigInt          @map("total_charged_paise")
+  status                 CampaignStatus  @default(DRAFT)
+  installApprover        InstallApprover @default(PLATFORM) @map("install_approver")
+  minDailyKm             Int             @default(30) @map("min_daily_km")
+  dailyPhotoStartHour    Int             @default(6) @map("daily_photo_start_hour")
+  dailyPhotoEndHour      Int             @default(22) @map("daily_photo_end_hour")
+  termsAcceptedAt        DateTime?       @map("terms_accepted_at")
+  approvedAt             DateTime?       @map("approved_at")
+  approvedByUserId       String?         @map("approved_by_user_id")
+  cancelledAt            DateTime?       @map("cancelled_at")
+  cancellationReason     String?         @map("cancellation_reason")
+  deletedAt              DateTime?       @map("deleted_at")
+  createdAt              DateTime        @default(now()) @map("created_at")
+  updatedAt              DateTime        @updatedAt @map("updated_at")
+
+  // Phase 5 additions
+  cityId                 String?         @map("city_id") @db.Uuid
+  posterFileId           String?         @map("poster_file_id") @db.Uuid
+  printMaterial          PrintMaterial   @default(VINYL_STICKER) @map("print_material")
+  printSize              String?         @map("print_size")
+  enrolmentClosesAt      DateTime?       @map("enrolment_closes_at")
+  paymentDeadlineAt      DateTime?       @map("payment_deadline_at")
+  liveAt                 DateTime?       @map("live_at")
+  commissionBps          Int?            @map("commission_bps")
+  gstBps                 Int?            @map("gst_bps")
+  assignedToId           String?         @map("assigned_to_id") @db.Uuid
+  assignedAt             DateTime?       @map("assigned_at")
+  pricingSnapshot        Json?           @map("pricing_snapshot")
+  revisionCount          Int             @default(0) @map("revision_count")
+  reviewReasons          Json?           @map("review_reasons")
+  lastSubmittedAt        DateTime?       @map("last_submitted_at")
+
+  company        User              @relation("CompanyCampaigns", fields: [companyId], references: [id], onDelete: Restrict)
+  city           City?             @relation(fields: [cityId], references: [id])
+  posterFile     UploadedFile?     @relation("CampaignPosterFile", fields: [posterFileId], references: [id])
+  assignedTo     User?             @relation("CampaignReviewer", fields: [assignedToId], references: [id])
+  reviews        CampaignReview[]
+  campaignZones  CampaignZone[]
+  payments       CampaignPayment[]
+  assignments    Assignment[]
+  ledgerAccounts LedgerAccount[]
+  refunds        Refund[]
+  settlements    AssignmentSettlement[]
+  taxDocuments   TaxDocument[]
+  disputes       Dispute[]         @relation("CampaignDisputes")
+
+  @@index([companyId])
+  @@index([status])
+  @@index([cityId])
+  @@index([assignedToId])
+  @@map("campaigns")
+}
+
+model CampaignReview {
+  id         String                 @id @default(uuid()) @db.Uuid
+  campaignId String                 @map("campaign_id") @db.Uuid
+  attemptNo  Int                    @map("attempt_no")
+  reviewerId String                 @map("reviewer_id") @db.Uuid
+  decision   CampaignReviewDecision
+  reasons    Json?
+  note       String?
+  createdAt  DateTime               @default(now()) @map("created_at")
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  reviewer User     @relation("ReviewerCampaignReviews", fields: [reviewerId], references: [id], onDelete: Restrict)
+
+  @@index([campaignId])
+  @@index([reviewerId])
+  @@map("campaign_reviews")
+}
+
+
+model CampaignZone {
+  id         String   @id @default(uuid()) @db.Uuid
+  campaignId String   @map("campaign_id") @db.Uuid
+  zoneId     String   @map("zone_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  zone     Zone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, zoneId])
+  @@map("campaign_zones")
+}
+
+model CampaignPayment {
+  id                  String        @id @default(uuid()) @db.Uuid
+  campaignId          String        @map("campaign_id") @db.Uuid
+  companyId           String        @map("company_id") @db.Uuid
+  amountPaise         BigInt        @map("amount_paise")
+  gatewayFeePaise     BigInt        @default(0) @map("gateway_fee_paise")
+  currency            String        @default("INR")
+  gateway             String
+  gatewayOrderId      String?       @map("gateway_order_id")
+  gatewayPaymentId    String?       @map("gateway_payment_id")
+  gatewaySignature    String?       @map("gateway_signature")
+  method              String?
+  status              PaymentStatus @default(CREATED)
+  idempotencyKey      String?       @unique @map("idempotency_key")
+  capturedAt          DateTime?     @map("captured_at")
+  signatureVerifiedAt DateTime?     @map("signature_verified_at")
+  orderExpiresAt      DateTime?     @map("order_expires_at")
+  rawResponse         Json?         @map("raw_response")
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+
+  campaign     Campaign      @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  company      User          @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  refunds      Refund[]
+  taxDocuments TaxDocument[]
+
+  @@index([campaignId])
+  @@index([companyId])
+  @@map("campaign_payments")
+}
+
+model WebhookEvent {
+  id          String    @id @default(uuid()) @db.Uuid
+  gateway     String
+  eventId     String    @map("event_id")
+  eventType   String    @map("event_type")
+  payload     Json
+  processedAt DateTime? @map("processed_at")
+  error       String?
+  attempts    Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@unique([gateway, eventId])
+  @@map("webhook_events")
+}
+
+// ---------------------------------------------------------
+// EXECUTION & MONITORING
+// ---------------------------------------------------------
+
+model Assignment {
+  id                      String                  @id @default(uuid()) @db.Uuid
+  campaignId              String                  @map("campaign_id") @db.Uuid
+  driverId                String                  @map("driver_id") @db.Uuid
+  vehicleId               String                  @map("vehicle_id") @db.Uuid
+  status                  AssignmentStatus        @default(RESERVED)
+  reservedAt              DateTime                @default(now()) @map("reserved_at")
+  expiresAt               DateTime                @map("expires_at")
+  installationDeadlineAt  DateTime?               @map("installation_deadline_at")
+  installedAt             DateTime?               @map("installed_at")
+  installApprovedAt       DateTime?               @map("install_approved_at")
+  installApprovedByUserId String?                 @map("install_approved_by_user_id")
+  installRejectReason     String?                 @map("install_reject_reason")
+  startedAt               DateTime?               @map("started_at")
+  endedAt                 DateTime?               @map("ended_at")
+  totalDays               Int                     @map("total_days")
+  windowDays              Int?                    @map("window_days")
+  verifiedDays            Int                     @default(0) @map("verified_days")
+  missedDays              Int                     @default(0) @map("missed_days")
+  excusedDays             Int                     @default(0) @map("excused_days")
+  rejectedDays            Int                     @default(0) @map("rejected_days")
+  printingAllowancePaid   Boolean                 @default(false) @map("printing_allowance_paid")
+  rentPaidPaise           BigInt                  @default(0) @map("rent_paid_paise")
+  finalPayoutId           String?                 @map("final_payout_id") @db.Uuid
+  releaseReason           AssignmentReleaseReason? @map("release_reason")
+  releasedAt              DateTime?               @map("released_at")
+  installAttempts         Int                     @default(0) @map("install_attempts")
+  extraAttemptsGranted    Int                     @default(0) @map("extra_attempts_granted")
+  reviewOwner             ReviewOwner             @default(PLATFORM) @map("review_owner")
+  escalatedAt             DateTime?               @map("escalated_at")
+  reviewClaimedById       String?                 @map("review_claimed_by_id") @db.Uuid
+  reviewClaimedAt         DateTime?               @map("review_claimed_at")
+  reservedIdempotencyKey  String?                 @unique @map("reserved_idempotency_key")
+  forceManualReview       Boolean                 @default(false) @map("force_manual_review")
+  terminatedById          String?                 @map("terminated_by_id") @db.Uuid
+  terminationDate         DateTime?               @map("termination_date") @db.Date
+  terminatedAt            DateTime?               @map("terminated_at")
+  createdAt               DateTime                @default(now()) @map("created_at")
+  updatedAt               DateTime                @updatedAt @map("updated_at")
+
+  campaign        Campaign        @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  driver          User            @relation("DriverAssignments", fields: [driverId], references: [id], onDelete: Restrict)
+  vehicle         Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  reviewClaimedBy User?           @relation("ReviewClaimedAssignments", fields: [reviewClaimedById], references: [id], onDelete: SetNull)
+  terminatedBy    User?           @relation("TerminatedAssignments", fields: [terminatedById], references: [id], onDelete: SetNull)
+  photos          Photo[]
+  days            AssignmentDay[]
+  strikes         Strike[]
+  disputes        Dispute[]
+  payouts         Payout[]
+  settlement      AssignmentSettlement?
+  posterFixNotices PosterFixNotice[]
+
+  @@unique([campaignId, driverId])
+  @@index([vehicleId])
+  @@index([status])
+  @@index([reviewClaimedById])
+  @@map("assignments")
+}
+
+model Photo {
+  id                  String             @id @default(uuid()) @db.Uuid
+  assignmentId        String             @map("assignment_id") @db.Uuid
+  driverId            String             @map("driver_id") @db.Uuid
+  kind                PhotoKind
+  photoDate           DateTime?          @map("photo_date") @db.Date
+  photoUrl            String             @map("photo_url")
+  thumbnailUrl        String?            @map("thumbnail_url")
+  lat                 Float
+  lng                 Float
+  accuracyMeters      Float              @map("accuracy_meters")
+  capturedAt          DateTime           @map("captured_at")
+  uploadedAt          DateTime           @default(now()) @map("uploaded_at")
+  isInsideAllowedZone Boolean            @default(false) @map("is_inside_allowed_zone")
+  distanceCoveredKm   Float              @default(0) @map("distance_covered_km")
+  odometerReading     Float?             @map("odometer_reading")
+  status              DailyPhotoStatus   @default(PENDING_CHECK)
+  failureReason       String?            @map("failure_reason")
+  reviewedByUserId    String?            @map("reviewed_by_user_id")
+  reviewedAt          DateTime?          @map("reviewed_at")
+  autoCheckFlags      Json?              @map("auto_check_flags")
+  reviewReasonCodes   Json?              @map("review_reason_codes")
+  duplicateFlags      Json?              @map("duplicate_flags")
+  attemptNo           Int                @default(1) @map("attempt_no")
+  dhash               String?            @db.VarChar(64)
+  riskScore           Int                @default(0) @map("risk_score")
+  reviewSource        PhotoReviewSource? @map("review_source")
+  fileSha256          String?            @map("file_sha256") @db.VarChar(64)
+  clientSentAt        DateTime?          @map("client_sent_at")
+  reviewClaimedById   String?            @map("review_claimed_by_id") @db.Uuid
+  reviewClaimedAt     DateTime?          @map("review_claimed_at")
+  createdAt           DateTime           @default(now()) @map("created_at")
+
+  assignment        Assignment      @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  driver            User            @relation("DriverPhotos", fields: [driverId], references: [id], onDelete: Restrict)
+  reviewClaimedBy   User?           @relation("ReviewClaimedPhotos", fields: [reviewClaimedById], references: [id], onDelete: SetNull)
+  verifiedDays      AssignmentDay[] @relation("VerifiedPhotoDays")
+  flags             PhotoFlag[]
+  disputes          Dispute[]
+  strikes           Strike[]
+  posterFixSources  PosterFixNotice[] @relation("PosterFixSourcePhoto")
+  posterFixResolved PosterFixNotice[] @relation("PosterFixResolvedPhoto")
+
+  @@index([assignmentId])
+  @@index([driverId])
+  @@index([status])
+  @@index([fileSha256])
+  @@index([reviewClaimedById])
+  @@index([riskScore])
+  @@map("photos")
+}
+
+model AssignmentDay {
+  id              String     @id @default(uuid()) @db.Uuid
+  assignmentId    String     @map("assignment_id") @db.Uuid
+  date            DateTime   @db.Date
+  status          DayStatus  @default(PENDING)
+  verifiedPhotoId String?    @map("verified_photo_id") @db.Uuid
+  reasonCode      String?    @map("reason_code")
+  excusedById     String?    @map("excused_by_id") @db.Uuid
+  excuseNote      String?    @map("excuse_note")
+  statusChangedAt DateTime?  @map("status_changed_at")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  assignment    Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  verifiedPhoto Photo?      @relation("VerifiedPhotoDays", fields: [verifiedPhotoId], references: [id], onDelete: SetNull)
+  excusedBy     User?       @relation("ExcusedDays", fields: [excusedById], references: [id], onDelete: SetNull)
+
+  @@unique([assignmentId, date])
+  @@index([date, status])
+  @@index([assignmentId, status])
+  @@map("assignment_days")
+}
+
+model PhotoFlag {
+  id             String          @id @default(uuid()) @db.Uuid
+  photoId        String          @map("photo_id") @db.Uuid
+  flaggedById    String          @map("flagged_by_id") @db.Uuid
+  flaggedByRole  Role            @map("flagged_by_role")
+  reason         PhotoFlagReason
+  note           String?
+  status         PhotoFlagStatus @default(OPEN)
+  resolvedById   String?         @map("resolved_by_id") @db.Uuid
+  resolvedAt     DateTime?       @map("resolved_at")
+  resolutionNote String?         @map("resolution_note")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  photo       Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  flaggedBy   User  @relation("UserFlaggedPhotos", fields: [flaggedById], references: [id], onDelete: Restrict)
+  resolvedBy  User? @relation("UserResolvedPhotoFlags", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([photoId, status])
+  @@index([flaggedById])
+  @@map("photo_flags")
+}
+
+model Strike {
+  id             String       @id @default(uuid()) @db.Uuid
+  driverId       String       @map("driver_id") @db.Uuid
+  assignmentId   String?      @map("assignment_id") @db.Uuid
+  reason         StrikeReason
+  status         StrikeStatus @default(ACTIVE)
+  source         StrikeSource @default(AUTO_RULE)
+  notes          String?
+  issuedByUserId String?      @map("issued_by_user_id") @db.Uuid
+  issuedAt       DateTime     @default(now()) @map("issued_at")
+  expiresAt      DateTime     @map("expires_at")
+  revokedById    String?      @map("revoked_by_id") @db.Uuid
+  revokedAt      DateTime?    @map("revoked_at")
+  revokeReason   String?      @map("revoke_reason")
+  banId          String?      @map("ban_id") @db.Uuid
+  photoId        String?      @map("photo_id") @db.Uuid
+  dayDate        DateTime?    @map("day_date") @db.Date
+  dedupeKey      String?      @unique @map("dedupe_key")
+
+  driver     User        @relation("DriverStrikes", fields: [driverId], references: [id], onDelete: Cascade)
+  assignment Assignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  revokedBy  User?       @relation("RevokedStrikes", fields: [revokedById], references: [id], onDelete: SetNull)
+  ban        DriverBan?  @relation(fields: [banId], references: [id], onDelete: SetNull)
+  photo      Photo?      @relation(fields: [photoId], references: [id], onDelete: SetNull)
+  disputes   Dispute[]
+
+  @@index([driverId])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("strikes")
+}
+
+model DriverBan {
+  id          String    @id @default(uuid()) @db.Uuid
+  driverId    String    @map("driver_id") @db.Uuid
+  type        BanType
+  startsAt    DateTime  @default(now()) @map("starts_at")
+  endsAt      DateTime? @map("ends_at")
+  reason      String
+  strikeIds   Json?     @default("[]") @map("strike_ids")
+  createdById String?   @map("created_by_id") @db.Uuid
+  liftedById  String?   @map("lifted_by_id") @db.Uuid
+  liftedAt    DateTime? @map("lifted_at")
+  liftReason  String?   @map("lift_reason")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  driver    User     @relation("DriverBans", fields: [driverId], references: [id], onDelete: Cascade)
+  createdBy User?    @relation("CreatedBans", fields: [createdById], references: [id], onDelete: SetNull)
+  liftedBy  User?    @relation("LiftedBans", fields: [liftedById], references: [id], onDelete: SetNull)
+  strikes   Strike[]
+
+  @@index([driverId])
+  @@index([type])
+  @@index([endsAt])
+  @@map("driver_bans")
+}
+
+model PosterFixNotice {
+  id              String          @id @default(uuid()) @db.Uuid
+  assignmentId    String          @map("assignment_id") @db.Uuid
+  openedAt        DateTime        @default(now()) @map("opened_at")
+  deadlineAt      DateTime        @map("deadline_at")
+  status          PosterFixStatus @default(OPEN)
+  sourcePhotoId   String?         @map("source_photo_id") @db.Uuid
+  resolvedPhotoId String?         @map("resolved_photo_id") @db.Uuid
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  assignment    Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  sourcePhoto   Photo?     @relation("PosterFixSourcePhoto", fields: [sourcePhotoId], references: [id], onDelete: SetNull)
+  resolvedPhoto Photo?     @relation("PosterFixResolvedPhoto", fields: [resolvedPhotoId], references: [id], onDelete: SetNull)
+
+  @@index([assignmentId])
+  @@index([status])
+  @@index([deadlineAt])
+  @@map("poster_fix_notices")
+}
+
+model Dispute {
+  id                      String                 @id @default(uuid()) @db.Uuid
+  assignmentId            String?                @map("assignment_id") @db.Uuid
+  campaignId              String?                @map("campaign_id") @db.Uuid
+  photoId                 String?                @map("photo_id") @db.Uuid
+  strikeId                String?                @map("strike_id") @db.Uuid
+  settlementId            String?                @map("settlement_id") @db.Uuid
+  disputedDate            DateTime?              @map("disputed_date") @db.Date
+  raisedByUserId          String                 @map("raised_by_user_id") @db.Uuid
+  role                    Role                   @default(DRIVER)
+  raisedByRole            Role                   @default(DRIVER) @map("raised_by_role")
+  againstParty            DisputeParty           @default(PLATFORM) @map("against_party")
+  reason                  DisputeReason
+  details                 String
+  status                  DisputeStatus          @default(OPEN)
+  claimedAmountPaise      BigInt?                @default(0) @map("claimed_amount_paise")
+  heldAmountPaise         BigInt?                @default(0) @map("held_amount_paise")
+  slaDueAt                DateTime?              @map("sla_due_at")
+  assignedToId            String?                @map("assigned_to_id") @db.Uuid
+  claimedAt               DateTime?              @map("claimed_at")
+  escalatedAt             DateTime?              @map("escalated_at")
+  reviewLevel             Int                    @default(1) @map("review_level")
+  resolutionType          DisputeResolutionType? @map("resolution_type")
+  resolution              String?
+  resolutionToDriverPaise BigInt?                @default(0) @map("resolution_to_driver_paise")
+  resolutionToCompanyPaise BigInt?               @default(0) @map("resolution_to_company_paise")
+  resolvedByUserId        String?                @map("resolved_by_user_id")
+  resolvedAt              DateTime?              @map("resolved_at")
+  closedAt                DateTime?              @map("closed_at")
+  reopenRequestedAt       DateTime?              @map("reopen_requested_at")
+  reopenRequestedById     String?                @map("reopen_requested_by_id") @db.Uuid
+  queue                   DisputeQueue           @default(MODERATION)
+  createdAt               DateTime               @default(now()) @map("created_at")
+  updatedAt               DateTime               @updatedAt @map("updated_at")
+
+  assignment        Assignment?           @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  campaign          Campaign?             @relation("CampaignDisputes", fields: [campaignId], references: [id], onDelete: SetNull)
+  photo             Photo?                @relation(fields: [photoId], references: [id], onDelete: SetNull)
+  strike            Strike?               @relation(fields: [strikeId], references: [id], onDelete: SetNull)
+  settlement        AssignmentSettlement? @relation(fields: [settlementId], references: [id], onDelete: SetNull)
+  raisedByUser      User                  @relation("DisputesRaised", fields: [raisedByUserId], references: [id], onDelete: Restrict)
+  assignedTo        User?                 @relation("AssignedDisputes", fields: [assignedToId], references: [id], onDelete: SetNull)
+  reopenRequestedBy User?                 @relation("ReopenRequestedDisputes", fields: [reopenRequestedById], references: [id], onDelete: SetNull)
+  evidences         DisputeEvidence[]
+  messages          DisputeMessage[]
+  events            DisputeEvent[]
+
+  @@index([assignmentId])
+  @@index([campaignId])
+  @@index([status])
+  @@index([queue])
+  @@index([assignedToId])
+  @@index([slaDueAt])
+  @@map("disputes")
+}
+
+model DisputeMessage {
+  id         String                   @id @default(uuid()) @db.Uuid
+  disputeId  String                   @map("dispute_id") @db.Uuid
+  authorId   String                   @map("author_id") @db.Uuid
+  authorRole Role                     @map("author_role")
+  body       String
+  visibleTo  DisputeMessageVisibility @default(BOTH) @map("visible_to")
+  createdAt  DateTime                 @default(now()) @map("created_at")
+
+  dispute Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  author  User    @relation("DisputeMessages", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([disputeId])
+  @@map("dispute_messages")
+}
+
+model DisputeEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  disputeId String   @map("dispute_id") @db.Uuid
+  type      String
+  actorId   String?  @map("actor_id") @db.Uuid
+  data      Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  dispute Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  actor   User?   @relation("DisputeEvents", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([disputeId])
+  @@map("dispute_events")
+}
+
+model DisputeEvidence {
+  id                   String   @id @default(uuid()) @db.Uuid
+  disputeId            String   @map("dispute_id") @db.Uuid
+  uploadedByUserId     String   @map("uploaded_by_user_id") @db.Uuid
+  fileUrl              String   @map("file_url")
+  notes                String?
+  visibleToOtherParty  Boolean  @default(false) @map("visible_to_other_party")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  dispute Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+
+  @@index([disputeId])
+  @@map("dispute_evidences")
+}
+
+// ---------------------------------------------------------
+// FINANCIAL LEDGER (DOUBLE-ENTRY, APPEND-ONLY)
+// ---------------------------------------------------------
+
+model LedgerAccount {
+  id          String            @id @default(uuid()) @db.Uuid
+  code        String            @unique
+  accountType LedgerAccountType @map("account_type")
+  currency    String            @default("INR")
+  userId      String?           @map("user_id") @db.Uuid
+  campaignId  String?           @map("campaign_id") @db.Uuid
+  isActive    Boolean           @default(true) @map("is_active")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  user        User?         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  campaign    Campaign?     @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  entries     LedgerEntry[]
+  adjustments Adjustment[]
+
+  @@index([accountType])
+  @@index([userId])
+  @@index([campaignId])
+  @@map("ledger_accounts")
+}
+
+model LedgerTransaction {
+  id             String        @id @default(uuid()) @db.Uuid
+  refType        LedgerRefType @map("ref_type")
+  refId          String        @map("ref_id")
+  description    String
+  idempotencyKey String?       @unique @map("idempotency_key")
+  metadata       Json?
+  postedAt       DateTime      @default(now()) @map("posted_at")
+
+  entries LedgerEntry[]
+
+  @@index([refType, refId])
+  @@map("ledger_transactions")
+}
+
+model LedgerEntry {
+  id                String          @id @default(uuid()) @db.Uuid
+  transactionId     String          @map("transaction_id") @db.Uuid
+  accountId         String          @map("account_id") @db.Uuid
+  direction         LedgerDirection
+  amountPaise       BigInt          @map("amount_paise")
+  balanceAfterPaise BigInt          @map("balance_after_paise")
+  createdAt         DateTime        @default(now()) @map("created_at")
+
+  transaction LedgerTransaction @relation(fields: [transactionId], references: [id], onDelete: Restrict)
+  account     LedgerAccount     @relation(fields: [accountId], references: [id], onDelete: Restrict)
+
+  @@index([transactionId])
+  @@index([accountId])
+  @@map("ledger_entries")
+}
+
+model Payout {
+  id                   String             @id @default(uuid()) @db.Uuid
+  driverId             String             @map("driver_id") @db.Uuid
+  assignmentId         String?            @map("assignment_id") @db.Uuid
+  payoutType           PayoutType         @map("payout_type")
+  amountPaise          BigInt             @map("amount_paise")
+  method               PayoutMethod       @default(UPI)
+  upiIdEncrypted       String?            @map("upi_id_encrypted")
+  bankAccountEncrypted String?            @map("bank_account_encrypted")
+  status               PayoutStatus       @default(PENDING)
+  gatewayReference     String?            @map("gateway_reference")
+  failureReason        String?            @map("failure_reason")
+  batchId              String?            @map("batch_id") @db.Uuid
+  utr                  String?
+  requestedById        String?            @map("requested_by_id") @db.Uuid
+  idempotencyKey       String?            @unique @map("idempotency_key")
+  expectedByDate       DateTime?          @map("expected_by_date") @db.Date
+  provider             PayoutProviderName @default(DEV)
+  requestedAt          DateTime           @default(now()) @map("requested_at")
+  approvedAt           DateTime?          @map("approved_at")
+  approvedByUserId     String?            @map("approved_by_user_id")
+  processedAt          DateTime?          @map("processed_at")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  driver      User         @relation("DriverPayouts", fields: [driverId], references: [id], onDelete: Restrict)
+  assignment  Assignment?  @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  batch       PayoutBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  requestedBy User?        @relation("RequestedPayouts", fields: [requestedById], references: [id], onDelete: SetNull)
+
+  @@index([driverId])
+  @@index([status])
+  @@index([batchId])
+  @@map("payouts")
+}
+
+model Refund {
+  id              String        @id @default(uuid()) @db.Uuid
+  campaignId      String        @map("campaign_id") @db.Uuid
+  companyId       String        @map("company_id") @db.Uuid
+  paymentId       String?       @map("payment_id") @db.Uuid
+  amountPaise     BigInt        @map("amount_paise")
+  reason          RefundReason
+  status          RefundStatus  @default(PENDING)
+  notes           String?
+  requestedById   String        @map("requested_by_id") @db.Uuid
+  approvedById    String?       @map("approved_by_id") @db.Uuid
+  rejectedById    String?       @map("rejected_by_id") @db.Uuid
+  rejectionReason String?       @map("rejection_reason")
+  gatewayRefundId String?       @map("gateway_refund_id")
+  idempotencyKey  String?       @unique @map("idempotency_key")
+  creditNoteId    String?       @map("credit_note_id") @db.Uuid
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  campaign    Campaign         @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  company     User             @relation("CompanyRefunds", fields: [companyId], references: [id], onDelete: Restrict)
+  payment     CampaignPayment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  requestedBy User             @relation("RequestedRefunds", fields: [requestedById], references: [id], onDelete: Restrict)
+  approvedBy  User?            @relation("ApprovedRefunds", fields: [approvedById], references: [id], onDelete: SetNull)
+  rejectedBy  User?            @relation("RejectedRefunds", fields: [rejectedById], references: [id], onDelete: SetNull)
+  creditNote  TaxDocument?     @relation(fields: [creditNoteId], references: [id], onDelete: SetNull)
+
+  @@index([campaignId])
+  @@index([companyId])
+  @@index([status])
+  @@map("refunds")
+}
+
+model AssignmentSettlement {
+  id                     String           @id @default(uuid()) @db.Uuid
+  assignmentId           String           @unique @map("assignment_id") @db.Uuid
+  campaignId             String           @map("campaign_id") @db.Uuid
+  driverId               String           @map("driver_id") @db.Uuid
+  status                 SettlementStatus @default(PENDING)
+  totalDays              Int              @map("total_days")
+  verifiedDays           Int              @map("verified_days")
+  missedDays             Int              @map("missed_days")
+  graceDaysUsed          Int              @map("grace_days_used")
+  payableDays            Int              @map("payable_days")
+  dailyRentPaise         BigInt           @map("daily_rent_paise")
+  rentPayablePaise       BigInt           @map("rent_payable_paise")
+  printingAllowancePaise BigInt           @map("printing_allowance_paise")
+  companyRefundPaise     BigInt           @map("company_refund_paise")
+  commissionPaise        BigInt           @map("commission_paise")
+  gstPaise               BigInt           @map("gst_paise")
+  totalAmountPaise       BigInt           @map("total_amount_paise")
+  anomalyFlags           Json?            @map("anomaly_flags")
+  holdReason             String?          @map("hold_reason")
+  approvedById           String?          @map("approved_by_id") @db.Uuid
+  approvedAt             DateTime?        @map("approved_at")
+  createdAt              DateTime         @default(now()) @map("created_at")
+  updatedAt              DateTime         @updatedAt @map("updated_at")
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
+  campaign   Campaign   @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  driver     User       @relation("DriverSettlements", fields: [driverId], references: [id], onDelete: Restrict)
+  approvedBy User?      @relation("ApprovedSettlements", fields: [approvedById], references: [id], onDelete: SetNull)
+  disputes   Dispute[]
+
+  @@index([campaignId])
+  @@index([driverId])
+  @@index([status])
+  @@map("assignment_settlements")
+}
+
+model TaxDocument {
+  id                 String          @id @default(uuid()) @db.Uuid
+  documentType       TaxDocumentType @map("document_type")
+  documentNumber     String          @unique @map("document_number")
+  financialYear      String          @map("financial_year")
+  sequenceNumber     Int             @map("sequence_number")
+  campaignId         String          @map("campaign_id") @db.Uuid
+  companyId          String          @map("company_id") @db.Uuid
+  paymentId          String?         @map("payment_id") @db.Uuid
+  taxableAmountPaise BigInt          @map("taxable_amount_paise")
+  cgstPaise          BigInt          @default(0) @map("cgst_paise")
+  sgstPaise          BigInt          @default(0) @map("sgst_paise")
+  igstPaise          BigInt          @default(0) @map("igst_paise")
+  totalAmountPaise   BigInt          @map("total_amount_paise")
+  pdfUrl             String?         @map("pdf_url")
+  metadata           Json?
+  issuedAt           DateTime        @default(now()) @map("issued_at")
+  createdAt          DateTime        @default(now()) @map("created_at")
+
+  campaign Campaign         @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  company  User             @relation("CompanyTaxDocuments", fields: [companyId], references: [id], onDelete: Restrict)
+  payment  CampaignPayment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  refunds  Refund[]
+
+  @@index([campaignId])
+  @@index([companyId])
+  @@index([documentType, financialYear])
+  @@map("tax_documents")
+}
+
+model InvoiceCounter {
+  id            String          @id @default(uuid()) @db.Uuid
+  financialYear String          @map("financial_year")
+  documentType  TaxDocumentType @map("document_type")
+  lastNumber    Int             @default(0) @map("last_number")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  @@unique([financialYear, documentType])
+  @@map("invoice_counters")
+}
+
+model Adjustment {
+  id              String           @id @default(uuid()) @db.Uuid
+  accountId       String           @map("account_id") @db.Uuid
+  amountPaise     BigInt           @map("amount_paise")
+  direction       LedgerDirection
+  reason          String
+  status          AdjustmentStatus @default(PENDING)
+  requestedById   String           @map("requested_by_id") @db.Uuid
+  approvedById    String?          @map("approved_by_id") @db.Uuid
+  rejectedById    String?          @map("rejected_by_id") @db.Uuid
+  rejectionReason String?          @map("rejection_reason")
+  transactionId   String?          @map("transaction_id") @db.Uuid
+  idempotencyKey  String?          @unique @map("idempotency_key")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  account     LedgerAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  requestedBy User          @relation("RequestedAdjustments", fields: [requestedById], references: [id], onDelete: Restrict)
+  approvedBy  User?         @relation("ApprovedAdjustments", fields: [approvedById], references: [id], onDelete: SetNull)
+  rejectedBy  User?         @relation("RejectedAdjustments", fields: [rejectedById], references: [id], onDelete: SetNull)
+
+  @@index([accountId])
+  @@index([status])
+  @@map("adjustments")
+}
+
+model PayoutBatch {
+  id               String             @id @default(uuid()) @db.Uuid
+  batchNumber      String             @unique @map("batch_number")
+  provider         PayoutProviderName
+  totalCount       Int                @default(0) @map("total_count")
+  totalAmountPaise BigInt             @default(0) @map("total_amount_paise")
+  status           String             @default("CREATED")
+  csvFileUrl       String?            @map("csv_file_url")
+  processedAt      DateTime?          @map("processed_at")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  payouts Payout[]
+
+  @@map("payout_batches")
+}
+
+model ReconciliationRun {
+  id                    String   @id @default(uuid()) @db.Uuid
+  runDate               DateTime @db.Date @map("run_date")
+  status                String
+  trialBalanceDiffPaise BigInt   @default(0) @map("trial_balance_diff_paise")
+  anomaliesFound        Int      @default(0) @map("anomalies_found")
+  details               Json?
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@index([runDate])
+  @@map("reconciliation_runs")
+}
+
+// ---------------------------------------------------------
+// SYSTEM & AUDIT
+// ---------------------------------------------------------
+
+model Notification {
+  id        String               @id @default(uuid()) @db.Uuid
+  userId    String               @map("user_id") @db.Uuid
+  category  NotificationCategory @default(SYSTEM)
+  channel   NotificationChannel
+  priority  NotificationPriority @default(NORMAL)
+  title     String
+  body      String
+  data      Json?
+  groupKey  String?              @map("group_key")
+  status    NotificationStatus   @default(PENDING)
+  error     String?
+  sentAt    DateTime?            @map("sent_at")
+  readAt    DateTime?            @map("read_at")
+  dedupeKey String?              @unique @map("dedupe_key")
+  createdAt DateTime             @default(now()) @map("created_at")
+
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries NotificationDelivery[]
+
+  @@index([userId])
+  @@index([category])
+  @@index([status])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id        String               @id @default(uuid()) @db.Uuid
+  userId    String               @map("user_id") @db.Uuid
+  category  NotificationCategory
+  channel   NotificationChannel
+  enabled   Boolean              @default(true)
+  createdAt DateTime             @default(now()) @map("created_at")
+  updatedAt DateTime             @updatedAt @map("updated_at")
+
+  user User @relation("NotificationPreferences", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category, channel])
+  @@index([userId])
+  @@map("notification_preferences")
+}
+
+model UserNotificationSettings {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @unique @map("user_id") @db.Uuid
+  quietHoursStart String   @default("22:00") @map("quiet_hours_start")
+  quietHoursEnd   String   @default("07:00") @map("quiet_hours_end")
+  language        String?  @default("en")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_notification_settings")
+}
+
+model NotificationDelivery {
+  id                String              @id @default(uuid()) @db.Uuid
+  notificationId    String              @map("notification_id") @db.Uuid
+  channel           NotificationChannel
+  status            DeliveryStatus      @default(PENDING)
+  provider          String?
+  providerMessageId String?             @map("provider_message_id")
+  attempts          Int                 @default(0)
+  error             String?
+  scheduledFor      DateTime?           @map("scheduled_for")
+  sentAt            DateTime?           @map("sent_at")
+  deviceTokenId     String?             @map("device_token_id") @db.Uuid
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  deviceToken  DeviceToken? @relation(fields: [deviceTokenId], references: [id], onDelete: SetNull)
+
+  @@index([notificationId])
+  @@index([status])
+  @@index([scheduledFor])
+  @@map("notification_deliveries")
+}
+
+model Announcement {
+  id              String             @id @default(uuid()) @db.Uuid
+  createdById     String             @map("created_by_id") @db.Uuid
+  titleByLanguage Json               @map("title_by_language")
+  bodyByLanguage  Json               @map("body_by_language")
+  audience        Json
+  scheduledFor    DateTime?          @map("scheduled_for")
+  status          AnnouncementStatus @default(DRAFT)
+  counts          Json?              @default("{\"target\":0,\"sent\":0,\"failed\":0}")
+  sentAt          DateTime?          @map("sent_at")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+
+  createdBy User @relation("CreatedAnnouncements", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([status])
+  @@map("announcements")
+}
+
+model Setting {
+  key             String   @id
+  value           Json
+  description     String?
+  updatedByUserId String?  @map("updated_by_user_id")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
+
+model AuditLog {
+  id         String    @id @default(uuid()) @db.Uuid
+  actorId    String?   @map("actor_id") @db.Uuid
+  actorType  ActorType @map("actor_type")
+  action     String
+  entityType String    @map("entity_type")
+  entityId   String    @map("entity_id")
+  oldValues  Json?     @map("old_values")
+  newValues  Json?     @map("new_values")
+  ipAddress  String?   @map("ip_address")
+  userAgent  String?   @map("user_agent")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  actor User? @relation("UserAuditLogs", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+// ---------------------------------------------------------
+// PHASE 10: ADMIN PORTAL MODELS
+// ---------------------------------------------------------
+
+model DailyMetric {
+  id         String   @id @default(uuid()) @db.Uuid
+  date       DateTime @db.Date
+  cityId     String?  @map("city_id") @db.Uuid
+  metrics    Json
+  computedAt DateTime @default(now()) @map("computed_at")
+
+  city City? @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([date, cityId])
+  @@index([date])
+  @@map("daily_metrics")
+}
+
+model SavedView {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  pageKey   String   @map("page_key")
+  name      String
+  filters   Json
+  isDefault Boolean  @default(false) @map("is_default")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, pageKey])
+  @@map("saved_views")
+}
+
+model ExportJob {
+  id            String          @id @default(uuid()) @db.Uuid
+  requestedById String          @map("requested_by_id") @db.Uuid
+  reportKey     String          @map("report_key")
+  filters       Json
+  status        ExportJobStatus @default(QUEUED)
+  rowCount      Int             @default(0) @map("row_count")
+  fileKey       String?         @map("file_key")
+  expiresAt     DateTime?       @map("expires_at")
+  error         String?
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  requestedBy User @relation("RequestedExportJobs", fields: [requestedById], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([requestedById])
+  @@map("export_jobs")
+}
+
+model SettingChangeRequest {
+  id            String                     @id @default(uuid()) @db.Uuid
+  key           String
+  oldValue      Json?                      @map("old_value")
+  newValue      Json                       @map("new_value")
+  reason        String
+  requestedById String                     @map("requested_by_id") @db.Uuid
+  approvedById  String?                    @map("approved_by_id") @db.Uuid
+  status        SettingChangeRequestStatus @default(REQUESTED)
+  appliedAt     DateTime?                  @map("applied_at")
+  createdAt     DateTime                   @default(now()) @map("created_at")
+  updatedAt     DateTime                   @updatedAt @map("updated_at")
+
+  requestedBy User  @relation("RequestedSettingChanges", fields: [requestedById], references: [id], onDelete: Restrict)
+  approvedBy  User? @relation("ApprovedSettingChanges", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  @@index([key])
+  @@index([status])
+  @@map("setting_change_requests")
+}
+
+model LegalDocument {
+  id           String              @id @default(uuid()) @db.Uuid
+  type         LegalDocumentType
+  language     String              @default("en")
+  version      Int
+  title        String
+  bodyMarkdown String              @map("body_markdown") @db.Text
+  status       LegalDocumentStatus @default(DRAFT)
+  publishedAt  DateTime?           @map("published_at")
+  createdById  String              @map("created_by_id") @db.Uuid
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+
+  createdBy User @relation("CreatedLegalDocuments", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@unique([type, language, version])
+  @@index([type, status])
+  @@map("legal_documents")
+}
+
+model HelpArticle {
+  id           String   @id @default(uuid()) @db.Uuid
+  category     String
+  language     String   @default("en")
+  title        String
+  bodyMarkdown String   @map("body_markdown") @db.Text
+  sortOrder    Int      @default(0) @map("sort_order")
+  published    Boolean  @default(true)
+  updatedById  String   @map("updated_by_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  updatedBy User @relation("UpdatedHelpArticles", fields: [updatedById], references: [id], onDelete: Restrict)
+
+  @@index([category, language, published])
+  @@map("help_articles")
+}
+
+model JobRun {
+  id         String       @id @default(uuid()) @db.Uuid
+  jobName    String       @map("job_name")
+  startedAt  DateTime     @default(now()) @map("started_at")
+  finishedAt DateTime?    @map("finished_at")
+  status     JobRunStatus @default(SUCCESS)
+  counts     Json?
+  error      String?      @db.Text
+
+  @@index([jobName, startedAt])
+  @@index([status])
+  @@map("job_runs")
+}

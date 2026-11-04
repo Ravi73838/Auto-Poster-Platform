@@ -8,7 +8,12 @@ export type Permission =
   | 'payout.approve'
   | 'dispute.resolve'
   | 'settings.manage'
-  | 'audit.view';
+  | 'audit.view'
+  | 'team.manage'
+  | 'strike.manage'
+  | 'announcement.manage'
+  | 'system.view'
+  | 'system.manage';
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   [ROLES.SUPER_ADMIN]: [
@@ -19,6 +24,11 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'dispute.resolve',
     'settings.manage',
     'audit.view',
+    'team.manage',
+    'strike.manage',
+    'announcement.manage',
+    'system.view',
+    'system.manage',
   ],
   [ROLES.MODERATOR]: [
     'kyc.approve',
@@ -26,10 +36,13 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'photo.approve',
     'dispute.resolve',
     'audit.view',
+    'strike.manage',
+    'announcement.manage',
   ],
   [ROLES.FINANCE]: [
     'payout.approve',
     'audit.view',
+    'dispute.resolve',
   ],
   [ROLES.COMPANY]: [],
   [ROLES.DRIVER]: [],
@@ -37,6 +50,10 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
 
 export function hasPermission(role: Role | null | undefined, permission: Permission): boolean {
   if (!role) return false;
+  const storePermissions = useAuthStore.getState().permissions;
+  if (storePermissions && storePermissions.length > 0) {
+    return storePermissions.includes(permission);
+  }
   const permissions = ROLE_PERMISSIONS[role] || [];
   return permissions.includes(permission);
 }
@@ -50,3 +67,4 @@ export function useCan(permission: Permission): boolean {
   const user = useAuthStore((s) => s.user);
   return hasPermission(user?.role, permission);
 }
+

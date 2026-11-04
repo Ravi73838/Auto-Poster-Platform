@@ -6,3 +6,4 @@ export interface SystemHealthCheckResult {
   database: 'connected' | 'disconnected' | 'disabled';
   redis: 'connected' | 'disconnected' | 'disabled';
 }
+

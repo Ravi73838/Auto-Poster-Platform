@@ -7,3 +7,4 @@ export interface ExampleItem {
 export interface CreateExampleDto {
   name: string;
 }
+

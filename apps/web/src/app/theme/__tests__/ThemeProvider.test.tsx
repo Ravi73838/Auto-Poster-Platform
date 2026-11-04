@@ -49,3 +49,4 @@ describe('ThemeProvider', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(false);
   });
 });
+

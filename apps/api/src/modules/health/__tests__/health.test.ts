@@ -33,3 +33,4 @@ describe('HealthService', () => {
     expect(health.status).toBe('degraded');
   });
 });
+

@@ -1,10 +1,13 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { useMobileTheme } from '../../src/theme/ThemeProvider';
 import { setMobileLanguage } from '../../src/i18n';
 import { useMobileAuthStore } from '../../src/store/authStore';
-import { LANGUAGES, THEMES, type Language, type Theme } from '@ap/shared-constants';
+import { apiClient } from '../../src/services/api';
+import { LANGUAGES, type Language, type Theme } from '@ap/shared-constants';
+import type { SessionDto } from '@ap/shared-types';
 
 const LANGUAGE_OPTIONS: { lang: Language; label: string }[] = [
   { lang: LANGUAGES.EN, label: 'English' },
@@ -20,17 +23,48 @@ export default function ProfileScreen() {
 
   const currentLang = (i18n.language?.slice(0, 2) as Language) || LANGUAGES.EN;
 
-  const handleLogout = () => {
-    logout();
+  const [sessions, setSessions] = useState<SessionDto[]>([]);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
+
+  useEffect(() => {
+    loadSessions();
+  }, []);
+
+  const loadSessions = async () => {
+    setIsLoadingSessions(true);
+    try {
+      const data = await apiClient.listSessions();
+      setSessions(data);
+    } catch {
+      // ignore
+    } finally {
+      setIsLoadingSessions(false);
+    }
+  };
+
+  const handleRevoke = async (id: string) => {
+    try {
+      await apiClient.revokeSession(id);
+      setSessions((prev) => prev.filter((s) => s.id !== id));
+    } catch {
+      Alert.alert('Error', 'Failed to revoke session');
+    }
+  };
+
+  const handleLogout = async () => {
+    await logout();
     router.replace('/(auth)/login');
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
       {/* Driver info */}
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <Text style={[styles.name, { color: colors.textPrimary }]}>{user?.name ?? 'Driver'}</Text>
-        <Text style={[styles.phone, { color: colors.textSecondary }]}>{user?.phone ?? '9876543210'}</Text>
+        <Text style={[styles.name, { color: colors.textPrimary }]}>Auto Driver</Text>
+        <Text style={[styles.phone, { color: colors.textSecondary }]}>{user?.mobile ?? 'Not signed in'}</Text>
+        <View style={styles.statusChip}>
+          <Text style={[styles.statusText, { color: colors.primary }]}>{user?.status ?? 'PENDING'}</Text>
+        </View>
       </View>
 
       {/* Language Selector */}
@@ -72,15 +106,11 @@ export default function ProfileScreen() {
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{t('settings:theme')}</Text>
         <View style={styles.buttonRow}>
-          {[
-            { value: THEMES.LIGHT, label: t('settings:themeLight') },
-            { value: THEMES.DARK, label: t('settings:themeDark') },
-            { value: THEMES.SYSTEM, label: t('settings:themeSystem') },
-          ].map((opt) => {
-            const isSelected = theme === opt.value;
+          {(['system', 'light', 'dark'] as Theme[]).map((thm) => {
+            const isSelected = theme === thm;
             return (
               <TouchableOpacity
-                key={opt.value}
+                key={thm}
                 style={[
                   styles.optionButton,
                   {
@@ -88,7 +118,7 @@ export default function ProfileScreen() {
                     borderColor: colors.border,
                   },
                 ]}
-                onPress={() => setTheme(opt.value as Theme)}
+                onPress={() => setTheme(thm)}
               >
                 <Text
                   style={[
@@ -99,7 +129,7 @@ export default function ProfileScreen() {
                     },
                   ]}
                 >
-                  {opt.label}
+                  {t(`settings:${thm}`)}
                 </Text>
               </TouchableOpacity>
             );
@@ -107,35 +137,81 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      {/* Active Login Sessions */}
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Active Login Sessions</Text>
+        {isLoadingSessions ? (
+          <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 12 }} />
+        ) : (
+          sessions.map((sess) => (
+            <View key={sess.id} style={[styles.sessionRow, { borderBottomColor: colors.border }]}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.sessionPlatform, { color: colors.textPrimary }]}>
+                  {sess.platform} {sess.isCurrent ? '(This device)' : ''}
+                </Text>
+                <Text style={[styles.sessionMeta, { color: colors.textSecondary }]}>
+                  IP: {sess.ipAddress || 'Unknown'} &bull;{' '}
+                  {new Date(sess.lastUsedAt).toLocaleDateString()}
+                </Text>
+              </View>
+              {!sess.isCurrent ? (
+                <TouchableOpacity
+                  onPress={() => handleRevoke(sess.id)}
+                  style={styles.revokeBtn}
+                >
+                  <Text style={styles.revokeText}>Revoke</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          ))
+        )}
+      </View>
+
       {/* Logout */}
       <TouchableOpacity
-        style={[styles.logoutButton, { borderColor: colors.danger }]}
+        style={[styles.logoutButton, { backgroundColor: colors.danger }]}
         onPress={handleLogout}
+        activeOpacity={0.8}
       >
-        <Text style={[styles.logoutText, { color: colors.danger }]}>{t('auth:logout')}</Text>
+        <Text style={styles.logoutText}>{t('auth:logout')}</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  content: {
     padding: 16,
-    gap: 16,
+    paddingBottom: 40,
   },
   card: {
-    padding: 18,
-    borderRadius: 14,
+    padding: 16,
+    borderRadius: 12,
     borderWidth: 1,
+    marginBottom: 16,
   },
   name: {
     fontSize: 18,
     fontWeight: '700',
+    marginBottom: 4,
   },
   phone: {
-    fontSize: 13,
-    marginTop: 4,
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  statusChip: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    backgroundColor: '#F0F9FF',
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   sectionTitle: {
     fontSize: 14,
@@ -152,20 +228,45 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
-    justifyContent: 'center',
   },
   optionText: {
     fontSize: 13,
   },
+  sessionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+  },
+  sessionPlatform: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  sessionMeta: {
+    fontSize: 11,
+    marginTop: 2,
+  },
+  revokeBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: '#FEF2F2',
+  },
+  revokeText: {
+    fontSize: 11,
+    color: '#DC2626',
+    fontWeight: '600',
+  },
   logoutButton: {
     paddingVertical: 14,
-    borderRadius: 10,
-    borderWidth: 1,
+    borderRadius: 12,
     alignItems: 'center',
     marginTop: 8,
   },
   logoutText: {
+    color: '#FFFFFF',
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

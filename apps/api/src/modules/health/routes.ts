@@ -10,6 +10,7 @@ export function createHealthRouter(): Router {
   const controller = new HealthController(service);
 
   router.get('/', controller.getHealth);
+  router.get('/ready', controller.getReadiness);
 
   return router;
 }

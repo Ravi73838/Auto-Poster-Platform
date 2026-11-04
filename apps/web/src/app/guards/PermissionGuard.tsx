@@ -25,3 +25,4 @@ export function PermissionGuard({ permission, children, fallback }: PermissionGu
 
   return <>{children}</>;
 }
+

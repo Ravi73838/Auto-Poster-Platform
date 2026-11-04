@@ -1,5 +1,6 @@
 import { prisma } from '../../shared/prisma.js';
-import { getRedisClient } from '../../shared/redis.js';
+import { getRedisClient } from '../../shared/redis/index.js';
+import { logger } from '../../shared/logger/index.js';
 import type { SystemHealthCheckResult } from './types.js';
 
 export class HealthRepository {
@@ -10,7 +11,8 @@ export class HealthRepository {
     try {
       await prisma.$queryRaw`SELECT 1`;
       database = 'connected';
-    } catch {
+    } catch (err) {
+      logger.warn({ err }, 'Health check database query failed');
       database = 'disconnected';
     }
 
@@ -18,7 +20,8 @@ export class HealthRepository {
       const client = getRedisClient();
       const pong = await client.ping();
       redis = pong === 'PONG' ? 'connected' : 'disconnected';
-    } catch {
+    } catch (err) {
+      logger.warn({ err }, 'Health check redis ping failed');
       redis = 'disconnected';
     }
 

@@ -1,104 +1,161 @@
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { companyLoginSchema, type CompanyLoginInput } from '@ap/shared-validation';
 import { useAuthStore } from '../../shared/store/authStore';
-import { ROLES, type Role } from '@ap/shared-constants';
+import { useApiClient } from '../../shared/lib/api';
 import { Card } from '../../shared/components/Card';
 import { Button } from '../../shared/components/Button';
-import { ShieldAlert, Building2, Shield, UserCheck, DollarSign } from 'lucide-react';
+import { Input } from '../../shared/components/Input';
+import { Building2, Shield, AlertCircle } from 'lucide-react';
+import { ApiError } from '@ap/api-client';
 
 export function LoginPage() {
-  const { t } = useTranslation(['auth', 'common']);
-  const { loginAs, isAuthenticated, user } = useAuthStore();
+  const { t } = useTranslation(['auth', 'common', 'errors']);
+  const { setAuth } = useAuthStore();
+  const client = useApiClient();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleDevLogin = (role: Role) => {
-    loginAs(role);
-    const origin = (location.state as { from?: { pathname: string } })?.from?.pathname;
-    if (origin) {
-      navigate(origin, { replace: true });
-      return;
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<CompanyLoginInput>({
+    resolver: zodResolver(companyLoginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const onSubmit = async (data: CompanyLoginInput) => {
+    setIsLoading(true);
+    setServerError(null);
+    try {
+      const response = await client.companyLogin(data);
+      setAuth({
+        user: response.user,
+        token: response.accessToken,
+        permissions: [],
+      });
+
+      const origin = (location.state as { from?: { pathname: string } })?.from?.pathname;
+      if (origin && origin.startsWith('/company')) {
+        navigate(origin, { replace: true });
+      } else {
+        navigate('/company/dashboard', { replace: true });
+      }
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        setServerError(t(`errors:${err.code}`, { defaultValue: err.message }));
+      } else {
+        setServerError('Failed to sign in. Please check your credentials and network connection.');
+      }
+    } finally {
+      setIsLoading(false);
     }
-    if (role === ROLES.COMPANY) {
-      navigate('/company/dashboard', { replace: true });
-    } else {
-      navigate('/admin/dashboard', { replace: true });
-    }
+  };
+
+  const handleQuickFill = (email: string, pass: string) => {
+    setValue('email', email, { shouldValidate: true });
+    setValue('password', pass, { shouldValidate: true });
   };
 
   return (
     <div className="w-full max-w-md">
       <Card className="shadow-lg">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-textPrimary">{t('auth:welcomeBack')}</h2>
-          <p className="text-sm text-textSecondary mt-1">{t('auth:enterPhone')}</p>
+          <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+            <Building2 className="w-6 h-6 text-primary" />
+          </div>
+          <h2 className="text-2xl font-bold text-textPrimary">Company Sign In</h2>
+          <p className="text-sm text-textSecondary mt-1">
+            Access your billboard campaigns & analytics
+          </p>
         </div>
 
-        <div className="space-y-4">
+        {serverError ? (
+          <div className="mb-4 p-3 bg-danger/10 border border-danger/20 rounded-lg flex items-center gap-2 text-danger text-sm">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{serverError}</span>
+          </div>
+        ) : null}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <Input
+            label="Email Address"
+            type="email"
+            placeholder="company@autoposter.com"
+            error={errors.email?.message}
+            {...register('email')}
+          />
+
           <div>
-            <label className="block text-xs font-semibold text-textSecondary mb-1.5">
-              {t('auth:phone')}
-            </label>
-            <input
-              type="tel"
-              placeholder="9876543210"
-              disabled
-              className="w-full px-3.5 py-2 text-sm bg-surfaceAlt border border-border rounded-lg text-textSecondary opacity-75 cursor-not-allowed"
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-textSecondary">
+                Password
+              </label>
+              <Link
+                to="/forgot-password"
+                className="text-xs text-primary hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <Input
+              type="password"
+              placeholder="••••••••••"
+              error={errors.password?.message}
+              {...register('password')}
             />
           </div>
 
-          <Button variant="primary" className="w-full" disabled>
-            {t('auth:sendOtp')}
+          <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>
+            Sign In
           </Button>
 
-          {/* Dev Mode Switcher */}
-          <div className="mt-8 pt-6 border-t border-border">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-warning mb-3">
-              <ShieldAlert className="w-4 h-4" />
-              <span>Phase 1 Dev Simulation</span>
-            </div>
-            <div className="grid grid-cols-1 gap-2">
+          <div className="text-center pt-2">
+            <p className="text-xs text-textSecondary">
+              Don&apos;t have an account?{' '}
+              <Link to="/register" className="text-primary font-semibold hover:underline">
+                Register company
+              </Link>
+            </p>
+          </div>
+
+          {/* Seeded Quick-Fill (Development helper) */}
+          <div className="mt-6 pt-4 border-t border-border">
+            <p className="text-xs font-medium text-textSecondary mb-2">Dev Helper: Quick-Fill</p>
+            <div className="flex gap-2">
               <Button
+                type="button"
                 variant="outline"
-                className="justify-start gap-2"
-                onClick={() => handleDevLogin(ROLES.COMPANY)}
+                size="sm"
+                className="w-full text-xs"
+                onClick={() => handleQuickFill('company@autoposter.com', 'Company@123456')}
               >
-                <Building2 className="w-4 h-4 text-primary" />
-                <span>{t('auth:devLoginCompany')}</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="justify-start gap-2"
-                onClick={() => handleDevLogin(ROLES.SUPER_ADMIN)}
-              >
-                <Shield className="w-4 h-4 text-warning" />
-                <span>{t('auth:devLoginAdmin')} (Super Admin)</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="justify-start gap-2"
-                onClick={() => handleDevLogin(ROLES.MODERATOR)}
-              >
-                <UserCheck className="w-4 h-4 text-info" />
-                <span>Dev: Login as Moderator</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="justify-start gap-2"
-                onClick={() => handleDevLogin(ROLES.FINANCE)}
-              >
-                <DollarSign className="w-4 h-4 text-success" />
-                <span>Dev: Login as Finance</span>
+                Seeded Company
               </Button>
             </div>
           </div>
 
-          {isAuthenticated && user ? (
-            <div className="mt-4 p-3 bg-surfaceAlt rounded-lg text-xs text-textSecondary text-center">
-              Active Session: <strong className="text-textPrimary">{user.name}</strong> ({user.role})
-            </div>
-          ) : null}
-        </div>
+          <div className="pt-2 text-center border-t border-border mt-3">
+            <Link
+              to="/admin/login"
+              className="inline-flex items-center gap-1.5 text-xs text-textSecondary hover:text-textPrimary"
+            >
+              <Shield className="w-3.5 h-3.5 text-warning" />
+              <span>Admin & Staff Portal Login &rarr;</span>
+            </Link>
+          </div>
+        </form>
       </Card>
     </div>
   );

@@ -22,3 +22,4 @@ describe('Module Template: ExampleService', () => {
     await expect(service.getItem('nonexistent')).rejects.toThrow(AppError);
   });
 });
+

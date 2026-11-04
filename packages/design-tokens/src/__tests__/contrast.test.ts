@@ -43,3 +43,4 @@ describe('Design Tokens Contrast Ratio (WCAG AA requirement >= 4.5:1)', () => {
     expect(ratio).toBeGreaterThanOrEqual(4.5);
   });
 });
+

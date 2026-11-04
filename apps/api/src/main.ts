@@ -34,3 +34,4 @@ async function handleShutdown(signal: string) {
 
 process.on('SIGTERM', () => handleShutdown('SIGTERM'));
 process.on('SIGINT', () => handleShutdown('SIGINT'));
+

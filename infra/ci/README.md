@@ -7,3 +7,4 @@ Continuous Integration workflows are located in the repository root at `.github/
 2. TypeScript compilation (`pnpm typecheck`)
 3. Unit and integration tests (`pnpm test`)
 4. Production bundle builds (`pnpm build`)
+

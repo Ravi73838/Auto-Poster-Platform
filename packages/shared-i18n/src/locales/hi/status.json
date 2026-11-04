@@ -45,5 +45,29 @@
     "SUPER_ADMIN": "सुपर व्यवस्थापक",
     "MODERATOR": "मॉडरेटर",
     "FINANCE": "वित्त अधिकारी"
+  },
+  "dispute": {
+    "OPEN": "खुला",
+    "UNDER_REVIEW": "समीक्षाधीन",
+    "RESOLVED": "समाधानित",
+    "REJECTED": "खारिज",
+    "WITHDRAWN": "वापस लिया गया"
+  },
+  "strike": {
+    "ACTIVE": "सक्रिय",
+    "REVOKED": "रद्द",
+    "EXPIRED": "समाप्त",
+    "CONSUMED": "उपयोग किया गया"
+  },
+  "posterFix": {
+    "OPEN": "कार्रवाई आवश्यक",
+    "RESOLVED": "समाधानित",
+    "STRIKED": "समय सीमा समाप्त",
+    "CANCELLED": "रद्द"
+  },
+  "ban": {
+    "TEMPORARY": "अस्थायी प्रतिबंध",
+    "PERMANENT": "स्थायी अवरोध"
   }
 }
+

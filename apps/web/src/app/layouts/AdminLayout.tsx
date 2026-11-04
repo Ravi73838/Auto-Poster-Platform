@@ -14,20 +14,59 @@ import {
   FileText,
   BarChart2,
   LogOut,
+  AlertCircle,
+  KeyRound,
+  ShieldAlert,
+  Megaphone,
+  Inbox,
+  FileCheck,
+  HelpCircle,
+  Activity,
+  Search,
+  Keyboard,
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CommandPalette } from '../../portals/admin/components/CommandPalette';
+import { KeyboardShortcutsModal } from '../../portals/admin/components/KeyboardShortcutsModal';
 import { LanguageSwitcher } from '../../shared/components/LanguageSwitcher';
 import { ThemeSwitcher } from '../../shared/components/ThemeSwitcher';
 import { useAuthStore } from '../../shared/store/authStore';
+import { useApiClient } from '../../shared/lib/api';
 import { hasPermission, type Permission } from '../../shared/permissions';
+import { ACCOUNT_STATUS } from '@ap/shared-constants';
 
 export function AdminLayout() {
   const { t } = useTranslation(['common', 'auth', 'status']);
-  const { user, logout } = useAuthStore();
+  const { user, clearAuth } = useAuthStore();
+  const client = useApiClient();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      } else if (e.key === '?' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
+        e.preventDefault();
+        setIsShortcutsOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await client.logout();
+    } catch {
+      // ignore
+    } finally {
+      clearAuth();
+      navigate('/admin/login');
+    }
   };
 
   const navItems: {
@@ -37,6 +76,7 @@ export function AdminLayout() {
     permission?: Permission;
   }[] = [
     { to: '/admin/dashboard', label: t('common:dashboard'), icon: LayoutDashboard },
+    { to: '/admin/my-work', label: 'My Work / Queues', icon: Inbox },
     { to: '/admin/drivers', label: 'Drivers', icon: Users, permission: 'kyc.approve' },
     { to: '/admin/companies', label: 'Companies', icon: Building, permission: 'kyc.approve' },
     { to: '/admin/campaign-review', label: 'Campaign Review', icon: CheckSquare, permission: 'campaign.approve' },
@@ -44,10 +84,15 @@ export function AdminLayout() {
     { to: '/admin/payments', label: 'Escrow Payments', icon: CreditCard, permission: 'payout.approve' },
     { to: '/admin/payouts', label: 'Driver Payouts', icon: Banknote, permission: 'payout.approve' },
     { to: '/admin/disputes', label: 'Disputes', icon: AlertTriangle, permission: 'dispute.resolve' },
+    { to: '/admin/discipline', label: 'Strikes & Bans', icon: ShieldAlert, permission: 'strike.manage' },
+    { to: '/admin/announcements', label: 'Announcements', icon: Megaphone, permission: 'announcement.manage' },
+    { to: '/admin/legal', label: 'Legal Policies', icon: FileCheck, permission: 'settings.manage' },
+    { to: '/admin/help', label: 'Help Articles', icon: HelpCircle, permission: 'settings.manage' },
     { to: '/admin/reports', label: 'Analytics & Reports', icon: BarChart2, permission: 'audit.view' },
     { to: '/admin/audit-log', label: 'Audit Log', icon: FileText, permission: 'audit.view' },
-    { to: '/admin/team-roles', label: 'Team Roles', icon: Shield, permission: 'settings.manage' },
+    { to: '/admin/team-roles', label: 'Team Roles', icon: Shield, permission: 'team.manage' },
     { to: '/admin/settings', label: 'System Settings', icon: Settings, permission: 'settings.manage' },
+    { to: '/admin/system', label: 'System Health', icon: Activity, permission: 'system.view' },
   ];
 
   const visibleNavItems = navItems.filter((item) => {
@@ -93,9 +138,18 @@ export function AdminLayout() {
 
         <div className="p-4 border-t border-border">
           <div className="mb-3 px-2">
-            <p className="text-xs font-semibold text-textPrimary truncate">{user?.name}</p>
-            <p className="text-xs text-textSecondary">{user?.phone}</p>
+            <p className="text-xs font-semibold text-textPrimary truncate">
+              {user?.email || user?.mobile}
+            </p>
+            <p className="text-xs text-textSecondary capitalize">{user?.status.toLowerCase()}</p>
           </div>
+          <button
+            onClick={() => navigate('/change-password')}
+            className="w-full mb-1 flex items-center gap-2 px-3 py-2 text-sm text-textSecondary hover:bg-surfaceAlt rounded-lg transition-colors"
+          >
+            <KeyRound className="w-4 h-4" />
+            <span>Change Password</span>
+          </button>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-surfaceAlt rounded-lg transition-colors"
@@ -107,20 +161,60 @@ export function AdminLayout() {
       </aside>
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col">
-        <header className="h-16 px-8 border-b border-border bg-surface flex items-center justify-between">
-          <div className="text-sm font-medium text-textSecondary">
-            Admin Portal ({user?.role})
-          </div>
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="h-16 px-8 border-b border-border bg-surface flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsCommandPaletteOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border bg-surfaceAlt/60 text-textSecondary hover:text-textPrimary hover:bg-surfaceAlt text-xs font-medium transition-colors w-64"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span>Search or jump to...</span>
+              <kbd className="ml-auto px-1.5 py-0.5 rounded bg-surface border border-border text-[10px] font-mono">
+                Ctrl+K
+              </kbd>
+            </button>
+            <button
+              onClick={() => setIsShortcutsOpen(true)}
+              className="p-1.5 rounded-lg border border-border text-textSecondary hover:text-textPrimary hover:bg-surfaceAlt text-xs"
+              title="Keyboard Shortcuts (?)"
+            >
+              <Keyboard className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <span className="text-xs text-textSecondary hidden md:inline">
+              {user?.role} &bull; {user?.email}
+            </span>
             <LanguageSwitcher />
             <ThemeSwitcher />
           </div>
         </header>
+
+        {user?.status === ACCOUNT_STATUS.SUSPENDED ? (
+          <div className="bg-danger/10 border-b border-danger/20 px-8 py-3 flex items-center gap-3 text-danger">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <p className="text-sm">
+              Your admin account is suspended. Write operations are disabled.
+            </p>
+          </div>
+        ) : null}
+
         <main className="flex-1 p-8 overflow-y-auto">
           <Outlet />
         </main>
       </div>
+
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+      />
+
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
+      />
     </div>
   );
 }

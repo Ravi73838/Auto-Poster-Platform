@@ -32,3 +32,4 @@ describe('LanguageSwitcher', () => {
     expect(localStorage.getItem('ap_language')).toBe(LANGUAGES.GU);
   });
 });
+

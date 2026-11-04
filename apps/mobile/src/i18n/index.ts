@@ -41,3 +41,4 @@ export async function setMobileLanguage(lang: Language): Promise<void> {
 }
 
 export default i18n;
+

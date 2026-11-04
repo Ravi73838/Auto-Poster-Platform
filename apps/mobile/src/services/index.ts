@@ -9,3 +9,4 @@ export const apiClient = new ApiClient({
   getAuthToken: () => useMobileAuthStore.getState().token,
   getLanguage: () => i18n.language as Language,
 });
+

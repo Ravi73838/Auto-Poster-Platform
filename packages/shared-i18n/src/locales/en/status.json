@@ -45,5 +45,29 @@
     "SUPER_ADMIN": "Super Admin",
     "MODERATOR": "Moderator",
     "FINANCE": "Finance Officer"
+  },
+  "dispute": {
+    "OPEN": "Open",
+    "UNDER_REVIEW": "Under Review",
+    "RESOLVED": "Resolved",
+    "REJECTED": "Rejected",
+    "WITHDRAWN": "Withdrawn"
+  },
+  "strike": {
+    "ACTIVE": "Active",
+    "REVOKED": "Revoked",
+    "EXPIRED": "Expired",
+    "CONSUMED": "Consumed"
+  },
+  "posterFix": {
+    "OPEN": "Action Required",
+    "RESOLVED": "Resolved",
+    "STRIKED": "Deadline Expired",
+    "CANCELLED": "Cancelled"
+  },
+  "ban": {
+    "TEMPORARY": "Temporary Ban",
+    "PERMANENT": "Permanent Block"
   }
 }
+

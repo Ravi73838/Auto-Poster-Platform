@@ -1,2 +1,1 @@
-// Driver campaign assignments
-export {};
+export * from './DriverAssignmentsScreen';

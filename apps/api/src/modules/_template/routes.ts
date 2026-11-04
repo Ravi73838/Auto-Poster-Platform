@@ -14,3 +14,4 @@ export function createExampleRouter(): Router {
 
   return router;
 }
+

@@ -5,3 +5,4 @@
 2. No ads on KYC submission or government document verification screens.
 3. No ads on bank account details or payout execution screens.
 4. Ads are permitted solely on non-critical summary or reward milestone screens.
+

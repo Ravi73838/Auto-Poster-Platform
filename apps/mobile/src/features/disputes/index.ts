@@ -1,2 +1,1 @@
-// Driver photo dispute submission
-export {};
+export { DriverDisputesScreen } from './DriverDisputesScreen';

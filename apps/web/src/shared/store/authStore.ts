@@ -1,70 +1,85 @@
 import { create } from 'zustand';
-import { ROLES, ACCOUNT_STATUS, type Role } from '@ap/shared-constants';
 import type { AuthUser } from '@ap/shared-types';
 
-interface AuthState {
+export interface AuthState {
   user: AuthUser | null;
   token: string | null;
+  permissions: string[];
   isAuthenticated: boolean;
-  loginAs: (role: Role) => void;
+  isInitialized: boolean;
+  isLoading: boolean;
+  setAuth: (payload: {
+    user: AuthUser;
+    token: string;
+    permissions?: string[];
+  }) => void;
+  setToken: (token: string | null) => void;
+  setUser: (user: AuthUser) => void;
+  setPermissions: (permissions: string[]) => void;
+  setInitialized: (initialized: boolean) => void;
+  setLoading: (loading: boolean) => void;
+  clearAuth: () => void;
   logout: () => void;
 }
-
-const mockUsers: Record<Role, AuthUser> = {
-  [ROLES.COMPANY]: {
-    id: 'user-comp-001',
-    role: ROLES.COMPANY,
-    status: ACCOUNT_STATUS.APPROVED,
-    name: 'Acme Advertising Ltd',
-    phone: '9876543210',
-  },
-  [ROLES.SUPER_ADMIN]: {
-    id: 'user-admin-001',
-    role: ROLES.SUPER_ADMIN,
-    status: ACCOUNT_STATUS.APPROVED,
-    name: 'Super Admin User',
-    phone: '9876543211',
-  },
-  [ROLES.MODERATOR]: {
-    id: 'user-mod-001',
-    role: ROLES.MODERATOR,
-    status: ACCOUNT_STATUS.APPROVED,
-    name: 'Content Moderator',
-    phone: '9876543212',
-  },
-  [ROLES.FINANCE]: {
-    id: 'user-fin-001',
-    role: ROLES.FINANCE,
-    status: ACCOUNT_STATUS.APPROVED,
-    name: 'Finance Manager',
-    phone: '9876543213',
-  },
-  [ROLES.DRIVER]: {
-    id: 'user-drv-001',
-    role: ROLES.DRIVER,
-    status: ACCOUNT_STATUS.APPROVED,
-    name: 'Ramesh Patel',
-    phone: '9876543214',
-  },
-};
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
+  permissions: [],
   isAuthenticated: false,
-  loginAs: (role: Role) => {
-    const user = mockUsers[role];
+  isInitialized: false,
+  isLoading: false,
+
+  setAuth: ({ user, token, permissions = [] }) => {
     set({
       user,
-      token: `fake-jwt-token-for-${role}`,
+      token,
+      permissions,
       isAuthenticated: true,
+      isLoading: false,
     });
   },
+
+  setToken: (token) => {
+    set({
+      token,
+      isAuthenticated: Boolean(token),
+    });
+  },
+
+  setUser: (user) => {
+    set({ user });
+  },
+
+  setPermissions: (permissions) => {
+    set({ permissions });
+  },
+
+  setInitialized: (isInitialized) => {
+    set({ isInitialized });
+  },
+
+  setLoading: (isLoading) => {
+    set({ isLoading });
+  },
+
+  clearAuth: () => {
+    set({
+      user: null,
+      token: null,
+      permissions: [],
+      isAuthenticated: false,
+      isLoading: false,
+    });
+  },
+
   logout: () => {
     set({
       user: null,
       token: null,
+      permissions: [],
       isAuthenticated: false,
+      isLoading: false,
     });
   },
 }));

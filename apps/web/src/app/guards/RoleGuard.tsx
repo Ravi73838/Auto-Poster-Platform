@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../shared/store/authStore';
 import { ROLES, type Role } from '@ap/shared-constants';
+import { Spinner } from '../../shared/components/Spinner';
 
 interface RoleGuardProps {
   allowedRoles: Role[];
@@ -9,15 +10,27 @@ interface RoleGuardProps {
 }
 
 export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isInitialized } = useAuthStore();
   const location = useLocation();
 
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Spinner />
+      </div>
+    );
+  }
+
   if (!isAuthenticated || !user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    const loginTarget = location.pathname.startsWith('/admin') ? '/admin/login' : '/login';
+    return <Navigate to={loginTarget} state={{ from: location }} replace />;
+  }
+
+  if (user.mustChangePassword && location.pathname !== '/change-password') {
+    return <Navigate to="/change-password" replace />;
   }
 
   if (!allowedRoles.includes(user.role)) {
-    // Redirect based on user's active role
     if (user.role === ROLES.COMPANY) {
       return <Navigate to="/company/dashboard" replace />;
     }

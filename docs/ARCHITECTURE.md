@@ -55,3 +55,4 @@ The monorepo is structured with **pnpm workspaces** and **Turborepo** to orchest
   - Supports English (`en`), Hindi (`hi`), and Gujarati (`gu`).
   - Preloaded translation namespaces: `common`, `auth`, `errors`, `status`, `settings`.
   - Stored in `localStorage` (web) and `AsyncStorage` (mobile), defaulting to device/browser locale before fallback to English.
+

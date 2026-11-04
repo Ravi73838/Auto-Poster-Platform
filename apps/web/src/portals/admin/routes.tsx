@@ -8,10 +8,16 @@ import { PhotoReviewPage } from './features/photo-review/PhotoReviewPage';
 import { AdminPaymentsPage } from './features/payments/PaymentsPage';
 import { PayoutsPage } from './features/payouts/PayoutsPage';
 import { DisputesPage } from './features/disputes/DisputesPage';
+import { DisciplinePage } from './features/discipline/DisciplinePage';
+import { AnnouncementsPage } from './features/announcements/AnnouncementsPage';
 import { SettingsPage } from './features/settings/SettingsPage';
 import { TeamRolesPage } from './features/team-roles/TeamRolesPage';
 import { AuditLogPage } from './features/audit-log/AuditLogPage';
 import { AdminReportsPage } from './features/reports/ReportsPage';
+import { MyWorkPage } from './features/work-queues/MyWorkPage';
+import { LegalDocsPage } from './features/content/LegalDocsPage';
+import { HelpArticlesPage } from './features/content/HelpArticlesPage';
+import { SystemPage } from './features/system/SystemPage';
 import { PermissionGuard } from '../../app/guards/PermissionGuard';
 
 export default function AdminPortalRoutes() {
@@ -20,6 +26,10 @@ export default function AdminPortalRoutes() {
       <Route element={<AdminLayout />}>
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
+        <Route
+          path="my-work"
+          element={<MyWorkPage />}
+        />
         <Route
           path="drivers"
           element={
@@ -77,6 +87,22 @@ export default function AdminPortalRoutes() {
           }
         />
         <Route
+          path="discipline"
+          element={
+            <PermissionGuard permission="strike.manage">
+              <DisciplinePage />
+            </PermissionGuard>
+          }
+        />
+        <Route
+          path="announcements"
+          element={
+            <PermissionGuard permission="announcement.manage">
+              <AnnouncementsPage />
+            </PermissionGuard>
+          }
+        />
+        <Route
           path="reports"
           element={
             <PermissionGuard permission="audit.view">
@@ -108,7 +134,20 @@ export default function AdminPortalRoutes() {
             </PermissionGuard>
           }
         />
+        <Route
+          path="legal"
+          element={<LegalDocsPage />}
+        />
+        <Route
+          path="help"
+          element={<HelpArticlesPage />}
+        />
+        <Route
+          path="system"
+          element={<SystemPage />}
+        />
       </Route>
     </Routes>
   );
 }
+

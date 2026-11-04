@@ -3,11 +3,12 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { RoleGuard } from '../RoleGuard';
 import { useAuthStore } from '../../../shared/store/authStore';
-import { ROLES } from '@ap/shared-constants';
+import { ROLES, ACCOUNT_STATUS } from '@ap/shared-constants';
 
 describe('RoleGuard', () => {
   beforeEach(() => {
     useAuthStore.getState().logout();
+    useAuthStore.getState().setInitialized(true);
   });
 
   it('redirects unauthenticated user to /login', () => {
@@ -31,7 +32,22 @@ describe('RoleGuard', () => {
   });
 
   it('redirects company user trying to visit /admin/dashboard to /company/dashboard', () => {
-    useAuthStore.getState().loginAs(ROLES.COMPANY);
+    useAuthStore.getState().setAuth({
+      user: {
+        id: 'u1',
+        role: ROLES.COMPANY,
+        status: ACCOUNT_STATUS.APPROVED,
+        mobile: '+919876543210',
+        email: 'company@test.com',
+        preferredLanguage: 'en',
+        preferredTheme: 'system',
+        twoFactorEnabled: false,
+        mustChangePassword: false,
+        mobileVerifiedAt: new Date().toISOString(),
+        emailVerifiedAt: new Date().toISOString(),
+      },
+      token: 'mock-jwt-token',
+    });
 
     render(
       <MemoryRouter initialEntries={['/admin/dashboard']}>
@@ -53,7 +69,22 @@ describe('RoleGuard', () => {
   });
 
   it('allows authorized role to access protected route', () => {
-    useAuthStore.getState().loginAs(ROLES.SUPER_ADMIN);
+    useAuthStore.getState().setAuth({
+      user: {
+        id: 'u2',
+        role: ROLES.SUPER_ADMIN,
+        status: ACCOUNT_STATUS.APPROVED,
+        mobile: '+919876543211',
+        email: 'admin@test.com',
+        preferredLanguage: 'en',
+        preferredTheme: 'system',
+        twoFactorEnabled: true,
+        mustChangePassword: false,
+        mobileVerifiedAt: new Date().toISOString(),
+        emailVerifiedAt: new Date().toISOString(),
+      },
+      token: 'mock-jwt-token',
+    });
 
     render(
       <MemoryRouter initialEntries={['/admin/dashboard']}>

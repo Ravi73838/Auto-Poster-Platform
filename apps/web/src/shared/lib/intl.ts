@@ -25,3 +25,4 @@ export function formatDateTimeIN(date: Date | string | number): string {
     minute: '2-digit',
   }).format(d);
 }
+

@@ -8,20 +8,32 @@ import {
   CreditCard,
   BarChart3,
   HelpCircle,
+  AlertTriangle,
   LogOut,
+  AlertCircle,
+  Clock,
 } from 'lucide-react';
 import { LanguageSwitcher } from '../../shared/components/LanguageSwitcher';
 import { ThemeSwitcher } from '../../shared/components/ThemeSwitcher';
 import { useAuthStore } from '../../shared/store/authStore';
+import { useApiClient } from '../../shared/lib/api';
+import { ACCOUNT_STATUS } from '@ap/shared-constants';
 
 export function CompanyLayout() {
   const { t } = useTranslation(['common', 'auth', 'status']);
-  const { user, logout } = useAuthStore();
+  const { user, clearAuth } = useAuthStore();
+  const client = useApiClient();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await client.logout();
+    } catch {
+      // ignore
+    } finally {
+      clearAuth();
+      navigate('/login');
+    }
   };
 
   const navItems = [
@@ -31,13 +43,14 @@ export function CompanyLayout() {
     { to: '/company/tracking', label: 'Tracking', icon: MapPin },
     { to: '/company/payments', label: 'Payments', icon: CreditCard },
     { to: '/company/reports', label: 'Reports', icon: BarChart3 },
+    { to: '/company/disputes', label: 'Disputes & Claims', icon: AlertTriangle },
     { to: '/company/support', label: 'Support', icon: HelpCircle },
   ];
 
   return (
     <div className="min-h-screen flex bg-background text-textPrimary">
       {/* Sidebar */}
-      <aside className="w-64 border-e border-border bg-surface flex flex-col justify-between">
+      <aside className="w-64 border-e border-border bg-surface flex flex-col justify-between shrink-0">
         <div>
           <div className="p-6 border-b border-border">
             <h2 className="text-lg font-bold text-primary">{t('common:appName')}</h2>
@@ -68,8 +81,10 @@ export function CompanyLayout() {
 
         <div className="p-4 border-t border-border">
           <div className="mb-3 px-2">
-            <p className="text-xs font-semibold text-textPrimary truncate">{user?.name}</p>
-            <p className="text-xs text-textSecondary">{user?.phone}</p>
+            <p className="text-xs font-semibold text-textPrimary truncate">
+              {user?.email || user?.mobile}
+            </p>
+            <p className="text-xs text-textSecondary capitalize">{user?.status.toLowerCase()}</p>
           </div>
           <button
             onClick={handleLogout}
@@ -82,16 +97,36 @@ export function CompanyLayout() {
       </aside>
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col">
-        <header className="h-16 px-8 border-b border-border bg-surface flex items-center justify-between">
-          <div className="text-sm font-medium text-textSecondary">
-            {user?.name}
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="h-16 px-8 border-b border-border bg-surface flex items-center justify-between shrink-0">
+          <div className="text-sm font-medium text-textSecondary truncate">
+            {user?.email || user?.mobile}
           </div>
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
             <ThemeSwitcher />
           </div>
         </header>
+
+        {/* Account status banners */}
+        {user?.status === ACCOUNT_STATUS.PENDING ? (
+          <div className="bg-warning/10 border-b border-warning/20 px-8 py-3 flex items-center gap-3 text-warning">
+            <Clock className="w-5 h-5 shrink-0" />
+            <p className="text-sm">
+              Your company account is pending review by the admin team. Certain features will be enabled once approved.
+            </p>
+          </div>
+        ) : null}
+
+        {user?.status === ACCOUNT_STATUS.SUSPENDED ? (
+          <div className="bg-danger/10 border-b border-danger/20 px-8 py-3 flex items-center gap-3 text-danger">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <p className="text-sm">
+              Your account has been suspended. Modification actions are disabled. Please contact support.
+            </p>
+          </div>
+        ) : null}
+
         <main className="flex-1 p-8 overflow-y-auto">
           <Outlet />
         </main>

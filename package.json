@@ -17,6 +17,7 @@
     "clean": "turbo run clean && rimraf node_modules",
     "db:up": "docker compose -f infra/docker/docker-compose.yml up -d",
     "db:down": "docker compose -f infra/docker/docker-compose.yml down",
+    "docs:permissions": "tsx scripts/generate-permissions-doc.ts",
     "prepare": "husky || true"
   },
   "pnpm": {

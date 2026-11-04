@@ -6,3 +6,4 @@ describe('Mobile App Utilities', () => {
     expect(formatCurrency(1500)).toContain('1,500');
   });
 });
+

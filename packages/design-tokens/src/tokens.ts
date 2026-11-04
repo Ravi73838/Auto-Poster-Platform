@@ -102,3 +102,4 @@ export function toCssVariables(theme: 'light' | 'dark'): Record<string, string> 
 
   return vars;
 }
+

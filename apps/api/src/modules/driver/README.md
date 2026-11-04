@@ -8,3 +8,4 @@ Prefix: `/api/v1/driver`
 - Poster installation verification proof upload
 - Daily live photo + GPS geotag verification submission
 - Daily earnings calculation and bank/UPI payout requests
+

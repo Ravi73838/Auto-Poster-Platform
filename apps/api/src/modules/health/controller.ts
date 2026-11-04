@@ -18,4 +18,41 @@ export class HealthController {
       next(err);
     }
   };
+
+  getReadiness = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const data = await this.service.getHealthStatus();
+      const isReady = data.services.database === 'connected' && data.services.redis === 'connected';
+
+      if (isReady) {
+        res.status(200).json({
+          success: true,
+          data: {
+            status: 'ready',
+            checks: {
+              database: 'ok',
+              redis: 'ok',
+            },
+          },
+        });
+      } else {
+        res.status(503).json({
+          success: false,
+          error: {
+            code: 'INTERNAL_ERROR',
+            message: 'Service dependencies are not ready',
+          },
+          data: {
+            status: 'not_ready',
+            checks: {
+              database: data.services.database === 'connected' ? 'ok' : 'down',
+              redis: data.services.redis === 'connected' ? 'ok' : 'down',
+            },
+          },
+        });
+      }
+    } catch (err) {
+      next(err);
+    }
+  };
 }

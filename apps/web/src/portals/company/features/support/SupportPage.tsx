@@ -11,3 +11,4 @@ export function CompanySupportPage() {
     </div>
   );
 }
+

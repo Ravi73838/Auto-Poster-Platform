@@ -6,3 +6,4 @@ Prefix: `/api/v1/auth`
 - Driver and Company OTP-based phone authentication
 - JWT token issuing, verification, and revocation
 - Role assignment and session management
+

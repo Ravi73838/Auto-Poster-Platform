@@ -17,3 +17,4 @@ export function languageMiddleware(req: Request, _res: Response, next: NextFunct
   }
   next();
 }
+

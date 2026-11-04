@@ -40,3 +40,4 @@ export function getContrastRatio(hex1: string, hex2: string): number {
   const darker = Math.min(lum1, lum2);
   return (lighter + 0.05) / (darker + 0.05);
 }
+

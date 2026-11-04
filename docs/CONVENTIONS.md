@@ -58,3 +58,65 @@ module-name/
   }
   ```
 - No stack traces or internal infrastructure errors are exposed in production.
+
+## 5. Database Conventions & Standards
+- **Naming Conventions**:
+  - Tables and database columns are strictly `snake_case` in PostgreSQL, mapped using Prisma `@map` and `@@map`.
+  - Prisma models and client properties are strictly `PascalCase` and `camelCase`.
+  - Primary keys are UUID v4 strings.
+  - Mutable entities include `createdAt` (`created_at`) and `updatedAt` (`updated_at`). Immutable append-only records (ledger transactions, ledger entries, audit logs) omit `updatedAt`.
+- **Soft Delete Policy**:
+  - Soft deletion via `deletedAt` (`deleted_at`) is **strictly isolated to `User` and `Campaign`**.
+  - All other entities (vehicles, documents, assignments, photos, payouts, ledger accounts) are permanent.
+  - Active record queries must filter with `notDeletedClause()` or `deletedAt: null`.
+- **Money & Financial Rules**:
+  - Floating point numbers are **strictly forbidden** for monetary figures.
+  - All amounts are stored and calculated as **integer paise** (100 paise = 1 INR).
+  - Per-unit configuration fields (rates, allowances) use `Int`; all balances, payments, payouts, and ledger entries use `BigInt`.
+  - `BigInt` values are serialized safely as strings via `apps/api/src/shared/money` JSON serialization.
+  - Campaign pricing and rent calculations use pure functions with half-up rounding.
+- **Audit Logging Rule**:
+  - Sensitive fields (passwords, PINs, tokens, encryption keys, raw bank details, UPI handles) must be redacted before recording into `audit_logs`.
+  - Audit logs record shallow diffs (`oldValues` and `newValues`) and are append-only.
+
+## 6. Authentication & Authorization Conventions
+- **Secrets & Token Handling**:
+  - Raw passwords, plaintext OTPs, and refresh tokens are **strictly forbidden from appearing in logs**.
+  - All passwords must be hashed using Argon2id (`apps/api/src/modules/auth/password.service.ts`).
+  - Refresh tokens are hashed with SHA-256 before database lookup.
+- **Route Authorization Pipeline**:
+  - Global middleware `authenticate` parses Bearer access tokens, validates active session in DB, and populates `req.user`, `req.session`, and `req.permissions`.
+  - Global middleware `blockSuspendedWrites()` automatically rejects `POST`, `PUT`, `PATCH`, `DELETE` with HTTP 403 `ACCOUNT_SUSPENDED` if `req.user.status === 'SUSPENDED'`.
+  - Prefix role guards strictly enforce role boundaries:
+    - `/api/v1/company/*` -> `requireRole(ROLES.COMPANY)`
+    - `/api/v1/admin/*` -> `requireRole(ROLES.SUPER_ADMIN, ROLES.MODERATOR, ROLES.FINANCE)`
+    - `/api/v1/driver/*` -> `requireRole(ROLES.DRIVER)`
+  - Feature access requiring verified status must use `requireApproved()`.
+  - Granular administrative capabilities use `requirePermission('permission.key')`.
+- **Client Refresh Invariant**:
+  - Front-end API clients (`@ap/api-client`) must employ single-flight refresh token locking. Concurrent 401s must wait on the primary refresh operation and replay with the new token.
+
+## 7. Campaign & Scheduling Conventions
+- **Dates vs Timestamps**:
+  - `startDate` and `endDate` are Indian Standard Time (`Asia/Kolkata`) calendar date boundaries. Never apply UTC timezone conversion to start/end calendar dates.
+  - All audit times (`liveAt`, `approvedAt`, `createdAt`, `updatedAt`) are UTC ISO 8601 timestamps.
+- **Campaign Pricing**:
+  - Never recalculate campaign pricing inline; always call `calculateCampaignPricing` from `@ap/shared-constants`.
+- **Slot Allocation Concurrency**:
+  - Drivers enrolling into a campaign MUST use row-level pessimistic locking (`SELECT FOR UPDATE`) via `SlotsService.reserveSlot`.
+
+## 8. Discipline, Disputes & Notification Conventions (Phase 9)
+- **Driver PII Masking**:
+  - Companies must NEVER receive driver personal information (full name, phone number, vehicle registration number). Controllers and repositories must mask driver details as `Driver #<shortId>` or `Auto #<shortPlate>`.
+- **Dispute Thread Visibility**:
+  - All dispute messages and evidence must respect the `visibility` attribute (`ALL` vs `ADMIN_ONLY`). Internal moderator notes must never leak to drivers or advertisers.
+- **Single Entry Point for Notifications**:
+  - All transactional, disciplinary, and marketing alerts must be dispatched through `NotificationsService.notify()` using keys declared in `NotificationRegistry`.
+- **Mandatory Notification Categories**:
+  - `DISCIPLINE` and critical `SYSTEM` notifications have `isMandatory: true` and cannot be opted out of by users.
+- **Quiet Hours Invariant**:
+  - Notifications dispatchers must evaluate IST quiet hours (22:00 to 07:00 IST). Non-urgent messages must not fire noisy push or SMS alerts during this window.
+
+
+
+

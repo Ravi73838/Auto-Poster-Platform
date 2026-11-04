@@ -1,2 +1,1 @@
-// Poster installation photos and review verification
-export {};
+export * from './InstallationUploadScreen';
