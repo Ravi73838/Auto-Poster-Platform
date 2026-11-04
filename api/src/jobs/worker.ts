@@ -5,8 +5,11 @@ import { registerFinanceEventListeners } from '../events/listeners/finance.liste
 import { registerDisciplineEventListeners } from '../events/listeners/discipline.listeners.js';
 import { logger } from '../shared/logger/index.js';
 import { env } from '../config/env.js';
+import { ensureRedisServer } from '../shared/redis/index.js';
 
 logger.info({ env: env.NODE_ENV }, 'Starting Auto Poster Background Worker...');
+
+await ensureRedisServer();
 
 // Register event listeners so notifications are dispatched
 registerCampaignEventListeners();

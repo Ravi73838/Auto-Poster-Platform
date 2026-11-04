@@ -26,7 +26,7 @@ const envSchema = z
       ),
     DIRECT_URL: z.string().optional(),
     DATABASE_URL_TEST: z.string().optional(),
-    REDIS_URL: z.string().default('redis://127.0.0.1:6379'),
+    REDIS_URL: z.string().default('redis://127.0.0.1:6380'),
     CORS_ORIGINS: z.string().default('http://localhost:5173,http://localhost:3000'),
     ENCRYPTION_KEY: z
       .string()
