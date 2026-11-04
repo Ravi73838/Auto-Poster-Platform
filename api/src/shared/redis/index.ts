@@ -47,6 +47,7 @@ export function getBullMQRedisOptions(): RedisOptions {
     password: url.password || undefined,
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
+    retryStrategy: (times) => Math.min(times * 100, 3000),
   };
 }
 
