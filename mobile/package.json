@@ -1,9 +1,12 @@
 {
-  "name": "@ap/mobile",
+  "name": "mobile",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "main": "expo-router/entry",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "start": "expo start",
     "dev": "expo start",
@@ -14,12 +17,13 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
   "dependencies": {
-    "@ap/api-client": "workspace:*",
-    "@ap/design-tokens": "workspace:*",
-    "@ap/shared-constants": "workspace:*",
-    "@ap/shared-i18n": "workspace:*",
-    "@ap/shared-types": "workspace:*",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@tanstack/react-query": "^5.66.11",
     "expo": "~52.0.37",
@@ -37,13 +41,22 @@
     "react-native": "0.76.7",
     "react-native-safe-area-context": "4.12.0",
     "react-native-screens": "~4.4.0",
+    "zod": "^3.24.2",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
-    "@ap/eslint-config": "workspace:*",
-    "@ap/tsconfig": "workspace:*",
+    "@eslint/js": "^9.21.0",
+    "@types/node": "^22.13.8",
     "@types/react": "^18.3.18",
+    "eslint": "^9.21.0",
+    "eslint-plugin-i18next": "^6.1.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.0.0",
+    "lint-staged": "^15.4.3",
+    "prettier": "^3.5.3",
     "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.0",
     "vitest": "^3.0.7"
   }
 }

@@ -1,9 +1,44 @@
 {
-  "extends": "@ap/tsconfig/node.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": false,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@ap/shared-constants": ["./src/contract/constants/index.ts"],
+      "@ap/shared-constants/*": ["./src/contract/constants/*"],
+      "@ap/shared-types": ["./src/contract/types/index.ts"],
+      "@ap/shared-types/*": ["./src/contract/types/*"],
+      "@ap/shared-validation": ["./src/contract/validation/index.ts"],
+      "@ap/shared-validation/*": ["./src/contract/validation/*"],
+      "@ap/shared-i18n": ["./src/contract/i18n/index.ts"],
+      "@ap/shared-i18n/*": ["./src/contract/i18n/*"],
+      "@ap/design-tokens": ["./src/contract/tokens/index.ts"],
+      "@ap/design-tokens/*": ["./src/contract/tokens/*"],
+      "@ap/api-client": ["./src/contract/api-client/index.ts"],
+      "@ap/api-client/*": ["./src/contract/api-client/*"],
+      "@ap/shared-money": ["./src/contract/money/index.ts"],
+      "@ap/shared-money/*": ["./src/contract/money/*"],
+      "@ap/shared-time": ["./src/contract/time/index.ts"],
+      "@ap/shared-time/*": ["./src/contract/time/*"]
+    }
   },
   "include": ["src/**/*"]
 }
-

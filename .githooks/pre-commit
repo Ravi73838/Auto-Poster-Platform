@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+# Run sync check
+npm run sync:check || {
+  echo "❌ Shared contract is out of sync or impure. Run 'npm run sync' and commit the result."
+  exit 1
+}
+
+# Run boundary checker
+npm run check:boundaries || {
+  echo "❌ Boundary violations detected between api, web, and mobile."
+  exit 1
+}

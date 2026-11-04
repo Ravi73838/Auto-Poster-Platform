@@ -1,23 +1,27 @@
 {
-  "name": "@ap/web",
+  "name": "web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "e2e": "playwright test"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "dependencies": {
-    "@ap/api-client": "workspace:*",
-    "@ap/design-tokens": "workspace:*",
-    "@ap/shared-constants": "workspace:*",
-    "@ap/shared-i18n": "workspace:*",
-    "@ap/shared-types": "workspace:*",
-    "@ap/shared-validation": "workspace:*",
     "@hookform/resolvers": "^4.1.3",
     "@tanstack/react-query": "^5.66.11",
     "clsx": "^2.1.1",
@@ -33,20 +37,27 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
-    "@ap/eslint-config": "workspace:*",
-    "@ap/tsconfig": "workspace:*",
+    "@eslint/js": "^9.21.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
+    "@types/node": "^22.13.8",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
+    "eslint": "^9.21.0",
+    "eslint-plugin-i18next": "^6.1.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.0.0",
     "jsdom": "^26.0.0",
+    "lint-staged": "^15.4.3",
     "postcss": "^8.5.3",
+    "prettier": "^3.5.3",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.0",
     "vite": "^6.2.0",
     "vitest": "^3.0.7"
   }
 }
-

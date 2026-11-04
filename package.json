@@ -2,38 +2,21 @@
   "name": "auto-poster-platform",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.33.0",
-  "engines": {
-    "node": ">=20.0.0"
-  },
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck",
-    "test": "turbo run test",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
-    "clean": "turbo run clean && rimraf node_modules",
-    "db:up": "docker compose -f infra/docker/docker-compose.yml up -d",
-    "db:down": "docker compose -f infra/docker/docker-compose.yml down",
-    "docs:permissions": "tsx scripts/generate-permissions-doc.ts",
-    "prepare": "husky || true"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@prisma/client",
-      "@prisma/engines",
-      "esbuild",
-      "prisma"
-    ]
-  },
-  "devDependencies": {
-    "turbo": "^2.4.4",
-    "prettier": "^3.5.3",
-    "typescript": "^5.8.2",
-    "husky": "^9.1.7",
-    "lint-staged": "^15.4.3",
-    "rimraf": "^6.0.1"
+    "install:all": "npm --prefix api install && npm --prefix web install && npm --prefix mobile install",
+    "dev:api": "npm --prefix api run dev",
+    "dev:worker": "npm --prefix api run worker",
+    "dev:web": "npm --prefix web run dev",
+    "dev:mobile": "npm --prefix mobile run start",
+    "db:up": "docker compose -f api/infra/docker-compose.dev.yml up -d",
+    "db:down": "docker compose -f api/infra/docker-compose.dev.yml down",
+    "sync": "npm --prefix api run sync:shared",
+    "sync:check": "npm --prefix api run sync:shared:check",
+    "check:boundaries": "npm --prefix api run check:boundaries",
+    "lint:all": "npm --prefix api run lint && npm --prefix web run lint && npm --prefix mobile run lint",
+    "typecheck:all": "npm --prefix api run typecheck && npm --prefix web run typecheck && npm --prefix mobile run typecheck",
+    "test:all": "npm --prefix api run test && npm --prefix web run test && npm --prefix mobile run test",
+    "build:all": "npm --prefix api run build && npm --prefix web run build",
+    "hooks:install": "git config core.hooksPath .githooks"
   }
 }

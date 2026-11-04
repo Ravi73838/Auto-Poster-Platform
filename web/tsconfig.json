@@ -1,11 +1,45 @@
 {
-  "extends": "@ap/tsconfig/react.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": false,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "allowJs": false,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@ap/shared-constants": ["./src/shared/constants/index.ts"],
+      "@ap/shared-constants/*": ["./src/shared/constants/*"],
+      "@ap/shared-types": ["./src/shared/types/index.ts"],
+      "@ap/shared-types/*": ["./src/shared/types/*"],
+      "@ap/shared-validation": ["./src/shared/validation/index.ts"],
+      "@ap/shared-validation/*": ["./src/shared/validation/*"],
+      "@ap/shared-i18n": ["./src/shared/i18n/index.ts"],
+      "@ap/shared-i18n/*": ["./src/shared/i18n/*"],
+      "@ap/design-tokens": ["./src/shared/tokens/index.ts"],
+      "@ap/design-tokens/*": ["./src/shared/tokens/*"],
+      "@ap/api-client": ["./src/shared/api-client/index.ts"],
+      "@ap/api-client/*": ["./src/shared/api-client/*"],
+      "@ap/shared-money": ["./src/shared/money/index.ts"],
+      "@ap/shared-money/*": ["./src/shared/money/*"],
+      "@ap/shared-time": ["./src/shared/time/index.ts"],
+      "@ap/shared-time/*": ["./src/shared/time/*"]
     }
   },
   "include": ["src/**/*"]
 }
-
