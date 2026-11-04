@@ -13,7 +13,7 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
   const { user, isAuthenticated, isInitialized } = useAuthStore();
   const location = useLocation();
 
-  if (!isInitialized) {
+  if (!isInitialized && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Spinner />

@@ -36,6 +36,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       token,
       permissions,
       isAuthenticated: true,
+      isInitialized: true,
       isLoading: false,
     });
   },
@@ -69,6 +70,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       token: null,
       permissions: [],
       isAuthenticated: false,
+      isInitialized: true,
       isLoading: false,
     });
   },

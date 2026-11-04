@@ -8,7 +8,6 @@ const ApiContext = createContext<ApiClient | undefined>(undefined);
 
 export function ApiProvider({ children }: { children: React.ReactNode }) {
   const { i18n } = useTranslation();
-  const initAttempted = useRef(false);
 
   const client = useMemo(() => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api/v1';
@@ -23,19 +22,17 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   }, [i18n.language]);
 
   useEffect(() => {
-    if (initAttempted.current) return;
-    initAttempted.current = true;
+    let canceled = false;
 
-    let isMounted = true;
     async function initAuth() {
       useAuthStore.getState().setLoading(true);
       try {
         // Attempt silent refresh via httpOnly cookie
         const tokens = await client.refreshTokens();
-        if (tokens.accessToken) {
+        if (tokens?.accessToken) {
           useAuthStore.getState().setToken(tokens.accessToken);
           const me = await client.getMe();
-          if (isMounted) {
+          if (!canceled) {
             useAuthStore.getState().setAuth({
               user: me.user,
               token: tokens.accessToken,
@@ -44,20 +41,18 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } catch {
-        if (isMounted) {
+        if (!canceled) {
           useAuthStore.getState().clearAuth();
         }
       } finally {
-        if (isMounted) {
-          useAuthStore.getState().setInitialized(true);
-          useAuthStore.getState().setLoading(false);
-        }
+        useAuthStore.getState().setInitialized(true);
+        useAuthStore.getState().setLoading(false);
       }
     }
 
     initAuth();
     return () => {
-      isMounted = false;
+      canceled = true;
     };
   }, [client]);
 
