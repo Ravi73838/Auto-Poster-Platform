@@ -63,11 +63,6 @@ export function LoginPage() {
     }
   };
 
-  const handleQuickFill = (email: string, pass: string) => {
-    setValue('email', email, { shouldValidate: true });
-    setValue('password', pass, { shouldValidate: true });
-  };
-
   return (
     <div className="w-full max-w-md">
       <Card className="shadow-lg">
@@ -92,7 +87,7 @@ export function LoginPage() {
           <Input
             label="Email Address"
             type="email"
-            placeholder="company@autoposter.com"
+            placeholder="name@company.com"
             error={errors.email?.message}
             {...register('email')}
           />
@@ -128,22 +123,6 @@ export function LoginPage() {
                 Register company
               </Link>
             </p>
-          </div>
-
-          {/* Seeded Quick-Fill (Development helper) */}
-          <div className="mt-6 pt-4 border-t border-border">
-            <p className="text-xs font-medium text-textSecondary mb-2">Dev Helper: Quick-Fill</p>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="w-full text-xs"
-                onClick={() => handleQuickFill('company@autoposter.com', 'Company@123456')}
-              >
-                Seeded Company
-              </Button>
-            </div>
           </div>
 
           <div className="pt-2 text-center border-t border-border mt-3">

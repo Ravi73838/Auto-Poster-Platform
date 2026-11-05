@@ -108,11 +108,6 @@ export function AdminLoginPage() {
     }
   };
 
-  const handleQuickFill = (email: string, pass: string) => {
-    setValueStep1('email', email, { shouldValidate: true });
-    setValueStep1('password', pass, { shouldValidate: true });
-  };
-
   return (
     <div className="w-full max-w-md">
       <Card className="shadow-lg">
@@ -142,7 +137,7 @@ export function AdminLoginPage() {
             <Input
               label="Staff Email Address"
               type="email"
-              placeholder="admin@autoposter.com"
+              placeholder="admin@example.com"
               error={errorsStep1.email?.message}
               {...registerStep1('email')}
             />
@@ -158,22 +153,6 @@ export function AdminLoginPage() {
             <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>
               Next: Send 2FA Code
             </Button>
-
-            {/* Quick-Fill Helpers for Development */}
-            <div className="mt-6 pt-4 border-t border-border">
-              <p className="text-xs font-medium text-textSecondary mb-2">Dev Helper: Seeded Admin</p>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-full text-xs"
-                  onClick={() => handleQuickFill('admin@autoposter.com', 'Admin@123456')}
-                >
-                  Super Admin (Seeded)
-                </Button>
-              </div>
-            </div>
 
             <div className="pt-2 text-center border-t border-border mt-3">
               <Link to="/login" className="text-xs text-textSecondary hover:text-textPrimary">

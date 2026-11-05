@@ -47,11 +47,6 @@ export function MobileInputScreen({ onOtpSent, onChangeLanguage }: Props) {
     }
   };
 
-  const handleQuickFill = (num: string) => {
-    setMobile(num);
-    setError(null);
-  };
-
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -101,17 +96,6 @@ export function MobileInputScreen({ onOtpSent, onChangeLanguage }: Props) {
             <Text style={styles.buttonText}>{t('auth:sendOtp', { defaultValue: 'Get OTP' })}</Text>
           )}
         </TouchableOpacity>
-
-        {/* Dev helper */}
-        <View style={styles.devBox}>
-          <Text style={styles.devTitle}>Dev Quick-Fill:</Text>
-          <TouchableOpacity
-            onPress={() => handleQuickFill('9876543210')}
-            style={styles.devChip}
-          >
-            <Text style={styles.devChipText}>Seeded Driver: 9876543210</Text>
-          </TouchableOpacity>
-        </View>
 
         <TouchableOpacity onPress={onChangeLanguage} style={styles.langLink}>
           <Text style={styles.langLinkText}>Change Language / भाषा बदलें</Text>
@@ -201,29 +185,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
-  },
-  devBox: {
-    marginTop: 32,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
-    alignItems: 'center',
-  },
-  devTitle: {
-    fontSize: 12,
-    color: '#94A3B8',
-    marginBottom: 8,
-  },
-  devChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#F1F5F9',
-    borderRadius: 16,
-  },
-  devChipText: {
-    fontSize: 12,
-    color: '#0284C7',
-    fontWeight: '600',
   },
   langLink: {
     marginTop: 24,
