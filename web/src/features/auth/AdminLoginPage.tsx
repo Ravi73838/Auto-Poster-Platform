@@ -3,11 +3,10 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
   adminLoginSchema,
-  adminVerifyOtpSchema,
   type AdminLoginInput,
-  type AdminVerifyOtpInput,
 } from '@ap/shared-validation';
 import { useAuthStore } from '../../shared/store/authStore';
 import { useApiClient } from '../../shared/lib/api';
@@ -16,6 +15,15 @@ import { Button } from '../../shared/components/Button';
 import { Input } from '../../shared/components/Input';
 import { Shield, AlertCircle, ArrowLeft } from 'lucide-react';
 import { ApiError } from '@ap/api-client';
+
+const adminOtpCodeSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(4, 'Verification code must be at least 4 digits')
+    .max(10, 'Verification code too long'),
+});
+type AdminOtpCodeInput = z.infer<typeof adminOtpCodeSchema>;
 
 export function AdminLoginPage() {
   const { t } = useTranslation(['auth', 'common', 'errors']);
@@ -34,21 +42,20 @@ export function AdminLoginPage() {
   const {
     register: registerStep1,
     handleSubmit: handleSubmitStep1,
-    setValue: setValueStep1,
     formState: { errors: errorsStep1 },
   } = useForm<AdminLoginInput>({
     resolver: zodResolver(adminLoginSchema),
     defaultValues: { email: '', password: '' },
   });
 
-  // Step 2 Form
+  // Step 2 Form (validates OTP code directly)
   const {
     register: registerStep2,
     handleSubmit: handleSubmitStep2,
     formState: { errors: errorsStep2 },
-  } = useForm<AdminVerifyOtpInput>({
-    resolver: zodResolver(adminVerifyOtpSchema),
-    defaultValues: { challengeId: '', code: '' },
+  } = useForm<AdminOtpCodeInput>({
+    resolver: zodResolver(adminOtpCodeSchema),
+    defaultValues: { code: '' },
   });
 
   const onStep1Submit = async (data: AdminLoginInput) => {
@@ -70,7 +77,12 @@ export function AdminLoginPage() {
     }
   };
 
-  const onStep2Submit = async (data: AdminVerifyOtpInput) => {
+  const onStep2Submit = async (data: AdminOtpCodeInput) => {
+    if (!challengeId) {
+      setServerError('Session expired. Please restart login.');
+      setStep(1);
+      return;
+    }
     setIsLoading(true);
     setServerError(null);
     try {
@@ -162,8 +174,6 @@ export function AdminLoginPage() {
           </form>
         ) : (
           <form onSubmit={handleSubmitStep2(onStep2Submit)} className="space-y-4">
-            <input type="hidden" value={challengeId} {...registerStep2('challengeId')} />
-
             <Input
               label="6-Digit 2FA Verification Code"
               type="text"
