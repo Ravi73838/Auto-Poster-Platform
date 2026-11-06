@@ -78,3 +78,4 @@ describe('db-guard', () => {
     expect(() => assertDbGuard('migrate', { targetSchema: 'verify_tmp' })).not.toThrow();
   });
 });
+

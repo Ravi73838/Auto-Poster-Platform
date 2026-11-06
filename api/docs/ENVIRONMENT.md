@@ -98,3 +98,4 @@ To update an existing local `api/.env` file for Phase 10.5 stabilization, add or
 | `EXPO_PUBLIC_API_BASE_URL`| Optional | `http://localhost:4000/api/v1` | Base REST API URL accessed by driver React Native client | Phase 1 |
 | `EXPO_PUBLIC_API_URL` | Optional | `http://localhost:4000/api/v1` | Backward-compatible alias for `EXPO_PUBLIC_API_BASE_URL` | Phase 1 |
 | `EAS_PROJECT_ID` | Optional | `00000000-0000-0000-0000-000000000000` | Expo Application Services project identifier | Phase 1 |
+

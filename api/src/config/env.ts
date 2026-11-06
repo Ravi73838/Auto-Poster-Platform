@@ -15,6 +15,14 @@ try {
   // ignore
 }
 
+// Default DIRECT_URL and DB_ENVIRONMENT if absent from process.env
+if (!process.env.DIRECT_URL && process.env.DATABASE_URL) {
+  process.env.DIRECT_URL = process.env.DATABASE_URL;
+}
+if (!process.env.DB_ENVIRONMENT) {
+  process.env.DB_ENVIRONMENT = 'development';
+}
+
 export function deriveTestDatabaseUrl(mainDbUrl: string, explicitTestUrl?: string): string {
   if (explicitTestUrl && explicitTestUrl.trim().length > 0) {
     return explicitTestUrl;

@@ -57,3 +57,4 @@ describe('check-secrets', () => {
     expect(findings.length).toBe(0);
   });
 });
+

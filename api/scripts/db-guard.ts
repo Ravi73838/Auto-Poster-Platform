@@ -21,8 +21,29 @@ export interface GuardOptions {
 }
 
 /**
- * Masks a database host (first 4 chars, '...', domain suffix)
- * e.g., 'db.wqpvvjtfoqgiecsykjrk.supabase.co' -> 'db.w...supabase.co'
+ * Converts an IPv6-only Supabase direct host (db.<ref>.supabase.co)
+ * to the IPv4-compatible Supabase connection pooler host (port 5432 session mode).
+ */
+export function toReachableSupabaseUrl(rawUrl: string): string {
+  try {
+    const u = new URL(rawUrl);
+    if (u.hostname.startsWith('db.') && u.hostname.endsWith('.supabase.co')) {
+      const parts = u.hostname.split('.');
+      const ref = parts[1]!;
+      u.hostname = 'aws-0-ap-northeast-1.pooler.supabase.com';
+      u.username = `postgres.${ref}`;
+      u.port = '5432';
+      return u.toString();
+    }
+  } catch {
+    // ignore
+  }
+  return rawUrl;
+}
+
+/**
+ * Masks a database host so it is safe to print in logs and prompts without exposing
+ * the full project reference.
  */
 export function maskDatabaseHost(rawUrlOrHost: string): string {
   let hostname = rawUrlOrHost;

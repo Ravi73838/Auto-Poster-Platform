@@ -20,6 +20,7 @@
     "test:integration": "vitest run --no-file-parallelism \"**/*.integration.test.ts\"",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:drift": "tsx scripts/db-drift-report.ts",
     "db:studio": "prisma studio",
     "db:seed:base": "tsx src/seeds/base.ts",
     "db:seed:demo": "tsx src/seeds/demo.ts",
