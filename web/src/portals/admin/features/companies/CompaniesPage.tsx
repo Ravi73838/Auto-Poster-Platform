@@ -31,6 +31,7 @@ export function CompaniesPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const page = parseInt(searchParams.get('page') || '1', 10);
   const limit = parseInt(searchParams.get('limit') || '25', 10);
@@ -67,6 +68,21 @@ export function CompaniesPage() {
       alert('Export job queued! Check the Reports & Exports tab to download once generated.');
     } catch (err: any) {
       alert(err?.message || 'Failed to trigger export');
+    }
+  };
+
+  const handleVerify = async (id: string) => {
+    if (!window.confirm('Are you sure you want to approve and verify this company?')) {
+      return;
+    }
+    try {
+      setActionLoading(id);
+      await client.adminVerifyCompany(id);
+      await loadCompanies();
+    } catch (err: any) {
+      alert(err?.message || 'Failed to verify company');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -139,17 +155,23 @@ export function CompaniesPage() {
       header: 'Account Status',
       accessorKey: 'status',
       sortable: true,
-      cell: (row) => (
-        <span
-          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-            row.status === 'ACTIVE'
-              ? 'bg-success/10 text-success'
-              : 'bg-danger/10 text-danger'
-          }`}
-        >
-          {row.status}
-        </span>
-      ),
+      cell: (row) => {
+        const isApproved = row.status === 'APPROVED' || row.status === 'ACTIVE';
+        const isPending = row.status === 'PENDING';
+        return (
+          <span
+            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+              isApproved
+                ? 'bg-success/10 text-success'
+                : isPending
+                ? 'bg-warning/10 text-warning'
+                : 'bg-danger/10 text-danger'
+            }`}
+          >
+            {row.status}
+          </span>
+        );
+      },
     },
     {
       id: 'createdAt',
@@ -160,6 +182,29 @@ export function CompaniesPage() {
         <span className="text-xs text-textSecondary">
           {new Date(row.createdAt).toLocaleDateString('en-IN')}
         </span>
+      ),
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: (row) => (
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          {(!row.isVerified || row.status !== 'APPROVED') ? (
+            <button
+              onClick={() => handleVerify(row.id)}
+              disabled={actionLoading === row.id}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-success hover:bg-success/90 text-white shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+              title="Verify GST and Approve Company Account"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>{actionLoading === row.id ? 'Approving...' : 'Approve & Verify'}</span>
+            </button>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-success/10 text-success">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Active & Verified
+            </span>
+          )}
+        </div>
       ),
     },
   ];
@@ -215,6 +260,7 @@ export function CompaniesPage() {
       <Company360Drawer
         companyId={selectedCompanyId}
         onClose={() => setSelectedCompanyId(null)}
+        onCompanyUpdated={loadCompanies}
       />
     </div>
   );

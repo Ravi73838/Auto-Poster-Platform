@@ -146,8 +146,23 @@ export function AdminDataTable<T extends { id: string }>({
     });
   };
 
+  // Sync visible columns when columns prop changes
+  useEffect(() => {
+    setVisibleColIds((prev) => {
+      let changed = false;
+      const next = new Set(prev);
+      for (const col of columns) {
+        if (col.defaultVisible !== false && !prev.has(col.id)) {
+          next.add(col.id);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [columns]);
+
   const visibleColumns = useMemo(
-    () => columns.filter((col) => visibleColIds.has(col.id)),
+    () => columns.filter((col) => col.id === 'actions' || visibleColIds.has(col.id)),
     [columns, visibleColIds]
   );
 

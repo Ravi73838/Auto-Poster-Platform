@@ -48,15 +48,17 @@ export function CampaignsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await api.listCompanyCampaigns({
+      const res: any = await api.listCompanyCampaigns({
         status: selectedStatus,
         search: searchQuery.trim() || undefined,
         page: 1,
         pageSize: 50,
         sortOrder: 'desc',
       });
-      setCampaigns(res.items);
-      setCounts(res.counts);
+      const items = Array.isArray(res) ? res : (res?.items ?? []);
+      const countsData = (!Array.isArray(res) && res?.counts) ? res.counts : {};
+      setCampaigns(items);
+      setCounts(countsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load campaigns');
     } finally {
@@ -134,7 +136,7 @@ export function CampaignsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-3">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
           {STATUS_TABS.map((tab) => {
-            const count = tab.value ? (counts[tab.value] ?? 0) : (counts.ALL ?? 0);
+            const count = tab.value ? (counts?.[tab.value] ?? 0) : (counts?.ALL ?? campaigns?.length ?? 0);
             const isActive = selectedStatus === tab.value;
             return (
               <button

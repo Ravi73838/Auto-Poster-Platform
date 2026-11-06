@@ -21,27 +21,40 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     });
   }, [i18n.language]);
 
+  const initRanRef = useRef(false);
+
   useEffect(() => {
-    let canceled = false;
+    // If we already have restored auth state from localStorage, initialize immediately
+    const current = useAuthStore.getState();
+    if (current.isAuthenticated && current.user && current.token) {
+      useAuthStore.getState().setInitialized(true);
+    }
+
+    if (initRanRef.current) return;
+    initRanRef.current = true;
 
     async function initAuth() {
       useAuthStore.getState().setLoading(true);
       try {
-        // Attempt silent refresh via httpOnly cookie
+        // Validate or refresh tokens via cookie
         const tokens = await client.refreshTokens();
         if (tokens?.accessToken) {
           useAuthStore.getState().setToken(tokens.accessToken);
           const me = await client.getMe();
-          if (!canceled) {
-            useAuthStore.getState().setAuth({
-              user: me.user,
-              token: tokens.accessToken,
-              permissions: me.permissions,
-            });
-          }
+          useAuthStore.getState().setAuth({
+            user: me.user,
+            token: tokens.accessToken,
+            permissions: me.permissions,
+          });
         }
-      } catch {
-        if (!canceled) {
+      } catch (err: any) {
+        // Only clear credentials if the session was explicitly rejected/revoked
+        if (
+          err?.status === 401 ||
+          err?.statusCode === 401 ||
+          err?.code === 'SESSION_REVOKED' ||
+          err?.code === 'TOKEN_INVALID'
+        ) {
           useAuthStore.getState().clearAuth();
         }
       } finally {
@@ -51,9 +64,6 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     }
 
     initAuth();
-    return () => {
-      canceled = true;
-    };
   }, [client]);
 
   return <ApiContext.Provider value={client}>{children}</ApiContext.Provider>;

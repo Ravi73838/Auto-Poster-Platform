@@ -79,4 +79,75 @@ export class Entity360Controller {
       next(err);
     }
   }
+
+  static async updateCompanyStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = req.params.id as string;
+      const { status, isVerified } = req.body;
+      const actorUserId = req.auth?.userId;
+
+      const data = await Entity360Service.updateCompanyStatus({
+        companyId: id,
+        status,
+        isVerified,
+        actorUserId,
+      });
+
+      res.json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async verifyCompany(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = req.params.id as string;
+      const actorUserId = req.auth?.userId;
+
+      const data = await Entity360Service.updateCompanyStatus({
+        companyId: id,
+        status: 'APPROVED',
+        isVerified: true,
+        actorUserId,
+      });
+
+      res.json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async updateDriverStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = req.params.id as string;
+      const { status } = req.body;
+      const actorUserId = req.auth?.userId;
+
+      const data = await Entity360Service.updateDriverStatus({
+        driverId: id,
+        status,
+        actorUserId,
+      });
+
+      res.json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async verifyDriver(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = req.params.id as string;
+      const actorUserId = req.auth?.userId;
+
+      const data = await Entity360Service.verifyDriver({
+        driverId: id,
+        actorUserId,
+      });
+
+      res.json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  }
 }

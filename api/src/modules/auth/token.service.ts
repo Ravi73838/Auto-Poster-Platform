@@ -165,7 +165,31 @@ export class TokenService {
     });
 
     if (reusedSession) {
-      // SECURITY INCIDENT: A rotated token has been presented again!
+      const now = new Date();
+      // Allow a 15-second grace period in non-test environments for network retries and React StrictMode
+      const gracePeriodMs = env.NODE_ENV === 'test' ? 0 : 15_000;
+      const timeSinceRotation = now.getTime() - (reusedSession.lastUsedAt?.getTime() ?? 0);
+
+      if (reusedSession.revokedAt === null && timeSinceRotation <= gracePeriodMs) {
+        logger.info(
+          { userId: reusedSession.userId, sessionId: reusedSession.id, timeSinceRotation },
+          'Refresh token replayed within grace period. Returning active access token without revoking.',
+        );
+
+        const accessToken = await this.generateAccessToken(
+          { id: reusedSession.user.id, role: reusedSession.user.role },
+          reusedSession.id,
+        );
+
+        return {
+          accessToken,
+          rawRefreshToken,
+          session: reusedSession,
+          user: reusedSession.user,
+        };
+      }
+
+      // SECURITY INCIDENT: A rotated token has been presented again beyond grace period!
       // Revoke the entire session family for that user
       await prisma.session.updateMany({
         where: { userId: reusedSession.userId, revokedAt: null },

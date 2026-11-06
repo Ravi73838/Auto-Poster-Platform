@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
+  ShieldCheck,
 } from 'lucide-react';
 import { useApiClient } from '../../../shared/lib/api';
 import { StepUpModal } from '../../../shared/components/StepUpModal';
@@ -18,16 +19,30 @@ import { StepUpModal } from '../../../shared/components/StepUpModal';
 interface Driver360DrawerProps {
   driverId: string | null;
   onClose: () => void;
+  onDriverUpdated?: () => void;
 }
 
-export function Driver360Drawer({ driverId, onClose }: Driver360DrawerProps) {
+export function Driver360Drawer({ driverId, onClose, onDriverUpdated }: Driver360DrawerProps) {
   const client = useApiClient();
   const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
   const [revealedMobile, setRevealedMobile] = useState<string | null>(null);
   const [revealedEmail, setRevealedEmail] = useState<string | null>(null);
   const [isStepUpOpen, setIsStepUpOpen] = useState(false);
   const [pendingRevealField, setPendingRevealField] = useState<'MOBILE' | 'EMAIL' | null>(null);
+
+  const loadDriverOverview = async (id: string) => {
+    setLoading(true);
+    try {
+      const res = await client.adminGetDriverOverview(id);
+      setData(res);
+    } catch (err: unknown) {
+      console.error('Failed to load driver 360 overview:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!driverId) {
@@ -37,13 +52,25 @@ export function Driver360Drawer({ driverId, onClose }: Driver360DrawerProps) {
       return;
     }
 
-    setLoading(true);
-    client
-      .adminGetDriverOverview(driverId)
-      .then((res: any) => setData(res))
-      .catch((err: unknown) => console.error('Failed to load driver 360 overview:', err))
-      .finally(() => setLoading(false));
+    loadDriverOverview(driverId);
   }, [client, driverId]);
+
+  const handleVerifyDriver = async () => {
+    if (!driverId) return;
+    if (!window.confirm('Are you sure you want to approve and verify this driver?')) {
+      return;
+    }
+    try {
+      setIsApproving(true);
+      await client.adminVerifyDriver(driverId);
+      await loadDriverOverview(driverId);
+      onDriverUpdated?.();
+    } catch (err: any) {
+      alert(err?.message || 'Failed to verify driver');
+    } finally {
+      setIsApproving(false);
+    }
+  };
 
   if (!driverId) return null;
 
@@ -127,6 +154,37 @@ export function Driver360Drawer({ driverId, onClose }: Driver360DrawerProps) {
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              {/* Approval & Verification Action Banner */}
+              {(!data.profile.kycStatus || data.profile.kycStatus !== 'APPROVED' || data.profile.status !== 'APPROVED') ? (
+                <div className="p-4 rounded-xl bg-warning/10 border border-warning/20 flex items-center justify-between gap-4">
+                  <div className="space-y-0.5">
+                    <span className="text-xs font-bold text-warning flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 shrink-0" /> Pending Driver KYC Approval
+                    </span>
+                    <p className="text-[11px] text-textSecondary">
+                      Driver account is <span className="font-semibold text-warning">{data.profile.status}</span> and KYC status is <span className="font-semibold text-warning">{data.profile.kycStatus || 'PENDING'}</span>. Approve KYC to activate this driver account.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleVerifyDriver}
+                    disabled={isApproving}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-success text-white font-semibold text-xs rounded-lg hover:bg-success/90 transition-all shadow-sm disabled:opacity-50 cursor-pointer shrink-0"
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>{isApproving ? 'Verifying...' : 'Approve & Verify'}</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl bg-success/10 border border-success/20 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-success flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4" /> Driver is KYC Verified & Active
+                  </span>
+                  <span className="text-[10px] font-mono font-bold text-success/80 uppercase px-2 py-0.5 bg-success/20 rounded">
+                    APPROVED
+                  </span>
+                </div>
+              )}
+
               {/* Profile Card & PII */}
               <div className="p-4 rounded-xl border border-border bg-surfaceAlt/20 space-y-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-textSecondary flex items-center gap-2">
@@ -192,19 +250,19 @@ export function Driver360Drawer({ driverId, onClose }: Driver360DrawerProps) {
                   <div className="p-3 bg-surfaceAlt/40 rounded-xl border border-border">
                     <span className="text-[11px] text-textSecondary">Total Earned</span>
                     <div className="text-sm font-bold text-textPrimary mt-0.5">
-                      {formatPaise(data.financialSummary.totalEarnedPaise)}
+                      {formatPaise(data?.financialSummary?.totalEarnedPaise ?? data?.profile?.lifetimeEarningsPaise ?? '0')}
                     </div>
                   </div>
                   <div className="p-3 bg-surfaceAlt/40 rounded-xl border border-border">
                     <span className="text-[11px] text-textSecondary">Available Balance</span>
                     <div className="text-sm font-bold text-success mt-0.5">
-                      {formatPaise(data.financialSummary.availableBalancePaise)}
+                      {formatPaise(data?.financialSummary?.availableBalancePaise ?? '0')}
                     </div>
                   </div>
                   <div className="p-3 bg-surfaceAlt/40 rounded-xl border border-border">
                     <span className="text-[11px] text-textSecondary">Pending Payouts</span>
                     <div className="text-sm font-bold text-textPrimary mt-0.5">
-                      {data.financialSummary.pendingPayoutsCount}
+                      {data?.financialSummary?.pendingPayoutsCount ?? 0}
                     </div>
                   </div>
                 </div>

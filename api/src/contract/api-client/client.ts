@@ -276,27 +276,8 @@ export class ApiClient {
   }
 
   private async executeRefreshToken(): Promise<AuthTokens> {
-    if (!this.refreshPromise) {
-      this.refreshPromise = (async () => {
-        try {
-          const refreshToken = this.getRefreshToken ? await this.getRefreshToken() : undefined;
-          const tokens = await this.refreshTokens(refreshToken ? { refreshToken } : undefined);
-          if (this.setAuthToken) {
-            await this.setAuthToken(tokens.accessToken);
-          }
-          return tokens;
-        } catch (err) {
-          if (this.setAuthToken) {
-            await this.setAuthToken(null);
-          }
-          this.onAuthLost?.();
-          throw err;
-        } finally {
-          this.refreshPromise = null;
-        }
-      })();
-    }
-    return this.refreshPromise;
+    const refreshToken = this.getRefreshToken ? await this.getRefreshToken() : undefined;
+    return this.refreshTokens(refreshToken ? { refreshToken } : undefined);
   }
 
   // -------------------------------------------------------------
@@ -372,10 +353,29 @@ export class ApiClient {
   // Auth: Refresh, Password & Session
   // -------------------------------------------------------------
   async refreshTokens(data?: RefreshTokenInput): Promise<AuthTokens> {
-    return this.request('auth/refresh', {
-      method: 'POST',
-      body: JSON.stringify(data ?? {}),
-    });
+    if (!this.refreshPromise) {
+      this.refreshPromise = (async () => {
+        try {
+          const tokens = await this.request<AuthTokens>('auth/refresh', {
+            method: 'POST',
+            body: JSON.stringify(data ?? {}),
+          });
+          if (this.setAuthToken) {
+            await this.setAuthToken(tokens.accessToken);
+          }
+          return tokens;
+        } catch (err) {
+          if (this.setAuthToken) {
+            await this.setAuthToken(null);
+          }
+          this.onAuthLost?.();
+          throw err;
+        } finally {
+          this.refreshPromise = null;
+        }
+      })();
+    }
+    return this.refreshPromise;
   }
 
   async forgotPassword(data: ForgotPasswordInput): Promise<{ message: string }> {
@@ -1659,6 +1659,34 @@ export class ApiClient {
 
   async adminGetCompanyOverview(id: string): Promise<any> {
     return this.request(`admin/companies/${id}/overview`, { method: 'GET' });
+  }
+
+  async adminUpdateCompanyStatus(id: string, data: { status?: string; isVerified?: boolean }): Promise<any> {
+    return this.request(`admin/companies/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminVerifyCompany(id: string): Promise<any> {
+    return this.request(`admin/companies/${id}/verify`, {
+      method: 'PATCH',
+      body: JSON.stringify({}),
+    });
+  }
+
+  async adminUpdateDriverStatus(id: string, data: { status?: string }): Promise<any> {
+    return this.request(`admin/drivers/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminVerifyDriver(id: string): Promise<any> {
+    return this.request(`admin/drivers/${id}/verify`, {
+      method: 'PATCH',
+      body: JSON.stringify({}),
+    });
   }
 
   async adminListAuditLogs(params?: Record<string, any>): Promise<{ items: any[]; total: number; page: number; limit: number }> {

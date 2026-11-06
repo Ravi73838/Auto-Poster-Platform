@@ -20,7 +20,30 @@ export class Entity360Service {
 
     const where: any = {};
     if (params.kycStatus) {
-      where.kycStatus = params.kycStatus;
+      if (params.kycStatus === 'SUBMITTED') {
+        where.user = {
+          ...where.user,
+          OR: [
+            { status: 'PENDING' },
+            { kycSubmissions: { some: { status: 'SUBMITTED' } } },
+          ],
+        };
+      } else if (params.kycStatus === 'APPROVED') {
+        where.user = {
+          ...where.user,
+          status: 'APPROVED',
+        };
+      } else if (params.kycStatus === 'REJECTED') {
+        where.user = {
+          ...where.user,
+          kycSubmissions: { some: { status: 'REJECTED' } },
+        };
+      } else {
+        where.user = {
+          ...where.user,
+          kycSubmissions: { some: { status: params.kycStatus as any } },
+        };
+      }
     }
     if (params.status) {
       where.user = { ...where.user, status: params.status };
@@ -38,7 +61,14 @@ export class Entity360Service {
       prisma.driverProfile.findMany({
         where,
         include: {
-          user: true,
+          user: {
+            include: {
+              kycSubmissions: {
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+              },
+            },
+          },
           city: true,
           currentVehicle: true,
         },
@@ -57,7 +87,7 @@ export class Entity360Service {
         mobile: maskPhone(d.user.mobile),
         email: maskEmail(d.user.email),
         status: d.user.status,
-        kycStatus: d.user.status,
+        kycStatus: d.user.kycSubmissions?.[0]?.status || (d.user.status === 'APPROVED' ? 'APPROVED' : 'PENDING'),
         cityName: d.city?.name || 'Unassigned',
         vehicleNumber: d.currentVehicle?.registrationNumber || 'Unassigned',
         createdAt: d.createdAt.toISOString(),
@@ -188,7 +218,23 @@ export class Entity360Service {
         }),
       ]);
 
+    const pendingPayouts = payouts.filter(
+      (p) => p.status === 'PENDING' || p.status === 'APPROVED' || p.status === 'PROCESSING',
+    );
+    const paidPaise = payouts
+      .filter((p) => p.status === 'PAID')
+      .reduce((acc, p) => acc + BigInt(p.amountPaise), 0n);
+    const availablePaise =
+      driver.lifetimeEarningsPaise > paidPaise
+        ? driver.lifetimeEarningsPaise - paidPaise
+        : 0n;
+
     return {
+      financialSummary: {
+        totalEarnedPaise: driver.lifetimeEarningsPaise.toString(),
+        availableBalancePaise: availablePaise.toString(),
+        pendingPayoutsCount: pendingPayouts.length,
+      },
       profile: {
         id: driver.id,
         userId: driver.userId,
@@ -196,6 +242,7 @@ export class Entity360Service {
         mobile: maskPhone(driver.user.mobile),
         email: maskEmail(driver.user.email),
         status: driver.user.status,
+        kycStatus: kycSubmissions[0]?.status || (driver.user.status === 'APPROVED' ? 'APPROVED' : 'PENDING'),
         rating: driver.rating,
         strikesCount: driver.strikesCount,
         bannedUntil: driver.bannedUntil ? driver.bannedUntil.toISOString() : null,
@@ -452,5 +499,198 @@ export class Entity360Service {
     }));
 
     return { items, total, page, limit };
+  }
+
+  /**
+   * Updates company verification and/or account status (Approve, Suspend, Block, etc.).
+   */
+  static async updateCompanyStatus(params: {
+    companyId: string;
+    status?: string;
+    isVerified?: boolean;
+    actorUserId?: string;
+  }): Promise<any> {
+    const profile = await prisma.companyProfile.findFirst({
+      where: {
+        OR: [{ id: params.companyId }, { userId: params.companyId }],
+      },
+      include: { user: true, city: true },
+    });
+
+    if (!profile) {
+      throw new NotFoundError('Company not found');
+    }
+
+    const updatedUser = params.status
+      ? await prisma.user.update({
+          where: { id: profile.userId },
+          data: { status: params.status as any },
+        })
+      : profile.user;
+
+    const updatedProfile = await prisma.companyProfile.update({
+      where: { id: profile.id },
+      data: {
+        ...(params.isVerified !== undefined ? { isVerified: params.isVerified } : {}),
+      },
+      include: { user: true, city: true },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        actorId: params.actorUserId || null,
+        actorType: 'USER',
+        action: 'COMPANY_STATUS_UPDATE',
+        entityType: 'CompanyProfile',
+        entityId: profile.id,
+        oldValues: { status: profile.user.status, isVerified: profile.isVerified },
+        newValues: { status: updatedUser.status, isVerified: updatedProfile.isVerified },
+      },
+    });
+
+    return {
+      id: updatedProfile.id,
+      userId: updatedProfile.userId,
+      companyName: updatedProfile.companyName,
+      brandName: updatedProfile.brandName,
+      legalName: updatedProfile.legalName,
+      gstin: maskGstin(updatedProfile.gstin),
+      contactPersonPhone: maskPhone(updatedProfile.contactPersonPhone),
+      email: maskEmail(updatedProfile.user.email),
+      isVerified: updatedProfile.isVerified,
+      status: updatedUser.status,
+      cityName: updatedProfile.city?.name || 'Unassigned',
+      createdAt: updatedProfile.createdAt.toISOString(),
+    };
+  }
+
+  /**
+   * Updates driver account status.
+   */
+  static async updateDriverStatus(params: {
+    driverId: string;
+    status?: string;
+    actorUserId?: string;
+  }): Promise<any> {
+    const profile = await prisma.driverProfile.findFirst({
+      where: {
+        OR: [{ id: params.driverId }, { userId: params.driverId }],
+      },
+      include: { user: true },
+    });
+
+    if (!profile) {
+      throw new NotFoundError('Driver not found');
+    }
+
+    const updatedUser = params.status
+      ? await prisma.user.update({
+          where: { id: profile.userId },
+          data: { status: params.status as any },
+        })
+      : profile.user;
+
+    await prisma.auditLog.create({
+      data: {
+        actorId: params.actorUserId || null,
+        actorType: 'USER',
+        action: 'DRIVER_STATUS_UPDATE',
+        entityType: 'DriverProfile',
+        entityId: profile.id,
+        oldValues: { status: profile.user.status },
+        newValues: { status: updatedUser.status },
+      },
+    });
+
+    return {
+      id: profile.id,
+      userId: profile.userId,
+      status: updatedUser.status,
+    };
+  }
+
+  /**
+   * Approves and verifies driver KYC and account.
+   */
+  static async verifyDriver(params: {
+    driverId: string;
+    actorUserId?: string;
+  }): Promise<any> {
+    const profile = await prisma.driverProfile.findFirst({
+      where: {
+        OR: [{ id: params.driverId }, { userId: params.driverId }],
+      },
+      include: { user: true, currentVehicle: true },
+    });
+
+    if (!profile) {
+      throw new NotFoundError('Driver not found');
+    }
+
+    // Update user status to APPROVED
+    const updatedUser = await prisma.user.update({
+      where: { id: profile.userId },
+      data: { status: 'APPROVED' },
+    });
+
+    // Update or create approved KYC submission
+    const latestKyc = await prisma.kycSubmission.findFirst({
+      where: { userId: profile.userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (latestKyc) {
+      await prisma.kycSubmission.update({
+        where: { id: latestKyc.id },
+        data: {
+          status: 'APPROVED',
+          reviewedById: params.actorUserId || null,
+          reviewedAt: new Date(),
+          decisionNote: 'Verified & approved by Admin',
+        },
+      });
+    } else {
+      await prisma.kycSubmission.create({
+        data: {
+          userId: profile.userId,
+          status: 'APPROVED',
+          reviewedById: params.actorUserId || null,
+          reviewedAt: new Date(),
+          decisionNote: 'Verified & approved by Admin',
+          profileSnapshot: {
+            fullName: profile.fullName || 'Driver',
+            mobile: profile.user.mobile,
+          },
+        },
+      });
+    }
+
+    // If vehicle attached, verify vehicle as well
+    if (profile.currentVehicleId) {
+      await prisma.vehicle.update({
+        where: { id: profile.currentVehicleId },
+        data: { isVerified: true },
+      });
+    }
+
+    // Audit log
+    await prisma.auditLog.create({
+      data: {
+        actorId: params.actorUserId || null,
+        actorType: 'USER',
+        action: 'DRIVER_VERIFIED',
+        entityType: 'DriverProfile',
+        entityId: profile.id,
+        oldValues: { status: profile.user.status, kycStatus: latestKyc?.status || 'DRAFT' },
+        newValues: { status: 'APPROVED', kycStatus: 'APPROVED' },
+      },
+    });
+
+    return {
+      id: profile.id,
+      userId: profile.userId,
+      status: 'APPROVED',
+      kycStatus: 'APPROVED',
+    };
   }
 }

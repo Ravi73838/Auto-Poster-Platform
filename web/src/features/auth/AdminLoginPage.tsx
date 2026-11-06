@@ -13,7 +13,7 @@ import { useApiClient } from '../../shared/lib/api';
 import { Card } from '../../shared/components/Card';
 import { Button } from '../../shared/components/Button';
 import { Input } from '../../shared/components/Input';
-import { Shield, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Shield, AlertCircle, ArrowLeft, KeyRound } from 'lucide-react';
 import { ApiError } from '@ap/api-client';
 
 const adminOtpCodeSchema = z.object({
@@ -42,6 +42,7 @@ export function AdminLoginPage() {
   const {
     register: registerStep1,
     handleSubmit: handleSubmitStep1,
+    setValue: setValueStep1,
     formState: { errors: errorsStep1 },
   } = useForm<AdminLoginInput>({
     resolver: zodResolver(adminLoginSchema),
@@ -52,6 +53,7 @@ export function AdminLoginPage() {
   const {
     register: registerStep2,
     handleSubmit: handleSubmitStep2,
+    setValue: setValueStep2,
     formState: { errors: errorsStep2 },
   } = useForm<AdminOtpCodeInput>({
     resolver: zodResolver(adminOtpCodeSchema),
@@ -95,7 +97,7 @@ export function AdminLoginPage() {
       setAuth({
         user: response.user,
         token: response.accessToken,
-        permissions: [],
+        permissions: response.user.role === 'SUPER_ADMIN' ? ['*'] : [],
       });
 
       if (response.mustChangePassword) {
@@ -146,6 +148,38 @@ export function AdminLoginPage() {
 
         {step === 1 ? (
           <form onSubmit={handleSubmitStep1(onStep1Submit)} className="space-y-4">
+            {/* Quick Auto-Fill Admin Credentials */}
+            <div className="p-3 bg-surfaceAlt/60 border border-border rounded-xl space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-textSecondary flex items-center gap-1.5">
+                  <KeyRound className="w-3.5 h-3.5 text-primary" /> Demo Admin Credentials
+                </span>
+                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">
+                  Click to Fill
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setValueStep1('email', 'admin@autoposter.com', { shouldValidate: true });
+                  setValueStep1('password', 'Admin@123456', { shouldValidate: true });
+                }}
+                className="w-full text-left p-2.5 rounded-lg bg-surface hover:bg-surfaceAlt transition-colors border border-border/80 flex items-center justify-between text-xs cursor-pointer group"
+              >
+                <div>
+                  <span className="font-semibold text-textPrimary group-hover:text-primary transition-colors block">
+                    Super Admin
+                  </span>
+                  <span className="text-[11px] font-mono text-textSecondary">
+                    admin@autoposter.com • Admin@123456
+                  </span>
+                </div>
+                <span className="text-xs font-medium text-primary group-hover:underline">
+                  Auto Fill &rarr;
+                </span>
+              </button>
+            </div>
+
             <Input
               label="Staff Email Address"
               type="email"
@@ -174,6 +208,17 @@ export function AdminLoginPage() {
           </form>
         ) : (
           <form onSubmit={handleSubmitStep2(onStep2Submit)} className="space-y-4">
+            {/* Quick Auto-Fill OTP Code */}
+            <button
+              type="button"
+              onClick={() => {
+                setValueStep2('code', '123456', { shouldValidate: true });
+              }}
+              className="w-full py-2 px-3 rounded-lg bg-surfaceAlt/60 hover:bg-surfaceAlt border border-border text-xs font-medium text-primary flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <KeyRound className="w-3.5 h-3.5" /> Auto-fill Dev OTP (123456)
+            </button>
+
             <Input
               label="6-Digit 2FA Verification Code"
               type="text"

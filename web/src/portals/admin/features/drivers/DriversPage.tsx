@@ -29,6 +29,7 @@ export function DriversPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const page = parseInt(searchParams.get('page') || '1', 10);
   const limit = parseInt(searchParams.get('limit') || '25', 10);
@@ -65,6 +66,21 @@ export function DriversPage() {
       alert('Driver export job queued! Check the Reports & Exports tab to download once generated.');
     } catch (err: any) {
       alert(err?.message || 'Failed to trigger driver export');
+    }
+  };
+
+  const handleVerify = async (id: string) => {
+    if (!window.confirm('Are you sure you want to approve and verify this driver?')) {
+      return;
+    }
+    try {
+      setActionLoading(id);
+      await client.adminVerifyDriver(id);
+      await loadDrivers();
+    } catch (err: any) {
+      alert(err?.message || 'Failed to verify driver');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -170,6 +186,29 @@ export function DriversPage() {
         </span>
       ),
     },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: (row) => (
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          {row.kycStatus !== 'APPROVED' || row.status !== 'APPROVED' ? (
+            <button
+              onClick={() => handleVerify(row.id)}
+              disabled={actionLoading === row.id}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-success hover:bg-success/90 text-white shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+              title="Verify KYC and Approve Driver Account"
+            >
+              <UserCheck className="w-3.5 h-3.5" />
+              <span>{actionLoading === row.id ? 'Approving...' : 'Approve & Verify'}</span>
+            </button>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-success/10 text-success">
+              <CheckCircle className="w-3.5 h-3.5" /> Active & Verified
+            </span>
+          )}
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -223,6 +262,7 @@ export function DriversPage() {
       <Driver360Drawer
         driverId={selectedDriverId}
         onClose={() => setSelectedDriverId(null)}
+        onDriverUpdated={loadDrivers}
       />
     </div>
   );

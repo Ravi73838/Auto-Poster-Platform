@@ -13,7 +13,10 @@ export class AdminCampaignsController {
       const result = await AdminCampaignsService.list(query);
       res.status(200).json({
         success: true,
-        data: result.items,
+        data: {
+          items: result.items,
+          pagination: result.pagination,
+        },
         meta: { pagination: result.pagination },
       });
     } catch (err) {

@@ -98,7 +98,11 @@ export class CompanyCampaignsController {
       const result = await CompanyCampaignsService.list(req.auth!.userId, query);
       res.status(200).json({
         success: true,
-        data: result.items,
+        data: {
+          items: result.items,
+          counts: result.counts,
+          pagination: result.pagination,
+        },
         meta: {
           pagination: result.pagination,
           counts: result.counts,

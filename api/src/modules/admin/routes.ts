@@ -87,6 +87,10 @@ export function createAdminRouter(): Router {
   router.get('/companies', requirePermission('kyc.view', 'company.view'), Entity360Controller.listCompanies);
   router.get('/drivers/:id/overview', requirePermission('kyc.view', 'driver.view'), Entity360Controller.getDriverOverview);
   router.get('/companies/:id/overview', requirePermission('kyc.view', 'company.view'), Entity360Controller.getCompanyOverview);
+  router.patch('/companies/:id/status', requirePermission('kyc.review', 'user.manage'), Entity360Controller.updateCompanyStatus);
+  router.patch('/companies/:id/verify', requirePermission('kyc.review', 'user.manage'), Entity360Controller.verifyCompany);
+  router.patch('/drivers/:id/status', requirePermission('kyc.review', 'user.manage'), Entity360Controller.updateDriverStatus);
+  router.patch('/drivers/:id/verify', requirePermission('kyc.review', 'user.manage'), Entity360Controller.verifyDriver);
   router.get('/audit-logs', requirePermission('audit.view'), Entity360Controller.listAuditLogs);
 
   // Phase 10 Saved Views

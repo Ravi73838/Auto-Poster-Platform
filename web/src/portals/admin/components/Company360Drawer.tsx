@@ -8,6 +8,7 @@ import {
   CreditCard,
   Eye,
   CheckCircle2,
+  ShieldCheck,
 } from 'lucide-react';
 import { useApiClient } from '../../../shared/lib/api';
 import { StepUpModal } from '../../../shared/components/StepUpModal';
@@ -15,12 +16,14 @@ import { StepUpModal } from '../../../shared/components/StepUpModal';
 interface Company360DrawerProps {
   companyId: string | null;
   onClose: () => void;
+  onCompanyUpdated?: () => void;
 }
 
-export function Company360Drawer({ companyId, onClose }: Company360DrawerProps) {
+export function Company360Drawer({ companyId, onClose, onCompanyUpdated }: Company360DrawerProps) {
   const client = useApiClient();
   const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
   const [revealedPhone, setRevealedPhone] = useState<string | null>(null);
   const [revealedEmail, setRevealedEmail] = useState<string | null>(null);
   const [revealedGstin, setRevealedGstin] = useState<string | null>(null);
@@ -28,6 +31,18 @@ export function Company360Drawer({ companyId, onClose }: Company360DrawerProps) 
 
   const [isStepUpOpen, setIsStepUpOpen] = useState(false);
   const [pendingRevealField, setPendingRevealField] = useState<'MOBILE' | 'EMAIL' | 'GSTIN' | 'PAN' | null>(null);
+
+  const loadDetail = async (id: string) => {
+    setLoading(true);
+    try {
+      const res = await client.adminGetCompanyOverview(id);
+      setData(res);
+    } catch (err: unknown) {
+      console.error('Failed to load company 360 overview:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!companyId) {
@@ -39,13 +54,25 @@ export function Company360Drawer({ companyId, onClose }: Company360DrawerProps) 
       return;
     }
 
-    setLoading(true);
-    client
-      .adminGetCompanyOverview(companyId)
-      .then((res: any) => setData(res))
-      .catch((err: unknown) => console.error('Failed to load company 360 overview:', err))
-      .finally(() => setLoading(false));
+    loadDetail(companyId);
   }, [client, companyId]);
+
+  const handleVerifyCompany = async () => {
+    if (!companyId) return;
+    if (!window.confirm('Are you sure you want to approve and verify this company account?')) {
+      return;
+    }
+    try {
+      setIsApproving(true);
+      await client.adminVerifyCompany(companyId);
+      await loadDetail(companyId);
+      onCompanyUpdated?.();
+    } catch (err: any) {
+      alert(err?.message || 'Failed to verify company');
+    } finally {
+      setIsApproving(false);
+    }
+  };
 
   if (!companyId) return null;
 
@@ -131,6 +158,37 @@ export function Company360Drawer({ companyId, onClose }: Company360DrawerProps) 
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              {/* Approval & Verification Action Banner */}
+              {(!data.profile.isVerified || data.profile.status !== 'APPROVED') ? (
+                <div className="p-4 rounded-xl bg-warning/10 border border-warning/20 flex items-center justify-between gap-4">
+                  <div className="space-y-0.5">
+                    <span className="text-xs font-bold text-warning flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 shrink-0" /> Pending Approval & Verification
+                    </span>
+                    <p className="text-[11px] text-textSecondary">
+                      Account status is <span className="font-semibold text-warning">{data.profile.status}</span>. Approve and verify GST so this company can launch campaigns.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleVerifyCompany}
+                    disabled={isApproving}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-success text-white font-semibold text-xs rounded-lg hover:bg-success/90 transition-all shadow-sm disabled:opacity-50 cursor-pointer shrink-0"
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>{isApproving ? 'Verifying...' : 'Approve & Verify'}</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl bg-success/10 border border-success/20 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-success flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4" /> Company Account is Verified & Active
+                  </span>
+                  <span className="text-[10px] font-mono font-bold text-success/80 uppercase px-2 py-0.5 bg-success/20 rounded">
+                    APPROVED
+                  </span>
+                </div>
+              )}
+
               {/* Profile Card & PII */}
               <div className="p-4 rounded-xl border border-border bg-surfaceAlt/20 space-y-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-textSecondary flex items-center gap-2">
