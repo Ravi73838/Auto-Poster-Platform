@@ -13,6 +13,8 @@
     "sync": "npm --prefix api run sync:shared",
     "sync:check": "npm --prefix api run sync:shared:check",
     "check:boundaries": "npm --prefix api run check:boundaries",
+    "check:secrets": "npm --prefix api run check:secrets",
+    "check:env": "npm --prefix api run check:env",
     "lint:all": "npm --prefix api run lint && npm --prefix web run lint && npm --prefix mobile run lint",
     "typecheck:all": "npm --prefix api run typecheck && npm --prefix web run typecheck && npm --prefix mobile run typecheck",
     "test:all": "npm --prefix api run test && npm --prefix web run test && npm --prefix mobile run test",

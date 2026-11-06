@@ -30,6 +30,8 @@
     "sync:shared:watch": "tsx scripts/sync-shared.ts --watch",
     "sync:shared:check": "tsx scripts/sync-shared.ts --check",
     "check:boundaries": "tsx scripts/check-boundaries.ts",
+    "check:secrets": "tsx scripts/check-secrets.ts",
+    "check:env": "tsx scripts/check-env.ts",
     "postinstall": "prisma generate"
   },
   "lint-staged": {

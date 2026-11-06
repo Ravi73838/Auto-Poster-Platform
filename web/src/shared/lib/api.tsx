@@ -10,7 +10,7 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   const { i18n } = useTranslation();
 
   const client = useMemo(() => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api/v1';
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
     return new ApiClient({
       baseUrl,
       getAuthToken: () => useAuthStore.getState().token,

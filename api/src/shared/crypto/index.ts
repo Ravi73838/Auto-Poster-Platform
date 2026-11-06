@@ -105,14 +105,14 @@ export function maskBankAccount(accountNumber: string): string {
  * Generates an HMAC-SHA256 hash of a token for secure lookup/storage.
  */
 export function hashToken(token: string): string {
-  return crypto.createHmac('sha256', env.HMAC_SECRET).update(token).digest('hex');
+  return crypto.createHmac('sha256', env.OTP_HMAC_SECRET).update(token).digest('hex');
 }
 
 /**
  * Generates an HMAC-SHA256 fingerprint for duplicate detection without storing or revealing raw secrets.
  */
 export function computeHmacFingerprint(value: string): string {
-  return crypto.createHmac('sha256', env.HMAC_SECRET).update(value.trim()).digest('hex');
+  return crypto.createHmac('sha256', env.OTP_HMAC_SECRET).update(value.trim()).digest('hex');
 }
 
 /**
