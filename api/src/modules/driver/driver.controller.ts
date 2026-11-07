@@ -76,4 +76,15 @@ export class DriverController {
       data,
     });
   }
+
+  static async getHome(req: Request, res: Response): Promise<void> {
+    if (!req.auth) throw new AppError(ERROR_CODES.UNAUTHORIZED, 'Unauthorized', 401);
+    const data = await DriverService.getHome(req.auth.userId);
+    res.status(200).json({ success: true, data });
+  }
+
+  static async getCaptureRules(_req: Request, res: Response): Promise<void> {
+    const data = await DriverService.getCaptureRules();
+    res.status(200).json({ success: true, data });
+  }
 }

@@ -25,6 +25,9 @@ driverRouter.get('/ping', (req, res) => {
   });
 });
 
+driverRouter.get('/home', DriverController.getHome);
+driverRouter.get('/capture-rules', DriverController.getCaptureRules);
+
 driverRouter.get('/onboarding', DriverController.getOnboarding);
 driverRouter.put('/profile', DriverController.updateProfile);
 driverRouter.put('/vehicle', DriverController.updateVehicle);

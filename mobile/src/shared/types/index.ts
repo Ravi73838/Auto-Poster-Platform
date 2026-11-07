@@ -1577,6 +1577,163 @@ export interface CompanyDashboardResponseDto {
   };
 }
 
+// -------------------------------------------------------------
+// Driver Aggregated Home & Mobile Experience (Phase 12)
+// -------------------------------------------------------------
+
+export interface DriverHomeTodayDto {
+  status: 'PENDING' | 'SUBMITTED' | 'VERIFIED' | 'REJECTED' | 'EXCUSED' | 'MISSED' | 'NO_ASSIGNMENT';
+  windowOpen: boolean;
+  cutoffTime: string;
+  attemptsLeft: number;
+  rejectionReason?: string | null;
+  canRetake: boolean;
+  currentPhotoThumbnailUrl?: string | null;
+}
+
+export interface DriverHomeActiveAssignmentDto {
+  id: string;
+  campaignId: string;
+  campaignTitle: string;
+  vehicleRegistrationNumber: string;
+  status: AssignmentStatus;
+  nextAction: string;
+  nextActionDeadline: string;
+  startedAt?: string | null;
+  endsAt?: string | null;
+  posterThumbnailUrl?: string | null;
+}
+
+export interface DriverHomeEarningsDto {
+  availablePaise: number;
+  balancePaise: number;
+  inTransitPaise: number;
+  lifetimeEarnedPaise: number;
+  projectedFinalRentPaise: number;
+  graceDaysAllowed: number;
+  graceDaysUsed: number;
+  graceDaysRemaining: number;
+}
+
+export interface DriverHomeDisciplineDto {
+  activeStrikes: number;
+  isBanned: boolean;
+  banEndsAt?: string | null;
+  posterFixDeadline?: string | null;
+  hasActiveNotice: boolean;
+}
+
+export interface DriverHomeResponseDto {
+  today: DriverHomeTodayDto;
+  activeAssignment: DriverHomeActiveAssignmentDto | null;
+  earnings: DriverHomeEarningsDto;
+  discipline: DriverHomeDisciplineDto;
+  unreadNotificationsCount: number;
+  pendingQueueCount: number;
+}
+
+export interface DriverCaptureRulesDto {
+  version: number;
+  gpsMaxAccuracyMeters: number;
+  photoMaxAgeMinutes: number;
+  dailyAttemptsLimit: number;
+  installAttemptsLimit: number;
+  lateUploadGraceHours: number;
+  clockSkewFlagMinutes: number;
+  compressionHints: {
+    maxDimension: number;
+    jpegQuality: number;
+  };
+}
+
+export interface PublicAppConfigDto {
+  minVersion: string;
+  latestVersion: string;
+  maintenance: boolean;
+  maintenanceMessage: string | null;
+  environment: string;
+}
+
+export interface DriverOnboardingDto {
+  driverProfile: {
+    id: string;
+    userId: string;
+    fullName: string | null;
+    cityId: string | null;
+    cityName?: string | null;
+    zoneId: string | null;
+    operatingZoneIds: string[];
+    isProfileComplete: boolean;
+  };
+  vehicle: {
+    id: string;
+    registrationNumber: string;
+    isOwner: boolean;
+    ownerName?: string | null;
+    ownerMobile?: string | null;
+    isVerified: boolean;
+  } | null;
+  documents: Array<{
+    id: string;
+    type: string;
+    status: string;
+    fileUrl?: string;
+  }>;
+  payoutDetails: {
+    type: 'UPI' | 'BANK';
+    maskedIdentifier: string;
+    isVerified: boolean;
+  } | null;
+  consents: Array<{
+    type: string;
+    version: string;
+    agreedAt: string;
+  }>;
+  kycSubmission: {
+    id: string;
+    status: KycSubmissionStatus;
+    submittedAt?: string;
+    reviewedAt?: string;
+    decisionNote?: string | null;
+    rejectionReasons?: string[];
+  } | null;
+}
+
+export interface UpdateDriverProfileInput {
+  fullName: string;
+  cityId: string;
+  zoneId?: string;
+  operatingZoneIds?: string[];
+}
+
+export interface UpdateDriverVehicleInput {
+  registrationNumber: string;
+  isOwner: boolean;
+  ownerName?: string;
+  ownerMobile?: string;
+}
+
+export interface AddDriverDocumentInput {
+  uploadedFileId: string;
+  type: string;
+}
+
+export interface UpdateDriverPayoutDetailsInput {
+  type: 'UPI' | 'BANK';
+  upiId?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  accountHolderName?: string;
+}
+
+export interface SubmitDriverConsentsInput {
+  consents: Array<{
+    type: string;
+    version: string;
+  }>;
+}
+
+
 
 
 

@@ -4,6 +4,7 @@ import { requireRole } from './shared/middleware/auth.js';
 import { adminIpAllowlist } from './shared/middleware/admin-ip-allowlist.js';
 import { createHealthRouter } from './modules/health/routes.js';
 import { createAuthRouter } from './modules/auth/routes.js';
+import { createPublicRouter } from './modules/public/routes.js';
 import { createCompanyRouter } from './modules/company/routes.js';
 import { createAdminRouter } from './modules/admin/routes.js';
 import { createDriverRouter } from './modules/driver/routes.js';
@@ -21,6 +22,7 @@ export function createApiRouter(): Router {
   const router = Router();
 
   router.use('/health', createHealthRouter());
+  router.use('/public', createPublicRouter());
   router.use('/auth', createAuthRouter());
   router.use('/webhooks/razorpay', CampaignPaymentController.handleWebhook);
   router.use('/uploads', uploadsRouter);

@@ -159,6 +159,17 @@
   - Zero run-time or build-time symlinks: Expo Metro and Vite run on standard local folders.
   - Contract synchronization is verified via CI (`.github/workflows/shared.yml`) and pre-commit git hooks, guaranteeing type safety and contract parity across all platforms.
 
+## ADR-032: Mobile Native Foundation, Foreground-Only Location Policy & Cleartext Configuration
+- **Decision**: Install native hardware integration modules (`expo-camera`, `expo-location`, `expo-notifications`, `expo-device`, `expo-application`, `expo-file-system`, `expo-sharing`, `expo-image`, `expo-font`, `expo-build-properties`, `expo-screen-capture`, `@react-native-community/netinfo`) directly within `mobile/`. Enforce foreground-only GPS access requested exclusively at the moment of photo capture with zero background location tracking. Restrict Android cleartext HTTP traffic strictly to the `development` build profile using `expo-build-properties` (preview and production builds require HTTPS). Bundle Noto Sans Devanagari and Gujarati offline font assets.
+- **Context**: Low-end Android devices used by auto-rickshaw drivers require real camera and GPS verification without draining battery life or raising privacy concerns with invasive background tracking. Development builds need to communicate over local LAN Wi-Fi with the developer's workstation without triggering Android's default cleartext network security block.
+- **Consequences**: Real hardware trust layer; full Android and iOS build compatibility; battery-efficient and privacy-compliant location policy; seamless local network debugging for development builds with HTTPS enforced in production.
+
+## ADR-033: Elimination of Simulated Capture in Mobile Client & Real Device Trust Layer
+- **Decision**: Remove all synthetic capture code (`dev-sim` file keys, hard-coded coordinates, hard-coded `isMockLocation: false`). The camera flow must strictly utilize live camera view (`expo-camera`) with live-only capture (gallery forbidden for proof photos). Capture time `capturedAt` is locked to the shutter press timestamp. Location is obtained via `expo-location` high-accuracy fix with mock location detection from the OS (`location.mocked`). A guard repository test permanently fails if `dev-sim` or `isMockLocation: false` literals appear in `mobile/src` or `mobile/app`.
+- **Context**: Simulated captures defeat the core value proposition of the advertising platform, exposing advertisers to location fraud and synthetic proof submission.
+- **Consequences**: Trustworthy physical proof pipeline; tamper-evident daily proof and installation validation; automated CI enforcement against accidental simulation regressions.
+
+
 
 
 

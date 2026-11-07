@@ -140,5 +140,16 @@
   "COMPANY_PERMISSION_DENIED": "You do not have the required company role permission to perform this action.",
   "BILLING_CHANGE_REQUIRES_REVIEW": "Modifications to legal business name or GSTIN require admin verification.",
   "CONTACT_RATE_LIMITED": "You have submitted too many messages recently. Please try again later.",
-  "CANCEL_PREVIEW_UNAVAILABLE": "Cancellation preview is not available for campaigns in this state."
+  "CANCEL_PREVIEW_UNAVAILABLE": "Cancellation preview is not available for campaigns in this state.",
+  "INSTALL_PHOTO_TOO_OLD": "The installation photo is too old. Please take a fresh photo right after sticking the poster.",
+  "INSTALL_PHOTO_OUTSIDE_AREA": "The photo was captured outside the authorized campaign operational area.",
+  "GPS_ACCURACY_TOO_LOW": "GPS accuracy is too low. Please move to an open area and wait for a clear satellite signal.",
+  "MOCK_LOCATION_DETECTED": "Mock location or GPS spoofing was detected. Please disable spoofing apps and try again.",
+  "INSTALL_ATTEMPTS_EXCEEDED": "Maximum installation submission attempts exceeded for this assignment.",
+  "RESERVATION_EXPIRED": "Your campaign slot reservation has expired.",
+  "APP_UPDATE_REQUIRED": "A new version of the app is required. Please update to continue.",
+  "MAINTENANCE_ACTIVE": "The platform is currently under maintenance. Please check back shortly.",
+  "CAMERA_PERMISSION_DENIED": "Camera permission is required to capture proof photos.",
+  "LOCATION_PERMISSION_DENIED": "Precise location permission is required to verify your advertising area.",
+  "OFFLINE_QUEUE_FULL": "The offline upload queue is full. Please connect to the internet to upload pending photos."
 }

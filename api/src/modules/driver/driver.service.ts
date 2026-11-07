@@ -811,5 +811,55 @@ export class DriverService {
       );
     }
   }
+
+  static async getHome(_userId: string): Promise<any> {
+    return {
+      today: {
+        date: new Date().toISOString().split('T')[0],
+        photoStatus: 'PENDING',
+        photoCutoffTime: '23:59:59',
+        isCutoffPassed: false,
+        attemptsLeftToday: 3,
+        canRetake: false,
+        rejectionReason: null,
+      },
+      activeAssignment: null,
+      earnings: {
+        currentMonthPaise: '0',
+        availableBalancePaise: '0',
+        pendingSettlementPaise: '0',
+        graceDaysUsed: 0,
+        graceDaysRemaining: 2,
+      },
+      discipline: {
+        activeStrikes: 0,
+        isSuspended: false,
+        isBanned: false,
+        banExpiresAt: null,
+        needsPosterReplaced: false,
+        posterFixDeadline: null,
+        hasActiveNotice: false,
+      },
+      unreadNotificationsCount: 0,
+      pendingQueueCount: 0,
+    };
+  }
+
+  static async getCaptureRules(): Promise<any> {
+    return {
+      version: 1,
+      gpsMaxAccuracyMeters: 50,
+      photoMaxAgeMinutes: 15,
+      dailyAttemptsLimit: 3,
+      installAttemptsLimit: 3,
+      lateUploadGraceHours: 2,
+      clockSkewFlagMinutes: 5,
+      compressionHints: {
+        maxDimension: 1920,
+        jpegQuality: 0.8,
+      },
+    };
+  }
 }
+
 

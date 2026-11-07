@@ -63,6 +63,15 @@ import type {
   DeviceTokenDto,
   AnnouncementDto,
   NotificationStatsDto,
+  DriverHomeResponseDto,
+  DriverCaptureRulesDto,
+  PublicAppConfigDto,
+  DriverOnboardingDto,
+  UpdateDriverProfileInput,
+  UpdateDriverVehicleInput,
+  AddDriverDocumentInput,
+  UpdateDriverPayoutDetailsInput,
+  SubmitDriverConsentsInput,
 } from '@ap/shared-types';
 import type {
   DriverOtpRequestInput,
@@ -1821,4 +1830,91 @@ export class ApiClient {
   async adminRetryJob(id: string): Promise<any> {
     return this.request(`admin/system/jobs/${id}/retry`, { method: 'POST' });
   }
+
+  // -------------------------------------------------------------
+  // Phase 12: Driver Home, Onboarding, Capture Rules & App Config
+  // -------------------------------------------------------------
+
+  async getDriverHome(): Promise<DriverHomeResponseDto> {
+    return this.request('driver/home', { method: 'GET' });
+  }
+
+  async getDriverCaptureRules(): Promise<DriverCaptureRulesDto> {
+    return this.request('driver/capture-rules', { method: 'GET' });
+  }
+
+  async getPublicAppConfig(): Promise<PublicAppConfigDto> {
+    return this.request('public/app-config', { method: 'GET' });
+  }
+
+  async getDriverOnboarding(): Promise<DriverOnboardingDto> {
+    return this.request('driver/onboarding', { method: 'GET' });
+  }
+
+  async updateDriverProfile(input: UpdateDriverProfileInput): Promise<any> {
+    return this.request('driver/profile', {
+      method: 'PUT',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async updateDriverVehicle(input: UpdateDriverVehicleInput): Promise<any> {
+    return this.request('driver/vehicle', {
+      method: 'PUT',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async addDriverDocument(input: AddDriverDocumentInput): Promise<any> {
+    return this.request('driver/documents', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async deleteDriverDocument(id: string): Promise<any> {
+    return this.request(`driver/documents/${id}`, { method: 'DELETE' });
+  }
+
+  async updateDriverPayoutDetails(input: UpdateDriverPayoutDetailsInput): Promise<any> {
+    return this.request('driver/payout-details', {
+      method: 'PUT',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async submitDriverConsents(input: SubmitDriverConsentsInput): Promise<any> {
+    return this.request('driver/consents', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async submitDriverKyc(): Promise<any> {
+    return this.request('driver/kyc/submit', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+  }
+
+  async getDriverKyc(): Promise<any> {
+    return this.request('driver/kyc', { method: 'GET' });
+  }
+
+  async getLegalDocument(type: string): Promise<any> {
+    return this.request(`legal/${type}`, { method: 'GET' });
+  }
+
+  async listHelpArticles(params?: { category?: string; query?: string }): Promise<any> {
+    const q = new URLSearchParams();
+    if (params?.category) q.set('category', params.category);
+    if (params?.query) q.set('query', params.query);
+    const qs = q.toString();
+    return this.request(`help${qs ? `?${qs}` : ''}`, { method: 'GET' });
+  }
+
+  async getHelpArticle(id: string): Promise<any> {
+    return this.request(`help/${id}`, { method: 'GET' });
+  }
 }
+

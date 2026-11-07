@@ -264,6 +264,8 @@ export const SETTING_SCHEMAS = {
   [SETTING_KEYS.SUPPORT_EMAIL]: z.string().email(),
   [SETTING_KEYS.PUBLIC_PRICING_PREVIEW_ENABLED]: z.boolean(),
   [SETTING_KEYS.COMPANY_IDLE_TIMEOUT_MINUTES]: z.coerce.number().int().min(5).max(480),
+  [SETTING_KEYS.MOBILE_MIN_VERSION]: z.string().regex(/^\d+\.\d+\.\d+$/),
+  [SETTING_KEYS.MOBILE_LATEST_VERSION]: z.string().regex(/^\d+\.\d+\.\d+$/),
 } as const;
 
 export type SettingSchemas = typeof SETTING_SCHEMAS;
