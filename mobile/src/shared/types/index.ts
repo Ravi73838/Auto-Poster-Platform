@@ -65,6 +65,12 @@ import type {
   AnnouncementStatus,
   DevicePushProvider,
   TerminationReason,
+  CompanyMemberRole,
+  MemberStatus,
+  InvitationStatus,
+  ContactMessageStatus,
+  CompanyPermission,
+  ExportJobKind,
 } from '@ap/shared-constants';
 
 
@@ -142,11 +148,23 @@ export interface AdminLoginChallengeResponse {
   maskedMobile: string;
 }
 
+export interface AuthMeCompanySummary {
+  id: string;
+  name: string;
+  memberId: string;
+  memberRole: CompanyMemberRole;
+  permissions: CompanyPermission[];
+  status: AccountStatus;
+  isVerified: boolean;
+  kycStatus: KycSubmissionStatus | 'NOT_SUBMITTED';
+}
+
 export interface AuthMeResponse {
   user: AuthUser;
   role: Role;
   status: AccountStatus;
   permissions: string[];
+  company?: AuthMeCompanySummary;
   preferences: {
     language: string;
     theme: string;
@@ -1372,6 +1390,191 @@ export interface NotificationStatsDto {
   topFailureReasons: Array<{ error: string; count: number }>;
   activeDeviceTokens: number;
   disabledDeviceTokens: number;
+}
+
+// ---------------------------------------------------------
+// Phase 11 Company Team, Billing, & Public Contracts
+// ---------------------------------------------------------
+
+export interface CompanyMemberDto {
+  id: string;
+  companyId: string;
+  userId: string;
+  role: CompanyMemberRole;
+  status: MemberStatus;
+  email: string | null;
+  mobile: string;
+  invitedById?: string | null;
+  joinedAt: string;
+  createdAt: string;
+}
+
+export interface CompanyInvitationDto {
+  id: string;
+  companyId: string;
+  email: string;
+  mobile: string;
+  role: CompanyMemberRole;
+  status: InvitationStatus;
+  expiresAt: string;
+  invitedById: string;
+  createdAt: string;
+}
+
+export interface BillingProfileDto {
+  id: string;
+  companyId: string;
+  legalName: string;
+  gstin?: string | null;
+  billingAddress: {
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    pinCode: string;
+  };
+  stateCode: string;
+  invoiceEmails: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContactMessageDto {
+  id: string;
+  name: string;
+  email: string;
+  mobile?: string | null;
+  message: string;
+  language: string;
+  status: ContactMessageStatus;
+  replyNote?: string | null;
+  handledById?: string | null;
+  ip?: string | null;
+  createdAt: string;
+}
+
+export interface CompanyContextDto {
+  companyId: string;
+  memberId: string;
+  memberRole: CompanyMemberRole;
+  permissions: CompanyPermission[];
+  status: AccountStatus;
+  isVerified: boolean;
+}
+
+export interface InviteCompanyMemberInput {
+  email: string;
+  mobile: string;
+  role: CompanyMemberRole;
+}
+
+export interface AcceptCompanyInvitationInput {
+  token: string;
+  password?: string;
+  name?: string;
+}
+
+export interface UpdateCompanyMemberRoleInput {
+  role: CompanyMemberRole;
+}
+
+export interface TransferOwnershipInput {
+  memberId: string;
+  stepUpCode?: string;
+}
+
+export interface UpdateBillingProfileInput {
+  legalName?: string;
+  gstin?: string;
+  billingAddress?: {
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    pinCode: string;
+  };
+  stateCode?: string;
+  invoiceEmails?: string[];
+  stepUpCode?: string;
+}
+
+export interface CancelPreviewDto {
+  campaignId: string;
+  canCancel: boolean;
+  totalAssignments: number;
+  releasedAssignmentsCount: number;
+  noticeActiveAssignmentsCount: number;
+  noticeEndAt: string | null;
+  totalPaidPaise: number;
+  driverCompensationPaise: number;
+  platformFeeRetainedPaise: number;
+  printingAllowanceSpentPaise: number;
+  estimatedRefundPaise: number;
+  nonRefundablePaise: number;
+  reasonRequired: boolean;
+}
+
+export interface PricingPreviewInput {
+  slots: number;
+  days: number;
+  rentPer30DaysPaise?: number;
+  printingAllowancePaise?: number;
+}
+
+export interface PricingPreviewDto {
+  slots: number;
+  days: number;
+  dailyRentPerAutoPaise: number;
+  totalRentPaise: number;
+  printingAllowancePaise: number;
+  totalPrintingPaise: number;
+  subtotalPaise: number;
+  platformFeePaise: number;
+  gstPaise: number;
+  totalCostPaise: number;
+  typicalRange: {
+    minPaise: number;
+    maxPaise: number;
+  };
+}
+
+export interface CompanyDashboardKpisDto {
+  activeCampaigns: number;
+  driversRunning: number;
+  photosVerifiedToday: number;
+  todayCoveragePercent: number;
+  sevenDayAvgCoveragePercent: number;
+  monthSpendPaise: number;
+  monthRefundsPaise: number;
+}
+
+export interface CompanyPendingActionDto {
+  id: string;
+  type: 'PAYMENT_DUE' | 'REJECTED_CAMPAIGN' | 'INSTALLATION_REVIEW' | 'DISPUTE_UPDATE' | 'EXPIRING_INVITATION';
+  title: string;
+  description: string;
+  deadlineAt?: string | null;
+  actionUrl: string;
+  primaryActionLabel: string;
+}
+
+export interface CompanyDashboardResponseDto {
+  kpis: CompanyDashboardKpisDto;
+  pendingActions: CompanyPendingActionDto[];
+  recentCampaigns: Array<{
+    id: string;
+    title: string;
+    status: CampaignStatus;
+    slots: number;
+    startDate: string;
+    endDate: string;
+  }>;
+  onboardingChecklist: {
+    isKycApproved: boolean;
+    hasCreatedCampaign: boolean;
+    hasPaidCampaign: boolean;
+    hasReceivedPhotos: boolean;
+  };
 }
 
 

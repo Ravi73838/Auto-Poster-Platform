@@ -499,6 +499,8 @@ export const OTP_PURPOSES = {
   ADMIN_2FA: 'ADMIN_2FA',
   PAYOUT_CHANGE: 'PAYOUT_CHANGE',
   PASSWORD_RESET: 'PASSWORD_RESET',
+  COMPANY_STEP_UP: 'COMPANY_STEP_UP',
+  COMPANY_INVITE: 'COMPANY_INVITE',
 } as const;
 export type OtpPurpose = (typeof OTP_PURPOSES)[keyof typeof OTP_PURPOSES];
 
@@ -802,6 +804,16 @@ export const ERROR_CODES = {
   LEGAL_DOCUMENT_NOT_FOUND: 'LEGAL_DOCUMENT_NOT_FOUND',
   CONSENT_PENDING: 'CONSENT_PENDING',
   MAINTENANCE_MODE: 'MAINTENANCE_MODE',
+  MEMBER_LIMIT_REACHED: 'MEMBER_LIMIT_REACHED',
+  INVITATION_INVALID: 'INVITATION_INVALID',
+  INVITATION_EXPIRED: 'INVITATION_EXPIRED',
+  ALREADY_MEMBER: 'ALREADY_MEMBER',
+  OWNER_REQUIRED: 'OWNER_REQUIRED',
+  LAST_OWNER: 'LAST_OWNER',
+  COMPANY_PERMISSION_DENIED: 'COMPANY_PERMISSION_DENIED',
+  BILLING_CHANGE_REQUIRES_REVIEW: 'BILLING_CHANGE_REQUIRES_REVIEW',
+  CONTACT_RATE_LIMITED: 'CONTACT_RATE_LIMITED',
+  CANCEL_PREVIEW_UNAVAILABLE: 'CANCEL_PREVIEW_UNAVAILABLE',
 } as const;
 export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
 
@@ -925,6 +937,15 @@ export const SETTING_KEYS = {
   MAINTENANCE_MODE: 'maintenance_mode',
   MAINTENANCE_MESSAGE: 'maintenance_message',
   METRICS_TIMEZONE: 'metrics_timezone',
+  COMPANY_MAX_MEMBERS: 'company_max_members',
+  INVITATION_TTL_DAYS: 'invitation_ttl_days',
+  PAYMENT_REMINDER_HOURS_BEFORE: 'payment_reminder_hours_before',
+  COMPANY_ZIP_MAX_PHOTOS: 'company_zip_max_photos',
+  COMPANY_PHOTO_DOWNLOAD_ENABLED: 'company_photo_download_enabled',
+  PUBLIC_CONTACT_RATE_LIMIT_PER_HOUR: 'public_contact_rate_limit_per_hour',
+  SUPPORT_EMAIL: 'support_email',
+  PUBLIC_PRICING_PREVIEW_ENABLED: 'public_pricing_preview_enabled',
+  COMPANY_IDLE_TIMEOUT_MINUTES: 'company_idle_timeout_minutes',
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
@@ -966,4 +987,99 @@ export const JOB_RUN_STATUS = {
   SKIPPED: 'SKIPPED',
 } as const;
 export type JobRunStatus = (typeof JOB_RUN_STATUS)[keyof typeof JOB_RUN_STATUS];
+
+export const COMPANY_MEMBER_ROLES = {
+  OWNER: 'OWNER',
+  MANAGER: 'MANAGER',
+  FINANCE: 'FINANCE',
+  VIEWER: 'VIEWER',
+} as const;
+export type CompanyMemberRole =
+  (typeof COMPANY_MEMBER_ROLES)[keyof typeof COMPANY_MEMBER_ROLES];
+
+export const MEMBER_STATUS = {
+  INVITED: 'INVITED',
+  ACTIVE: 'ACTIVE',
+  REMOVED: 'REMOVED',
+} as const;
+export type MemberStatus = (typeof MEMBER_STATUS)[keyof typeof MEMBER_STATUS];
+
+export const INVITATION_STATUS = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  EXPIRED: 'EXPIRED',
+  REVOKED: 'REVOKED',
+} as const;
+export type InvitationStatus =
+  (typeof INVITATION_STATUS)[keyof typeof INVITATION_STATUS];
+
+export const CONTACT_MESSAGE_STATUS = {
+  NEW: 'NEW',
+  REPLIED: 'REPLIED',
+  SPAM: 'SPAM',
+} as const;
+export type ContactMessageStatus =
+  (typeof CONTACT_MESSAGE_STATUS)[keyof typeof CONTACT_MESSAGE_STATUS];
+
+export const EXPORT_JOB_KINDS = {
+  CAMPAIGNS: 'CAMPAIGNS',
+  DRIVERS: 'DRIVERS',
+  PHOTO_ZIP: 'PHOTO_ZIP',
+  COMPANY_STATEMENT: 'COMPANY_STATEMENT',
+} as const;
+export type ExportJobKind = (typeof EXPORT_JOB_KINDS)[keyof typeof EXPORT_JOB_KINDS];
+
+export const COMPANY_PERMISSIONS = {
+  CAMPAIGN_VIEW: 'campaign.view',
+  CAMPAIGN_MANAGE: 'campaign.manage',
+  CAMPAIGN_CANCEL: 'campaign.cancel',
+  INSTALLATION_REVIEW: 'installation.review',
+  PHOTO_FLAG: 'photo.flag',
+  PAYMENT_VIEW: 'payment.view',
+  PAYMENT_PAY: 'payment.pay',
+  BILLING_MANAGE: 'billing.manage',
+  TEAM_MANAGE: 'team.manage',
+  DISPUTE_MANAGE: 'dispute.manage',
+  REPORT_VIEW: 'report.view',
+} as const;
+export type CompanyPermission = (typeof COMPANY_PERMISSIONS)[keyof typeof COMPANY_PERMISSIONS];
+
+export const COMPANY_ROLE_PERMISSIONS: Record<CompanyMemberRole, readonly CompanyPermission[]> = {
+  OWNER: [
+    'campaign.view',
+    'campaign.manage',
+    'campaign.cancel',
+    'installation.review',
+    'photo.flag',
+    'payment.view',
+    'payment.pay',
+    'billing.manage',
+    'team.manage',
+    'dispute.manage',
+    'report.view',
+  ],
+  MANAGER: [
+    'campaign.view',
+    'campaign.manage',
+    'campaign.cancel',
+    'installation.review',
+    'photo.flag',
+    'dispute.manage',
+    'report.view',
+    'payment.view',
+  ],
+  FINANCE: [
+    'campaign.view',
+    'payment.view',
+    'payment.pay',
+    'billing.manage',
+    'report.view',
+    'dispute.manage',
+  ],
+  VIEWER: [
+    'campaign.view',
+    'report.view',
+    'payment.view',
+  ],
+} as const;
 

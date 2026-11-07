@@ -49,6 +49,7 @@ import {
   NOTIFICATION_CATEGORIES,
   DEVICE_PUSH_PROVIDERS,
   TERMINATION_REASONS,
+  COMPANY_MEMBER_ROLES,
 } from '@ap/shared-constants';
 
 
@@ -254,6 +255,15 @@ export const SETTING_SCHEMAS = {
   [SETTING_KEYS.MAINTENANCE_MODE]: z.boolean(),
   [SETTING_KEYS.MAINTENANCE_MESSAGE]: z.string(),
   [SETTING_KEYS.METRICS_TIMEZONE]: z.string().min(1),
+  [SETTING_KEYS.COMPANY_MAX_MEMBERS]: z.coerce.number().int().min(1).max(50),
+  [SETTING_KEYS.INVITATION_TTL_DAYS]: z.coerce.number().int().min(1).max(30),
+  [SETTING_KEYS.PAYMENT_REMINDER_HOURS_BEFORE]: z.coerce.number().int().min(1).max(72),
+  [SETTING_KEYS.COMPANY_ZIP_MAX_PHOTOS]: z.coerce.number().int().min(10).max(2000),
+  [SETTING_KEYS.COMPANY_PHOTO_DOWNLOAD_ENABLED]: z.boolean(),
+  [SETTING_KEYS.PUBLIC_CONTACT_RATE_LIMIT_PER_HOUR]: z.coerce.number().int().min(1).max(100),
+  [SETTING_KEYS.SUPPORT_EMAIL]: z.string().email(),
+  [SETTING_KEYS.PUBLIC_PRICING_PREVIEW_ENABLED]: z.boolean(),
+  [SETTING_KEYS.COMPANY_IDLE_TIMEOUT_MINUTES]: z.coerce.number().int().min(5).max(480),
 } as const;
 
 export type SettingSchemas = typeof SETTING_SCHEMAS;
@@ -1409,6 +1419,78 @@ export const createAnnouncementSchema = z.object({
   sendNow: z.boolean().optional().default(false),
 });
 export type CreateAnnouncementInput = z.infer<typeof createAnnouncementSchema>;
+
+// =============================================================================
+// PHASE 11: COMPANY TEAM, BILLING & PUBLIC SCHEMAS
+// =============================================================================
+
+export const inviteCompanyMemberSchema = z.object({
+  email: emailSchema,
+  mobile: mobileSchema,
+  role: z.enum([
+    COMPANY_MEMBER_ROLES.OWNER,
+    COMPANY_MEMBER_ROLES.MANAGER,
+    COMPANY_MEMBER_ROLES.FINANCE,
+    COMPANY_MEMBER_ROLES.VIEWER,
+  ]),
+});
+
+export const acceptCompanyInvitationSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8).max(100).optional(),
+  name: z.string().min(2).max(100).optional(),
+});
+
+export const updateCompanyMemberRoleSchema = z.object({
+  role: z.enum([
+    COMPANY_MEMBER_ROLES.OWNER,
+    COMPANY_MEMBER_ROLES.MANAGER,
+    COMPANY_MEMBER_ROLES.FINANCE,
+    COMPANY_MEMBER_ROLES.VIEWER,
+  ]),
+});
+
+export const transferOwnershipSchema = z.object({
+  memberId: z.string().uuid(),
+  stepUpCode: z.string().optional(),
+});
+
+export const updateBillingProfileSchema = z.object({
+  legalName: z.string().trim().min(2).max(200).optional(),
+  gstin: gstinSchema.optional(),
+  billingAddress: z
+    .object({
+      line1: z.string().trim().min(2).max(200),
+      line2: z.string().trim().max(200).optional(),
+      city: z.string().trim().min(2).max(100),
+      state: z.string().trim().min(2).max(100),
+      pinCode: z.string().trim().regex(/^\d{6}$/, { message: 'PIN code must be 6 digits' }),
+    })
+    .optional(),
+  stateCode: z.string().trim().length(2).optional(),
+  invoiceEmails: z.array(emailSchema).min(1).max(5).optional(),
+  stepUpCode: z.string().optional(),
+});
+
+export const contactMessageSchema = z.object({
+  name: z.string().trim().min(2).max(100),
+  email: emailSchema,
+  mobile: mobileSchema.optional(),
+  message: z.string().trim().min(10).max(2000),
+  language: z.enum(['en', 'hi', 'gu']).default('en'),
+  websiteUrl: z.string().optional(), // honeypot field
+});
+
+export const pricingPreviewQuerySchema = z.object({
+  slots: z.coerce.number().int().min(1).max(500).default(20),
+  days: z.coerce.number().int().min(7).max(90).default(30),
+  rentPer30DaysPaise: z.coerce.number().int().positive().optional(),
+  printingAllowancePaise: z.coerce.number().int().nonnegative().optional(),
+});
+
+export const cancelCampaignPreviewSchema = z.object({
+  reason: z.string().trim().max(500).optional(),
+});
 
 
 

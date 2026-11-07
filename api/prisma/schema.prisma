@@ -350,6 +350,8 @@ enum OtpPurpose {
   ADMIN_2FA
   PAYOUT_CHANGE
   PASSWORD_RESET
+  COMPANY_STEP_UP
+  COMPANY_INVITE
 }
 
 enum ActorType {
@@ -520,6 +522,32 @@ enum JobRunStatus {
   SKIPPED
 }
 
+enum CompanyMemberRole {
+  OWNER
+  MANAGER
+  FINANCE
+  VIEWER
+}
+
+enum MemberStatus {
+  INVITED
+  ACTIVE
+  REMOVED
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+enum ContactMessageStatus {
+  NEW
+  REPLIED
+  SPAM
+}
+
 
 // ---------------------------------------------------------
 // LOCATION
@@ -645,6 +673,11 @@ model User {
   settingChangeRequestsApproved  SettingChangeRequest[] @relation("ApprovedSettingChanges")
   legalDocumentsCreated  LegalDocument[]           @relation("CreatedLegalDocuments")
   helpArticlesUpdated    HelpArticle[]             @relation("UpdatedHelpArticles")
+  companyMemberships             CompanyMember[]           @relation("CompanyMemberships")
+  invitedMembers                 CompanyMember[]           @relation("InvitedMembers")
+  sentCompanyInvitations         CompanyInvitation[]       @relation("SentCompanyInvitations")
+  acceptedCompanyInvitations     CompanyInvitation[]       @relation("AcceptedCompanyInvitations")
+  handledContactMessages         ContactMessage[]          @relation("HandledContactMessages")
 
   @@map("users")
 }
@@ -817,14 +850,102 @@ model CompanyProfile {
   contactPersonName  String   @map("contact_person_name")
   contactPersonPhone String   @map("contact_person_phone")
   isVerified         Boolean  @default(false) @map("is_verified")
+  defaultInstallApprover InstallApprover @default(PLATFORM) @map("default_install_approver")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 
   user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   city City? @relation(fields: [cityId], references: [id], onDelete: SetNull)
 
+  members        CompanyMember[]
+  invitations    CompanyInvitation[]
+  billingProfile BillingProfile?
+
   @@index([cityId])
   @@map("company_profiles")
+}
+
+model CompanyMember {
+  id          String            @id @default(uuid()) @db.Uuid
+  companyId   String            @map("company_id") @db.Uuid
+  userId      String            @map("user_id") @db.Uuid
+  role        CompanyMemberRole @default(VIEWER)
+  status      MemberStatus      @default(ACTIVE)
+  invitedById String?           @map("invited_by_id") @db.Uuid
+  joinedAt    DateTime          @default(now()) @map("joined_at")
+  removedAt   DateTime?         @map("removed_at")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  company   CompanyProfile @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user      User           @relation("CompanyMemberships", fields: [userId], references: [id], onDelete: Cascade)
+  invitedBy User?          @relation("InvitedMembers", fields: [invitedById], references: [id], onDelete: SetNull)
+
+  @@unique([companyId, userId])
+  @@index([userId])
+  @@index([companyId])
+  @@map("company_members")
+}
+
+model CompanyInvitation {
+  id             String            @id @default(uuid()) @db.Uuid
+  companyId      String            @map("company_id") @db.Uuid
+  email          String
+  mobile         String
+  role           CompanyMemberRole @default(VIEWER)
+  tokenHash      String            @unique @map("token_hash")
+  status         InvitationStatus  @default(PENDING)
+  expiresAt      DateTime          @map("expires_at")
+  invitedById    String            @map("invited_by_id") @db.Uuid
+  acceptedUserId String?           @map("accepted_user_id") @db.Uuid
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  company      CompanyProfile @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  invitedBy    User           @relation("SentCompanyInvitations", fields: [invitedById], references: [id], onDelete: Cascade)
+  acceptedUser User?          @relation("AcceptedCompanyInvitations", fields: [acceptedUserId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([email])
+  @@index([mobile])
+  @@map("company_invitations")
+}
+
+model BillingProfile {
+  id             String   @id @default(uuid()) @db.Uuid
+  companyId      String   @unique @map("company_id") @db.Uuid
+  legalName      String   @map("legal_name")
+  gstin          String?
+  billingAddress Json     @map("billing_address")
+  stateCode      String   @map("state_code")
+  invoiceEmails  Json     @map("invoice_emails")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  company CompanyProfile @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("billing_profiles")
+}
+
+model ContactMessage {
+  id          String               @id @default(uuid()) @db.Uuid
+  name        String
+  email       String
+  mobile      String?
+  message     String
+  language    String               @default("en")
+  status      ContactMessageStatus @default(NEW)
+  replyNote   String?              @map("reply_note")
+  handledById String?              @map("handled_by_id") @db.Uuid
+  ip          String?
+  createdAt   DateTime             @default(now()) @map("created_at")
+  updatedAt   DateTime             @updatedAt @map("updated_at")
+
+  handledBy User? @relation("HandledContactMessages", fields: [handledById], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("contact_messages")
 }
 
 model Document {

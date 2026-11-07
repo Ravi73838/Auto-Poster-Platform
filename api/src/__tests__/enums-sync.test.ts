@@ -56,6 +56,10 @@ import {
   LEGAL_DOCUMENT_TYPES,
   LEGAL_DOCUMENT_STATUS,
   JOB_RUN_STATUS,
+  COMPANY_MEMBER_ROLES,
+  MEMBER_STATUS,
+  INVITATION_STATUS,
+  CONTACT_MESSAGE_STATUS,
 } from '@ap/shared-constants';
 
 
@@ -137,6 +141,10 @@ describe('Enum Synchronization: Prisma Schema vs @ap/shared-constants', () => {
     LegalDocumentType: LEGAL_DOCUMENT_TYPES,
     LegalDocumentStatus: LEGAL_DOCUMENT_STATUS,
     JobRunStatus: JOB_RUN_STATUS,
+    CompanyMemberRole: COMPANY_MEMBER_ROLES,
+    MemberStatus: MEMBER_STATUS,
+    InvitationStatus: INVITATION_STATUS,
+    ContactMessageStatus: CONTACT_MESSAGE_STATUS,
   };
 
   it('contains all required enums in Prisma schema', () => {
