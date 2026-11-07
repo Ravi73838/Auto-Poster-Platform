@@ -557,6 +557,8 @@ export const FILE_PURPOSES = {
   DAILY_PHOTO: 'DAILY_PHOTO',
   DISPUTE_EVIDENCE: 'DISPUTE_EVIDENCE',
   VEHICLE_PHOTO: 'VEHICLE_PHOTO',
+  LOCAL_AD_IMAGE: 'LOCAL_AD_IMAGE',
+  REPORT_DOCUMENT: 'REPORT_DOCUMENT',
 } as const;
 export type FilePurpose = (typeof FILE_PURPOSES)[keyof typeof FILE_PURPOSES];
 
@@ -573,6 +575,7 @@ export const CONSENT_TYPES = {
   LOCATION: 'LOCATION',
   CAMERA: 'CAMERA',
   POSTER_POLICY: 'POSTER_POLICY',
+  ADS_PERSONALIZATION: 'ADS_PERSONALIZATION',
 } as const;
 export type ConsentType = (typeof CONSENT_TYPES)[keyof typeof CONSENT_TYPES];
 
@@ -822,6 +825,14 @@ export const ERROR_CODES = {
   CAMERA_PERMISSION_DENIED: 'CAMERA_PERMISSION_DENIED',
   LOCATION_PERMISSION_DENIED: 'LOCATION_PERMISSION_DENIED',
   OFFLINE_QUEUE_FULL: 'OFFLINE_QUEUE_FULL',
+  REPORT_NOT_FOUND: 'REPORT_NOT_FOUND',
+  REPORT_RATE_LIMITED: 'REPORT_RATE_LIMITED',
+  REPORT_GENERATION_FAILED: 'REPORT_GENERATION_FAILED',
+  AD_NOT_FOUND: 'AD_NOT_FOUND',
+  AD_MAKER_CHECKER_VIOLATION: 'AD_MAKER_CHECKER_VIOLATION',
+  AD_POLICY_VIOLATION: 'AD_POLICY_VIOLATION',
+  AD_INVALID_CTA: 'AD_INVALID_CTA',
+  ADVERTISER_NOT_FOUND: 'ADVERTISER_NOT_FOUND',
 } as const;
 export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
 
@@ -956,6 +967,20 @@ export const SETTING_KEYS = {
   COMPANY_IDLE_TIMEOUT_MINUTES: 'company_idle_timeout_minutes',
   MOBILE_MIN_VERSION: 'mobile_min_version',
   MOBILE_LATEST_VERSION: 'mobile_latest_version',
+  REPORT_RETENTION_MONTHS: 'report_retention_months',
+  REPORT_INTERIM_MAX_PER_CAMPAIGN_PER_DAY: 'report_interim_max_per_campaign_per_day',
+  REPORT_MAP_PROVIDER: 'report_map_provider',
+  REPORT_INCLUDE_PHOTOS_COUNT: 'report_include_photos_count',
+  ADS_ENABLED: 'ads_enabled',
+  LOCAL_ADS_ENABLED: 'local_ads_enabled',
+  ADS_PLACEMENTS: 'ads_placements',
+  ADS_MAX_PER_SCREEN: 'ads_max_per_screen',
+  ADS_LIST_EVERY_N: 'ads_list_every_n',
+  ADS_DISABLE_ON_SLOW_NETWORK: 'ads_disable_on_slow_network',
+  ADS_PERSONALIZED_DEFAULT: 'ads_personalized_default',
+  ADS_MAX_CONTENT_RATING: 'ads_max_content_rating',
+  ADS_CTR_ALERT_PERCENT: 'ads_ctr_alert_percent',
+  LOCAL_AD_FREQUENCY_CAP_PER_DAY: 'local_ad_frequency_cap_per_day',
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
@@ -1092,4 +1117,90 @@ export const COMPANY_ROLE_PERMISSIONS: Record<CompanyMemberRole, readonly Compan
     'payment.view',
   ],
 } as const;
+
+// ============================================================================
+// Phase 13: Reports, Google Ads (AdMob) and Local Direct Ads
+// ============================================================================
+
+export const REPORT_TYPES = {
+  CAMPAIGN_INTERIM: 'CAMPAIGN_INTERIM',
+  CAMPAIGN_FINAL: 'CAMPAIGN_FINAL',
+  DRIVER_EARNINGS: 'DRIVER_EARNINGS',
+  FINANCE_MONTHLY_PACK: 'FINANCE_MONTHLY_PACK',
+  LOCAL_AD_PERFORMANCE: 'LOCAL_AD_PERFORMANCE',
+} as const;
+export type ReportType = (typeof REPORT_TYPES)[keyof typeof REPORT_TYPES];
+
+export const REPORT_STATUSES = {
+  QUEUED: 'QUEUED',
+  RUNNING: 'RUNNING',
+  READY: 'READY',
+  FAILED: 'FAILED',
+  EXPIRED: 'EXPIRED',
+} as const;
+export type ReportStatus = (typeof REPORT_STATUSES)[keyof typeof REPORT_STATUSES];
+
+export const AD_SOURCES = {
+  ADMOB: 'ADMOB',
+  LOCAL: 'LOCAL',
+  DIRECT: 'DIRECT',
+} as const;
+export type AdSource = (typeof AD_SOURCES)[keyof typeof AD_SOURCES];
+
+export const LOCAL_AD_CATEGORIES = {
+  TYRE_SHOP: 'TYRE_SHOP',
+  FUEL_PUMP: 'FUEL_PUMP',
+  MECHANIC: 'MECHANIC',
+  AUTO_PARTS: 'AUTO_PARTS',
+  INSURANCE: 'INSURANCE',
+  FINANCE: 'FINANCE',
+  DRIVER_SERVICES: 'DRIVER_SERVICES',
+  OTHER_APPROVED: 'OTHER_APPROVED',
+} as const;
+export type LocalAdCategory = (typeof LOCAL_AD_CATEGORIES)[keyof typeof LOCAL_AD_CATEGORIES];
+
+export const LOCAL_AD_STATUSES = {
+  DRAFT: 'DRAFT',
+  PENDING_REVIEW: 'PENDING_REVIEW',
+  ACTIVE: 'ACTIVE',
+  PAUSED: 'PAUSED',
+  ENDED: 'ENDED',
+  REJECTED: 'REJECTED',
+} as const;
+export type LocalAdStatus = (typeof LOCAL_AD_STATUSES)[keyof typeof LOCAL_AD_STATUSES];
+
+export const LOCAL_AD_FORMATS = {
+  BANNER: 'BANNER',
+  CARD: 'CARD',
+} as const;
+export type LocalAdFormat = (typeof LOCAL_AD_FORMATS)[keyof typeof LOCAL_AD_FORMATS];
+
+export const LOCAL_AD_CTA_TYPES = {
+  CALL: 'CALL',
+  WHATSAPP: 'WHATSAPP',
+  MAPS: 'MAPS',
+  LINK: 'LINK',
+} as const;
+export type LocalAdCtaType = (typeof LOCAL_AD_CTA_TYPES)[keyof typeof LOCAL_AD_CTA_TYPES];
+
+export const LOCAL_AD_REJECT_REASONS = {
+  POLICY_CATEGORY: 'POLICY_CATEGORY',
+  MISLEADING_CLAIMS: 'MISLEADING_CLAIMS',
+  POOR_IMAGE: 'POOR_IMAGE',
+  WRONG_LANGUAGE: 'WRONG_LANGUAGE',
+  INVALID_CTA: 'INVALID_CTA',
+  NEEDS_DISCLAIMER: 'NEEDS_DISCLAIMER',
+  OTHER: 'OTHER',
+} as const;
+export type LocalAdRejectReason = (typeof LOCAL_AD_REJECT_REASONS)[keyof typeof LOCAL_AD_REJECT_REASONS];
+
+export const AD_PLACEMENTS = {
+  CAMPAIGN_LIST: 'campaign_list',
+  CAMPAIGN_DETAIL: 'campaign_detail',
+  PRINT_GUIDE: 'print_guide',
+  WALLET: 'wallet',
+  OFFERS: 'offers',
+} as const;
+export type AdPlacement = (typeof AD_PLACEMENTS)[keyof typeof AD_PLACEMENTS];
+
 

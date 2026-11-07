@@ -151,5 +151,13 @@
   "MAINTENANCE_ACTIVE": "The platform is currently under maintenance. Please check back shortly.",
   "CAMERA_PERMISSION_DENIED": "Camera permission is required to capture proof photos.",
   "LOCATION_PERMISSION_DENIED": "Precise location permission is required to verify your advertising area.",
-  "OFFLINE_QUEUE_FULL": "The offline upload queue is full. Please connect to the internet to upload pending photos."
+  "OFFLINE_QUEUE_FULL": "The offline upload queue is full. Please connect to the internet to upload pending photos.",
+  "REPORT_NOT_FOUND": "The requested report was not found.",
+  "REPORT_RATE_LIMITED": "You have reached the maximum number of report generation requests allowed. Please try again later.",
+  "REPORT_GENERATION_FAILED": "Report generation encountered an error. Please retry.",
+  "AD_NOT_FOUND": "The requested advertisement was not found.",
+  "AD_MAKER_CHECKER_VIOLATION": "Maker-Checker violation: An advertisement cannot be approved by the same administrator who created it.",
+  "AD_POLICY_VIOLATION": "The advertisement violates platform advertising policy.",
+  "AD_INVALID_CTA": "The advertisement call-to-action is invalid or uses an unsupported scheme.",
+  "ADVERTISER_NOT_FOUND": "The requested advertiser was not found."
 }

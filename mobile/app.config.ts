@@ -36,11 +36,25 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'android.permission.ACCESS_FINE_LOCATION',
       'android.permission.ACCESS_COARSE_LOCATION',
       'android.permission.POST_NOTIFICATIONS',
+      'com.google.android.gms.permission.AD_ID',
     ],
   },
   plugins: [
     'expo-router',
     'expo-asset',
+    [
+      'react-native-google-mobile-ads',
+      {
+        androidAppId:
+          process.env.ADMOB_ANDROID_APP_ID ||
+          'ca-app-pub-3940256099942544~3347511713', // Google's sample Android App ID for development/preview
+        iosAppId:
+          process.env.ADMOB_IOS_APP_ID ||
+          'ca-app-pub-3940256099942544~1458002511', // Google's sample iOS App ID for development/preview
+        userTrackingUsageDescription:
+          'This identifier will be used to deliver relevant local and platform offers to you.',
+      },
+    ],
     [
       'expo-font',
       {

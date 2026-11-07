@@ -169,6 +169,22 @@
 - **Context**: Simulated captures defeat the core value proposition of the advertising platform, exposing advertisers to location fraud and synthetic proof submission.
 - **Consequences**: Trustworthy physical proof pipeline; tamper-evident daily proof and installation validation; automated CI enforcement against accidental simulation regressions.
 
+## ADR-034: Headless Chromium PDF Engine via Playwright for Complex Indic Script Rendering
+- **Decision**: Adopt headless Chromium driven by Playwright (`page.pdf`) to render HTML/print-CSS report templates to PDF. Run report jobs asynchronously on a separate `report-generation` BullMQ queue processed by a dedicated `reporter` worker container based on Debian slim with Noto Sans, Noto Sans Devanagari, and Noto Sans Gujarati fonts installed. Keep the core API and regular worker Docker images slim without Chromium dependencies.
+- **Context**: Pure JavaScript PDF libraries (`pdf-lib`, `pdfkit`) lack complex text layout (CTL) and font shaping engines needed for Indic scripts (Hindi conjuncts, matras, Gujarati ligatures), resulting in disjointed, broken characters or tofu boxes. Headless Chromium provides native HarfBuzz font shaping and CSS Paged Media support (`@page`, break-inside: avoid).
+- **Consequences**: Perfectly shaped multi-lingual reports in English, Hindi, and Gujarati; zero impact on core API memory footprint; isolated compute and crash boundary for PDF rendering.
+
+## ADR-035: Google AdMob Non-Intrusive Layout Safety, Dynamic Kill Switches & Privacy-Preserving Aggregated Ad Telemetry
+- **Decision**: Restrict Google AdMob integration strictly to anchored adaptive banners on non-critical screens (campaign list between cards, campaign details footer, print guide, wallet overview). Enforce a minimum 16dp spacing margin away from primary action touch targets (Select, Withdraw). Forbid ads outright on camera, KYC, bank/payout, and authentication screens through static AST analysis and runtime route guards. Provide remote kill switches via `public/app-config`. Aggregate telemetry (impressions, clicks, fill rate) strictly at the daily placement level without ever storing per-driver ad history in the database.
+- **Context**: Ads serve as a modest supplementary income rather than the core business. Misplaced ads degrade user trust, lead to accidental clicks that trigger AdMob invalid traffic penalties, or violate Google Play developer policies.
+- **Consequences**: Full compliance with AdMob invalid traffic guidelines; safe, accessible UI layout for auto-rickshaw drivers; zero privacy liability under Indian data protection laws.
+
+## ADR-036: Local Direct Ads Architecture, Maker-Checker Review and Ephemeral Redis Frequency Capping
+- **Decision**: Enable direct local advertisements targeted by city and operational zones for driver-relevant service providers (tyre shops, CNG stations, mechanics, vehicle insurance). Enforce Maker-Checker approval: an ad created by one admin cannot be approved by that same admin. Store per-driver frequency limits (max 3 impressions per driver per ad daily) exclusively in Redis with a 48-hour TTL, ensuring zero persistent driver ad profiling in PostgreSQL.
+- **Context**: Local B2B advertisers provide high-relevance offers to auto-rickshaw drivers and generate superior margins compared to generic programmatic ad networks. However, ad content must be moderated against predatory lending or counterfeit parts, and driver viewing habits must remain private.
+- **Consequences**: High-yield direct monetization; verified advertiser content; strict privacy preservation through ephemeral in-memory frequency counters.
+
+
 
 
 

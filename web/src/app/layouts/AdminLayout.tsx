@@ -38,6 +38,7 @@ import { ACCOUNT_STATUS } from '@ap/shared-constants';
 export function AdminLayout() {
   const { t } = useTranslation(['common', 'auth', 'status']);
   const { user, clearAuth } = useAuthStore();
+  const permissions = useAuthStore((s) => s.permissions);
   const client = useApiClient();
   const navigate = useNavigate();
 

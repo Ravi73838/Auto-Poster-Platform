@@ -1,12 +1,12 @@
 {
-  "api-client/client.ts": "ad060888e0db0bf22e3256e7a8c52f9a4a96787323eb85dcd9e502c5d20bff60",
+  "api-client/client.ts": "2a419f14150616ef674ea24db01e3c150dab40400c4d6b1bfc0f573d37f08a0a",
   "api-client/index.ts": "e0e40b37ac8639781da930c10d82cb7ad95715dec3a808904efe83438afd0342",
-  "constants/index.ts": "9a4807defed80302d4ace07332e0295efcab2c1a329ae3e076d5bd6753f03079",
+  "constants/index.ts": "cd7959ab4433ee6d172468c12c3e48e8dae735fe704bd352db70f9a82a6e8a63",
   "i18n/index.ts": "c2d0a298ac2dcad5fc3ee937d4c0ae5f1bb831ae1776897a2381e2b57d160373",
   "i18n/locales/en/auth.json": "06a4ddec7d574dc0a142c9d806afdcfe31c26ca6d33ee18538cf96ade3345e05",
   "i18n/locales/en/campaigns.json": "b459fda1a5141bea2ec402d13ca5e60b127a9c805d782624abb9a3d30f82d1c3",
   "i18n/locales/en/common.json": "46b4adcac9c56548e2862f655616f6861abd39af0e1183ade85ac56a9d93a6bc",
-  "i18n/locales/en/errors.json": "e3afd093b9eb581bada9acc8b8843476a7dc901a50bea48299122211ae582fdf",
+  "i18n/locales/en/errors.json": "ec2e45a2f120e238ff018e36d26aeea0fc55ef87266a8be58323994046a5168b",
   "i18n/locales/en/kyc.json": "82426cec5c3a6c43556a26e627da3f32a3bd72aa826709436ee4906d0d64df60",
   "i18n/locales/en/notifications.json": "3ffc511f0bb718f3fde4e972ecd383692fab58763fb62f780f84271e1e95c2f2",
   "i18n/locales/en/settings.json": "41515fd3e5e8be3d46040b7334bdb70d626d6ea0dc16a81a276224a05184e720",
@@ -14,7 +14,7 @@
   "i18n/locales/gu/auth.json": "03e73d5deca46052c7f50a87114bb5a2c6b037e052b32b478a89a61807d926ba",
   "i18n/locales/gu/campaigns.json": "331a012b631a5da3041cb46f41e1f378c61ad82c0a8d6003ddbf58b86bad70a2",
   "i18n/locales/gu/common.json": "b1d8ade6ee56d692636ecf46bac4fdef0a1afde21019a7494404ebc9084fad8b",
-  "i18n/locales/gu/errors.json": "3a8aa84f8ed6b74a5d4b51a9d86f7ecaa2989430dbe9ef2de12a2139c98cafe0",
+  "i18n/locales/gu/errors.json": "78edf81b38b0a1256edd37c36909e17a18690c95cb060df228cea3b391671e3b",
   "i18n/locales/gu/kyc.json": "2deb19da5ba4fae4008153dd83ff2e6f7aedb77584af258e91a28345a772db12",
   "i18n/locales/gu/notifications.json": "fb7bf28c0b2d739ebb6066fbeb41d00664155f0d2fc67363210701737c3e932c",
   "i18n/locales/gu/settings.json": "1aef3c7974f7ee2943294487055f3eb2690a35013bad3f7fcddc1431afc5255b",
@@ -22,7 +22,7 @@
   "i18n/locales/hi/auth.json": "07b84147d8d4d6d075f9ab61c87c4bf71cde20d322af8522a3f9f9a673ceb1e3",
   "i18n/locales/hi/campaigns.json": "09d5b63cbeda72e2ce5eda3fd907d6a5ed785650604983151699b55678c18138",
   "i18n/locales/hi/common.json": "5ecb553975f14ae545aaeda11d2903933f4d7343b4d869816ccfe67ef8f6b59d",
-  "i18n/locales/hi/errors.json": "ec01bf1c39c13b216da46a32d5ff801e7b96e33f86b0094744c1cb4991097efe",
+  "i18n/locales/hi/errors.json": "f080e5dac4cc55daae67259e1640157f608a024d87c2b3549f6552d2b8a79b20",
   "i18n/locales/hi/kyc.json": "bb4d87543edd7cc30bcb5d400f3400e68572232d5786796289ee61e494e5a051",
   "i18n/locales/hi/notifications.json": "6c360329519f14034499a0ab26f3f66eda289daea890ac6c55688b12371da0a3",
   "i18n/locales/hi/settings.json": "f0199542649dddf9dfb67eafe7a2f6b52f5e3b62771bc6e4e3a7df1b7cd5018b",
@@ -32,6 +32,6 @@
   "tokens/contrast.ts": "930ae952755591ecae2e9b64153bc9eb453f6cff84113e31b6279da8d8c2fea3",
   "tokens/index.ts": "97f2239992661aba6a23d690b26b0efc875a36cbfa896d82bd5cb428a133e5ee",
   "tokens/tokens.ts": "5df61aca54808c22410468fcf18ab42f8fe09fd9d0780a942d09d12ef3c26146",
-  "types/index.ts": "7ca600da79ff9de0c0961f11b5e006dd4bd8247f6a2f527f67bda6141521a5dc",
-  "validation/index.ts": "b01f5ffc39f682e0732648b3482820245fbb58b83ede92faf64d1690c38b0a4a"
+  "types/index.ts": "f3b59d9a7e48cd25858554682c64533f05e6002e0263c5d8f5574bc7794b3c90",
+  "validation/index.ts": "ee419e104f2be90e88a7878ecd306495bbf441d7ead27ac68140f97306925b11"
 }

@@ -50,6 +50,13 @@ import {
   DEVICE_PUSH_PROVIDERS,
   TERMINATION_REASONS,
   COMPANY_MEMBER_ROLES,
+  LOCAL_AD_CATEGORIES,
+  LOCAL_AD_FORMATS,
+  LOCAL_AD_CTA_TYPES,
+  LOCAL_AD_REJECT_REASONS,
+  AD_PLACEMENTS,
+  AD_SOURCES,
+  REPORT_TYPES,
 } from '@ap/shared-constants';
 
 
@@ -266,6 +273,20 @@ export const SETTING_SCHEMAS = {
   [SETTING_KEYS.COMPANY_IDLE_TIMEOUT_MINUTES]: z.coerce.number().int().min(5).max(480),
   [SETTING_KEYS.MOBILE_MIN_VERSION]: z.string().regex(/^\d+\.\d+\.\d+$/),
   [SETTING_KEYS.MOBILE_LATEST_VERSION]: z.string().regex(/^\d+\.\d+\.\d+$/),
+  [SETTING_KEYS.REPORT_RETENTION_MONTHS]: z.coerce.number().int().min(1).max(120),
+  [SETTING_KEYS.REPORT_INTERIM_MAX_PER_CAMPAIGN_PER_DAY]: z.coerce.number().int().min(1).max(20),
+  [SETTING_KEYS.REPORT_MAP_PROVIDER]: z.enum(['vector', 'tiles']),
+  [SETTING_KEYS.REPORT_INCLUDE_PHOTOS_COUNT]: z.coerce.number().int().min(1).max(50),
+  [SETTING_KEYS.ADS_ENABLED]: z.boolean(),
+  [SETTING_KEYS.LOCAL_ADS_ENABLED]: z.boolean(),
+  [SETTING_KEYS.ADS_PLACEMENTS]: z.record(z.boolean()),
+  [SETTING_KEYS.ADS_MAX_PER_SCREEN]: z.coerce.number().int().min(1).max(5),
+  [SETTING_KEYS.ADS_LIST_EVERY_N]: z.coerce.number().int().min(1).max(20),
+  [SETTING_KEYS.ADS_DISABLE_ON_SLOW_NETWORK]: z.boolean(),
+  [SETTING_KEYS.ADS_PERSONALIZED_DEFAULT]: z.boolean(),
+  [SETTING_KEYS.ADS_MAX_CONTENT_RATING]: z.enum(['G', 'PG', 'T', 'MA']),
+  [SETTING_KEYS.ADS_CTR_ALERT_PERCENT]: z.coerce.number().min(1).max(100),
+  [SETTING_KEYS.LOCAL_AD_FREQUENCY_CAP_PER_DAY]: z.coerce.number().int().min(1).max(20),
 } as const;
 
 export type SettingSchemas = typeof SETTING_SCHEMAS;
@@ -1493,6 +1514,104 @@ export const pricingPreviewQuerySchema = z.object({
 export const cancelCampaignPreviewSchema = z.object({
   reason: z.string().trim().max(500).optional(),
 });
+
+// ============================================================================
+// Phase 13: Reports & Ads Validation Schemas
+// ============================================================================
+
+export const createCampaignReportSchema = z.object({
+  type: z.enum(['CAMPAIGN_INTERIM']).default('CAMPAIGN_INTERIM'),
+  language: z.enum(['en', 'hi', 'gu']).default('en'),
+});
+export type CreateCampaignReportInput = z.infer<typeof createCampaignReportSchema>;
+
+export const createDriverEarningsReportSchema = z.object({
+  from: z.string().optional(),
+  to: z.string().optional(),
+  assignmentId: z.string().optional(),
+});
+export type CreateDriverEarningsReportInput = z.infer<typeof createDriverEarningsReportSchema>;
+
+export const createFinanceMonthlyPackSchema = z.object({
+  month: z.string().regex(/^\d{4}-\d{2}$/, 'Format must be YYYY-MM'),
+});
+export type CreateFinanceMonthlyPackInput = z.infer<typeof createFinanceMonthlyPackSchema>;
+
+export const createLocalAdvertiserSchema = z.object({
+  businessName: z.string().trim().min(2).max(100),
+  category: z.nativeEnum(LOCAL_AD_CATEGORIES),
+  contactName: z.string().trim().min(2).max(100),
+  contactMobile: z.string().regex(/^\+?[1-9]\d{9,14}$/, 'Invalid mobile phone number'),
+  contactEmail: emailSchema.optional().nullable(),
+  address: z.string().trim().max(255).optional().nullable(),
+  cityId: z.string().optional().nullable(),
+  notes: z.string().trim().max(1000).optional().nullable(),
+});
+export type CreateLocalAdvertiserInput = z.infer<typeof createLocalAdvertiserSchema>;
+
+export const updateLocalAdvertiserSchema = createLocalAdvertiserSchema.partial();
+export type UpdateLocalAdvertiserInput = z.infer<typeof updateLocalAdvertiserSchema>;
+
+export const createLocalAdSchema = z.object({
+  advertiserId: z.string().min(1),
+  titleByLanguage: z.record(z.string().min(1).max(100)),
+  bodyByLanguage: z.record(z.string().min(1).max(300)),
+  imageFileKey: z.string().min(1),
+  format: z.nativeEnum(LOCAL_AD_FORMATS).default(LOCAL_AD_FORMATS.BANNER),
+  ctaType: z.nativeEnum(LOCAL_AD_CTA_TYPES),
+  ctaValue: z.string().min(1).max(255),
+  targeting: z.object({
+    cityIds: z.array(z.string()).optional(),
+    zoneIds: z.array(z.string()).optional(),
+  }).optional(),
+  startDate: z.string(),
+  endDate: z.string(),
+  priority: z.coerce.number().int().min(0).max(100).default(0),
+  weight: z.coerce.number().int().min(1).max(100).default(1),
+  dailyImpressionCap: z.coerce.number().int().positive().optional().nullable(),
+  pricingModel: z.enum(['FLAT_MONTHLY', 'MANUAL']).default('FLAT_MONTHLY'),
+  agreedAmountPaise: z.string().regex(/^\d+$/).default('0'),
+});
+export type CreateLocalAdInput = z.infer<typeof createLocalAdSchema>;
+
+export const updateLocalAdSchema = createLocalAdSchema.partial();
+export type UpdateLocalAdInput = z.infer<typeof updateLocalAdSchema>;
+
+export const reviewLocalAdSchema = z.object({
+  decision: z.enum(['APPROVE', 'REJECT']),
+  reasons: z.array(z.nativeEnum(LOCAL_AD_REJECT_REASONS)).optional(),
+  note: z.string().trim().max(500).optional(),
+});
+export type ReviewLocalAdInput = z.infer<typeof reviewLocalAdSchema>;
+
+export const localAdEventSchema = z.object({
+  eventType: z.enum(['IMPRESSION', 'CLICK']),
+  viewId: z.string().optional(),
+});
+export type LocalAdEventInput = z.infer<typeof localAdEventSchema>;
+
+export const adBatchEventsSchema = z.object({
+  events: z.array(
+    z.object({
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      placement: z.nativeEnum(AD_PLACEMENTS),
+      source: z.nativeEnum(AD_SOURCES),
+      type: z.enum(['LOADED', 'FAILED', 'IMPRESSION', 'CLICK']),
+    }),
+  ).min(1).max(100),
+});
+export type AdBatchEventsInput = z.infer<typeof adBatchEventsSchema>;
+
+export const createAdRevenueEntrySchema = z.object({
+  month: z.string().regex(/^\d{4}-\d{2}$/, 'Month format must be YYYY-MM'),
+  source: z.nativeEnum(AD_SOURCES),
+  advertiserId: z.string().optional().nullable(),
+  amountPaise: z.string().regex(/^\d+$/, 'amountPaise must be non-negative integer string'),
+  currencyNote: z.string().max(10).default('INR'),
+  note: z.string().trim().max(500).optional().nullable(),
+});
+export type CreateAdRevenueEntryInput = z.infer<typeof createAdRevenueEntrySchema>;
+
 
 
 

@@ -72,6 +72,13 @@ import type {
   AddDriverDocumentInput,
   UpdateDriverPayoutDetailsInput,
   SubmitDriverConsentsInput,
+  GeneratedReportDto,
+  PublicReportVerifyDto,
+  LocalAdvertiserDto,
+  LocalAdDto,
+  ServedLocalAdDto,
+  AdPlacementHealthDto,
+  AdRevenueEntryDto,
 } from '@ap/shared-types';
 import type {
   DriverOtpRequestInput,
@@ -1915,6 +1922,182 @@ export class ApiClient {
 
   async getHelpArticle(id: string): Promise<any> {
     return this.request(`help/${id}`, { method: 'GET' });
+  }
+
+  // ============================================================================
+  // Phase 13: Reports & Ads Methods
+  // ============================================================================
+
+  // Company Reports
+  async createCampaignReport(campaignId: string, input: { type?: string; language?: string }): Promise<GeneratedReportDto> {
+    return this.request(`company/campaigns/${campaignId}/reports`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async listCampaignReports(campaignId: string): Promise<GeneratedReportDto[]> {
+    return this.request(`company/campaigns/${campaignId}/reports`, { method: 'GET' });
+  }
+
+  async getReportDownloadUrl(reportId: string): Promise<{ url: string; expiresAt: string }> {
+    return this.request(`reports/${reportId}/download`, { method: 'GET' });
+  }
+
+  // Driver Reports
+  async createDriverEarningsReport(input: { from?: string; to?: string; assignmentId?: string }): Promise<GeneratedReportDto> {
+    return this.request('driver/reports/earnings', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async listDriverReports(): Promise<GeneratedReportDto[]> {
+    return this.request('driver/reports', { method: 'GET' });
+  }
+
+  // Finance Monthly Pack
+  async createFinanceMonthlyPack(input: { month: string }): Promise<GeneratedReportDto> {
+    return this.request('admin/reports/finance-monthly', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  // Admin Reports Management
+  async adminListGeneratedReports(params?: Record<string, any>): Promise<{ reports: GeneratedReportDto[]; total: number }> {
+    const q = new URLSearchParams();
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        if (v !== undefined && v !== null && v !== '') q.set(k, String(v));
+      }
+    }
+    return this.request(`admin/reports?${q.toString()}`, { method: 'GET' });
+  }
+
+  async adminRegenerateReport(reportId: string, reason?: string): Promise<GeneratedReportDto> {
+    return this.request(`admin/reports/${reportId}/regenerate`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  }
+
+  // Public Report Verification
+  async verifyReport(publicId: string, hash: string): Promise<PublicReportVerifyDto> {
+    return this.request(`public/reports/verify/${publicId}?hash=${encodeURIComponent(hash)}`, { method: 'GET' });
+  }
+
+  // Admin Local Ads & Advertisers
+  async adminListLocalAdvertisers(params?: Record<string, any>): Promise<{ advertisers: LocalAdvertiserDto[]; total: number }> {
+    const q = new URLSearchParams();
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        if (v !== undefined && v !== null && v !== '') q.set(k, String(v));
+      }
+    }
+    return this.request(`admin/ads/advertisers?${q.toString()}`, { method: 'GET' });
+  }
+
+  async adminCreateLocalAdvertiser(data: any): Promise<LocalAdvertiserDto> {
+    return this.request('admin/ads/advertisers', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminUpdateLocalAdvertiser(id: string, data: any): Promise<LocalAdvertiserDto> {
+    return this.request(`admin/ads/advertisers/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminListLocalAds(params?: Record<string, any>): Promise<{ ads: LocalAdDto[]; total: number }> {
+    const q = new URLSearchParams();
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        if (v !== undefined && v !== null && v !== '') q.set(k, String(v));
+      }
+    }
+    return this.request(`admin/ads?${q.toString()}`, { method: 'GET' });
+  }
+
+  async adminCreateLocalAd(data: any): Promise<LocalAdDto> {
+    return this.request('admin/ads', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminUpdateLocalAd(id: string, data: any): Promise<LocalAdDto> {
+    return this.request(`admin/ads/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminReviewLocalAd(id: string, data: { decision: string; reasons?: string[]; note?: string }): Promise<LocalAdDto> {
+    return this.request(`admin/ads/${id}/review`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminGetLocalAdStats(id: string, params?: { from?: string; to?: string }): Promise<any> {
+    const q = new URLSearchParams();
+    if (params?.from) q.set('from', params.from);
+    if (params?.to) q.set('to', params.to);
+    return this.request(`admin/ads/${id}/stats?${q.toString()}`, { method: 'GET' });
+  }
+
+  async adminTriggerLocalAdPerformanceReport(advertiserId: string, params: { from: string; to: string; language?: string }): Promise<GeneratedReportDto> {
+    return this.request(`admin/ads/advertisers/${advertiserId}/performance-report`, {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
+  // Admin Ads Health & Revenue
+  async adminListAdPlacementHealth(params?: { from?: string; to?: string }): Promise<AdPlacementHealthDto[]> {
+    const q = new URLSearchParams();
+    if (params?.from) q.set('from', params.from);
+    if (params?.to) q.set('to', params.to);
+    return this.request(`admin/ads/health?${q.toString()}`, { method: 'GET' });
+  }
+
+  async adminListAdRevenueEntries(params?: { month?: string }): Promise<AdRevenueEntryDto[]> {
+    const q = new URLSearchParams();
+    if (params?.month) q.set('month', params.month);
+    return this.request(`admin/ads/revenue?${q.toString()}`, { method: 'GET' });
+  }
+
+  async adminCreateAdRevenueEntry(data: any): Promise<AdRevenueEntryDto> {
+    return this.request('admin/ads/revenue', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Driver Ads Serving & Telemetry
+  async driverGetLocalAds(params: { placement: string; limit?: number }): Promise<{ ads: ServedLocalAdDto[] }> {
+    const q = new URLSearchParams();
+    q.set('placement', params.placement);
+    if (params.limit) q.set('limit', String(params.limit));
+    return this.request(`driver/local-ads?${q.toString()}`, { method: 'GET' });
+  }
+
+  async driverRecordLocalAdEvent(adId: string, data: { eventType: 'IMPRESSION' | 'CLICK'; viewId?: string }): Promise<{ recorded: boolean }> {
+    return this.request(`driver/local-ads/${adId}/events`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async driverRecordAdBatchEvents(data: { events: Array<{ date: string; placement: string; source: string; type: string }> }): Promise<{ recorded: boolean; count: number }> {
+    return this.request('driver/ad-events', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 }
 

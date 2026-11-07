@@ -71,6 +71,15 @@ import type {
   ContactMessageStatus,
   CompanyPermission,
   ExportJobKind,
+  ReportType,
+  ReportStatus,
+  AdSource,
+  LocalAdCategory,
+  LocalAdStatus,
+  LocalAdFormat,
+  LocalAdCtaType,
+  LocalAdRejectReason,
+  AdPlacement,
 } from '@ap/shared-constants';
 
 
@@ -1646,12 +1655,24 @@ export interface DriverCaptureRulesDto {
   };
 }
 
+export interface AppConfigAdsDto {
+  enabled: boolean;
+  localAdsEnabled: boolean;
+  placements: Record<string, boolean>;
+  maxPerScreen: number;
+  listEveryN: number;
+  disableOnSlowNetwork: boolean;
+  personalizedDefault: boolean;
+  maxContentRating: 'G' | 'PG' | 'T' | 'MA';
+}
+
 export interface PublicAppConfigDto {
   minVersion: string;
   latestVersion: string;
   maintenance: boolean;
   maintenanceMessage: string | null;
   environment: string;
+  ads?: AppConfigAdsDto;
 }
 
 export interface DriverOnboardingDto {
@@ -1732,6 +1753,130 @@ export interface SubmitDriverConsentsInput {
     version: string;
   }>;
 }
+
+// ============================================================================
+// Phase 13: Reports & Ads DTOs
+// ============================================================================
+
+export interface GeneratedReportDto {
+  id: string;
+  publicId: string;
+  type: ReportType;
+  subjectType: string;
+  subjectId: string;
+  language: string;
+  status: ReportStatus;
+  version: number;
+  isFinal: boolean;
+  fileUrl?: string | null;
+  fileSha256?: string | null;
+  snapshotHash: string;
+  snapshot: Record<string, any>;
+  requestedById?: string | null;
+  generatedAt?: string | null;
+  failedReason?: string | null;
+  expiresAt?: string | null;
+  createdAt: string;
+}
+
+export interface PublicReportVerifyDto {
+  valid: boolean;
+  publicId: string;
+  type: ReportType;
+  subjectTitle: string;
+  companyName?: string;
+  generatedAt: string;
+  version: number;
+  isFinal: boolean;
+  hashMatches: boolean;
+}
+
+export interface LocalAdvertiserDto {
+  id: string;
+  businessName: string;
+  category: LocalAdCategory;
+  contactName: string;
+  contactMobile: string;
+  contactEmail?: string | null;
+  address?: string | null;
+  cityId?: string | null;
+  status: string;
+  notes?: string | null;
+  createdById?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LocalAdDto {
+  id: string;
+  advertiserId: string;
+  advertiserName?: string;
+  titleByLanguage: Record<string, string>;
+  bodyByLanguage: Record<string, string>;
+  imageFileKey: string;
+  imageUrl?: string;
+  format: LocalAdFormat;
+  ctaType: LocalAdCtaType;
+  ctaValue: string;
+  targeting?: {
+    cityIds?: string[];
+    zoneIds?: string[];
+  };
+  startDate: string;
+  endDate: string;
+  priority: number;
+  weight: number;
+  dailyImpressionCap?: number | null;
+  pricingModel: string;
+  agreedAmountPaise: string;
+  status: LocalAdStatus;
+  reviewedById?: string | null;
+  reviewReasonCodes?: string[] | null;
+  reviewNote?: string | null;
+  createdById: string;
+  pausedReason?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ServedLocalAdDto {
+  id: string;
+  advertiserName: string;
+  title: string;
+  body: string;
+  imageUrl: string;
+  format: LocalAdFormat;
+  ctaType: LocalAdCtaType;
+  ctaValue: string;
+}
+
+export interface AdPlacementHealthDto {
+  date: string;
+  placement: string;
+  source: AdSource;
+  loaded: number;
+  failed: number;
+  impressions: number;
+  clicks: number;
+  fillRate: number;
+  ctr: number;
+  hasCtrAlert: boolean;
+}
+
+export interface AdRevenueEntryDto {
+  id: string;
+  month: string;
+  source: string;
+  advertiserId?: string | null;
+  advertiserName?: string | null;
+  amountPaise: string;
+  currencyNote: string;
+  note?: string | null;
+  enteredById: string;
+  enteredByEmail?: string;
+  createdAt: string;
+}
+
 
 
 

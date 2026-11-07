@@ -11,6 +11,7 @@ interface PermissionGuardProps {
 
 export function PermissionGuard({ permission, children, fallback }: PermissionGuardProps) {
   const user = useAuthStore((s) => s.user);
+  const permissions = useAuthStore((s) => s.permissions);
   const { t } = useTranslation('auth');
 
   if (!hasPermission(user?.role, permission)) {

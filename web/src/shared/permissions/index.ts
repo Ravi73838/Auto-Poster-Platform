@@ -50,7 +50,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
 
 export function hasPermission(role: Role | null | undefined, permission: Permission): boolean {
   if (!role) return false;
-  if (role === ROLES.SUPER_ADMIN) return true;
+  const upperRole = String(role).toUpperCase().trim();
+  if (upperRole === ROLES.SUPER_ADMIN || upperRole === 'SUPER_ADMIN') return true;
 
   const storePermissions = useAuthStore.getState().permissions;
   if (storePermissions && storePermissions.length > 0) {

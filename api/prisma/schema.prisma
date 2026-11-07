@@ -383,6 +383,8 @@ enum FilePurpose {
   DAILY_PHOTO
   DISPUTE_EVIDENCE
   VEHICLE_PHOTO
+  LOCAL_AD_IMAGE
+  REPORT_DOCUMENT
 }
 
 enum FileStatus {
@@ -397,6 +399,7 @@ enum ConsentType {
   LOCATION
   CAMERA
   POSTER_POLICY
+  ADS_PERSONALIZATION
 }
 
 enum KycReasonCode {
@@ -567,6 +570,7 @@ model City {
   companyProfiles CompanyProfile[]
   campaigns       Campaign[]
   dailyMetrics    DailyMetric[]
+  localAdvertisers LocalAdvertiser[]
 
 
   @@unique([name, state])
@@ -678,6 +682,11 @@ model User {
   sentCompanyInvitations         CompanyInvitation[]       @relation("SentCompanyInvitations")
   acceptedCompanyInvitations     CompanyInvitation[]       @relation("AcceptedCompanyInvitations")
   handledContactMessages         ContactMessage[]          @relation("HandledContactMessages")
+  requestedReports               GeneratedReport[]         @relation("ReportRequestedBy")
+  createdAdvertisers             LocalAdvertiser[]         @relation("AdvertiserCreatedBy")
+  reviewedLocalAds               LocalAd[]                 @relation("LocalAdReviewedBy")
+  createdLocalAds                LocalAd[]                 @relation("LocalAdCreatedBy")
+  enteredAdRevenueEntries        AdRevenueEntry[]          @relation("AdRevenueEnteredBy")
 
   @@map("users")
 }
@@ -816,6 +825,7 @@ model DriverProfile {
   city           City?        @relation(fields: [cityId], references: [id], onDelete: SetNull)
   currentVehicle Vehicle?     @relation(fields: [currentVehicleId], references: [id], onDelete: SetNull)
   driverZones    DriverZone[]
+  generatedReports GeneratedReport[]
 
   @@index([cityId])
   @@index([bankAccountFingerprint])
@@ -860,6 +870,7 @@ model CompanyProfile {
   members        CompanyMember[]
   invitations    CompanyInvitation[]
   billingProfile BillingProfile?
+  generatedReports GeneratedReport[]
 
   @@index([cityId])
   @@map("company_profiles")
@@ -2066,3 +2077,223 @@ model JobRun {
   @@index([status])
   @@map("job_runs")
 }
+
+// ============================================================================
+// Phase 13: Reports, Google Ads (AdMob) and Local Direct Ads
+// ============================================================================
+
+enum ReportType {
+  CAMPAIGN_INTERIM
+  CAMPAIGN_FINAL
+  DRIVER_EARNINGS
+  FINANCE_MONTHLY_PACK
+  LOCAL_AD_PERFORMANCE
+}
+
+enum ReportStatus {
+  QUEUED
+  RUNNING
+  READY
+  FAILED
+  EXPIRED
+}
+
+enum AdSource {
+  ADMOB
+  LOCAL
+  DIRECT
+}
+
+enum LocalAdCategory {
+  TYRE_SHOP
+  FUEL_PUMP
+  MECHANIC
+  AUTO_PARTS
+  INSURANCE
+  FINANCE
+  DRIVER_SERVICES
+  OTHER_APPROVED
+}
+
+enum LocalAdStatus {
+  DRAFT
+  PENDING_REVIEW
+  ACTIVE
+  PAUSED
+  ENDED
+  REJECTED
+}
+
+enum LocalAdFormat {
+  BANNER
+  CARD
+}
+
+enum LocalAdCtaType {
+  CALL
+  WHATSAPP
+  MAPS
+  LINK
+}
+
+enum LocalAdRejectReason {
+  POLICY_CATEGORY
+  MISLEADING_CLAIMS
+  POOR_IMAGE
+  WRONG_LANGUAGE
+  INVALID_CTA
+  NEEDS_DISCLAIMER
+  OTHER
+}
+
+model GeneratedReport {
+  id              String       @id @default(uuid()) @db.Uuid
+  publicId        String       @unique @map("public_id")
+  type            ReportType
+  subjectType     String       @map("subject_type")
+  subjectId       String       @map("subject_id")
+  language        String       @default("en")
+  status          ReportStatus @default(QUEUED)
+  version         Int          @default(1)
+  isFinal         Boolean      @default(false) @map("is_final")
+  supersededById  String?      @map("superseded_by_id") @db.Uuid
+  fileKey         String?      @map("file_key")
+  fileSha256      String?      @map("file_sha256")
+  snapshotHash    String       @map("snapshot_hash")
+  snapshot        Json
+  requestedById   String?      @map("requested_by_id") @db.Uuid
+  ownerCompanyId  String?      @map("owner_company_id") @db.Uuid
+  ownerDriverId   String?      @map("owner_driver_id") @db.Uuid
+  generatedAt     DateTime?    @map("generated_at")
+  failedReason    String?      @map("failed_reason")
+  expiresAt       DateTime?    @map("expires_at")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  requestedBy  User?           @relation("ReportRequestedBy", fields: [requestedById], references: [id], onDelete: SetNull)
+  ownerCompany CompanyProfile? @relation(fields: [ownerCompanyId], references: [id], onDelete: SetNull)
+  ownerDriver  DriverProfile?  @relation(fields: [ownerDriverId], references: [id], onDelete: SetNull)
+
+  @@index([type, subjectId])
+  @@index([status])
+  @@index([ownerCompanyId])
+  @@index([ownerDriverId])
+  @@index([expiresAt])
+  @@map("generated_reports")
+}
+
+model LocalAdvertiser {
+  id            String          @id @default(uuid()) @db.Uuid
+  businessName  String          @map("business_name")
+  category      LocalAdCategory
+  contactName   String          @map("contact_name")
+  contactMobile String          @map("contact_mobile")
+  contactEmail  String?         @map("contact_email")
+  address       String?
+  cityId        String?         @map("city_id") @db.Uuid
+  status        String          @default("ACTIVE")
+  notes         String?
+  createdById   String?         @map("created_by_id") @db.Uuid
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  city      City?     @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  createdBy User?     @relation("AdvertiserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  ads       LocalAd[]
+
+  @@index([cityId])
+  @@index([status])
+  @@map("local_advertisers")
+}
+
+model LocalAd {
+  id                 String              @id @default(uuid()) @db.Uuid
+  advertiserId       String              @map("advertiser_id") @db.Uuid
+  titleByLanguage    Json                @map("title_by_language")
+  bodyByLanguage     Json                @map("body_by_language")
+  imageFileKey       String              @map("image_file_key")
+  format             LocalAdFormat       @default(BANNER)
+  ctaType            LocalAdCtaType      @map("cta_type")
+  ctaValue           String              @map("cta_value")
+  targeting          Json?
+  startDate          DateTime            @map("start_date")
+  endDate            DateTime            @map("end_date")
+  priority           Int                 @default(0)
+  weight             Int                 @default(1)
+  dailyImpressionCap Int?                @map("daily_impression_cap")
+  pricingModel       String              @default("FLAT_MONTHLY") @map("pricing_model")
+  agreedAmountPaise  BigInt              @default(0) @map("agreed_amount_paise")
+  status             LocalAdStatus       @default(DRAFT)
+  reviewedById       String?             @map("reviewed_by_id") @db.Uuid
+  reviewReasonCodes  Json?               @map("review_reason_codes")
+  reviewNote         String?             @map("review_note")
+  createdById        String              @map("created_by_id") @db.Uuid
+  pausedReason       String?             @map("paused_reason")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+
+  advertiser LocalAdvertiser    @relation(fields: [advertiserId], references: [id], onDelete: Cascade)
+  reviewedBy User?              @relation("LocalAdReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  createdBy  User               @relation("LocalAdCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  stats      LocalAdStatDaily[]
+
+  @@index([advertiserId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@index([priority, weight])
+  @@map("local_ads")
+}
+
+model LocalAdStatDaily {
+  id          String   @id @default(uuid()) @db.Uuid
+  adId        String   @map("ad_id") @db.Uuid
+  date        DateTime @db.Date
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  ad LocalAd @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  @@unique([adId, date])
+  @@index([date])
+  @@map("local_ad_stats_daily")
+}
+
+model AdPlacementDaily {
+  id               String   @id @default(uuid()) @db.Uuid
+  date             DateTime @db.Date
+  placement        String
+  source           AdSource
+  loaded           Int      @default(0)
+  failed           Int      @default(0)
+  impressions      Int      @default(0)
+  clicks           Int      @default(0)
+  appVersionBucket String   @default("all") @map("app_version_bucket")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@unique([date, placement, source, appVersionBucket])
+  @@index([date, placement])
+  @@map("ad_placements_daily")
+}
+
+model AdRevenueEntry {
+  id           String   @id @default(uuid()) @db.Uuid
+  month        String   // Format: YYYY-MM
+  source       String   // ADMOB, DIRECT
+  advertiserId String?  @map("advertiser_id") @db.Uuid
+  amountPaise  BigInt   @default(0) @map("amount_paise")
+  currencyNote String   @default("INR") @map("currency_note")
+  note         String?
+  enteredById  String   @map("entered_by_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  enteredBy User @relation("AdRevenueEnteredBy", fields: [enteredById], references: [id], onDelete: Restrict)
+
+  @@index([month])
+  @@index([source])
+  @@map("ad_revenue_entries")
+}
+
