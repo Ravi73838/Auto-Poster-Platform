@@ -18,6 +18,8 @@ import { MyWorkPage } from './features/work-queues/MyWorkPage';
 import { LegalDocsPage } from './features/content/LegalDocsPage';
 import { HelpArticlesPage } from './features/content/HelpArticlesPage';
 import { SystemPage } from './features/system/SystemPage';
+import { LaunchReadinessPage } from './pages/LaunchReadinessPage';
+import { PilotCommandCenterPage } from './pages/PilotCommandCenterPage';
 import { PermissionGuard } from '../../app/guards/PermissionGuard';
 
 export default function AdminPortalRoutes() {
@@ -145,6 +147,14 @@ export default function AdminPortalRoutes() {
         <Route
           path="system"
           element={<SystemPage />}
+        />
+        <Route
+          path="launch-readiness"
+          element={<LaunchReadinessPage />}
+        />
+        <Route
+          path="pilot-command-center"
+          element={<PilotCommandCenterPage />}
         />
       </Route>
     </Routes>

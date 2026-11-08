@@ -184,6 +184,22 @@
 - **Context**: Local B2B advertisers provide high-relevance offers to auto-rickshaw drivers and generate superior margins compared to generic programmatic ad networks. However, ad content must be moderated against predatory lending or counterfeit parts, and driver viewing habits must remain private.
 - **Consequences**: High-yield direct monetization; verified advertiser content; strict privacy preservation through ephemeral in-memory frequency counters.
 
+## ADR-037: Three-Tier Environment Model (`development`, `staging`, `production`), Safe Cutover Guardrails & Live Key Gate
+- **Decision**: Formalize `DB_ENVIRONMENT` into exactly three values: `development`, `staging`, and `production`. Enforce that `development` and `staging` accept ONLY Razorpay TEST API keys; `production` accepts live keys ONLY when all required launch sign-offs in `launch_signoffs` have been confirmed by a Super Admin with step-up verification. Disallow all destructive migrations or cleanup against `staging` and `production`. In non-production environments, restrict SMS, email, and push communications strictly to recipients declared in `NOTIFY_ALLOWLIST` to prevent spamming real users during testing.
+- **Context**: Moving from development to a live pilot requires strict isolation between development, staging (rehearsal), and production (pilot). Accidental execution of cleanup scripts, test payments against live gateway credentials, or leaked customer SMS notifications during rehearsals present catastrophic operational risks.
+- **Consequences**: Provably safe cutover; zero risk of test payments in production or real payments in staging; safe multi-environment test runs with strict notification allow-listing.
+
+## ADR-038: Server-Enforced Pilot Hard Guardrails, Invite-Only Funnel & Waitlist Architecture
+- **Decision**: Implement all pilot constraints as hard server-side guardrails backed by dynamic system settings (`pilot_mode_enabled`, `pilot_invite_only`, `pilot_city_ids`, caps on drivers, companies, campaigns, escrow, and daily payouts). Enforce invite-only onboarding for both drivers and companies with single or multi-use unambiguous alphanumeric invite codes. Divert all non-invited or cap-exceeded users to a polite, consent-driven waitlist with zero automatic marketing spam. Store all cap overrides and exceptions as auditable events in the ledger and audit logs.
+- **Context**: An uncontrolled rollout exposes a nascent platform to operational overload, unmonitored escrow balance spikes, fraudulent registrations, and review queue bottlenecks. Hard server-side enforcement prevents UI bypasses or malicious API exploitation.
+- **Consequences**: Predictable, risk-bounded pilot in a single target city; seamless conversion from invite codes to registrations; automated waitlist capture for post-pilot expansion.
+
+## ADR-039: Injectable Application Clock for Rehearsal & Game Day Simulation without Destructive State
+- **Decision**: Abstract system time retrieval behind an injectable application clock service (`api/src/shared/clock`). When `CLOCK_CONTROL_ENABLED=true` (which is strictly forbidden and rejected at startup in `production`), expose Super Admin endpoints and CLI tooling to offset the application clock forward across days or hours. All background jobs, day rollovers, SLA evaluations, grace periods, and settlements evaluate due timestamps against this clock.
+- **Context**: Thoroughly testing a 15-day campaign lifecycle, consecutive missed photo strikes, settlement delays, and disaster recovery scenarios cannot wait for 15 real-world calendar days during dress rehearsals. Modifying database timestamps directly damages foreign keys and violates financial ledger immutability invariants.
+- **Consequences**: Multi-day operational lifecycle rehearsal completed in minutes; zero database tampering; strictly locked out of production environments.
+
+
 
 
 

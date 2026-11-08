@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { LanguageSwitcher } from '../../shared/components/LanguageSwitcher';
 import { ThemeSwitcher } from '../../shared/components/ThemeSwitcher';
+import { EnvironmentRibbon } from '../../shared/components/EnvironmentRibbon';
 import { useAuthStore } from '../../shared/store/authStore';
 import { useApiClient } from '../../shared/lib/api';
 import { ACCOUNT_STATUS } from '@ap/shared-constants';
@@ -98,6 +99,7 @@ export function CompanyLayout() {
 
       {/* Main Container */}
       <div className="flex-1 flex flex-col min-w-0">
+        <EnvironmentRibbon />
         <header className="h-16 px-8 border-b border-border bg-surface flex items-center justify-between shrink-0">
           <div className="text-sm font-medium text-textSecondary truncate">
             {user?.email || user?.mobile}

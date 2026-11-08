@@ -71,6 +71,18 @@ describe('db-guard', () => {
     expect(() => assertDbGuard('seed:demo', { targetSchema: 'public' })).not.toThrow();
   });
 
+  it('enforces staging rules: permits rehearsal, gameday, e2e seeds, but prohibits demo seeds', () => {
+    process.env.DB_ENVIRONMENT = 'staging';
+    process.env.NODE_ENV = 'development';
+
+    expect(() => assertDbGuard('rehearsal')).not.toThrow();
+    expect(() => assertDbGuard('gameday')).not.toThrow();
+    expect(() => assertDbGuard('seed:e2e')).not.toThrow();
+    expect(() => assertDbGuard('seed:base', { targetSchema: 'public' })).not.toThrow();
+    expect(() => assertDbGuard('seed:demo')).toThrow(/PROHIBITED when DB_ENVIRONMENT="staging"/);
+    expect(() => assertDbGuard('seed:load')).toThrow(/PROHIBITED when DB_ENVIRONMENT="staging"/);
+  });
+
   it('allows valid combinations', () => {
     process.env.DB_ENVIRONMENT = 'development';
     process.env.NODE_ENV = 'development';

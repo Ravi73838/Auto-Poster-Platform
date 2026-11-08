@@ -385,6 +385,7 @@ enum FilePurpose {
   VEHICLE_PHOTO
   LOCAL_AD_IMAGE
   REPORT_DOCUMENT
+  FEEDBACK_ATTACHMENT
 }
 
 enum FileStatus {
@@ -512,6 +513,7 @@ enum LegalDocumentType {
   PRIVACY
   POSTER_POLICY
   DRIVER_AGREEMENT
+  PILOT_TERMS
 }
 
 enum LegalDocumentStatus {
@@ -687,6 +689,14 @@ model User {
   reviewedLocalAds               LocalAd[]                 @relation("LocalAdReviewedBy")
   createdLocalAds                LocalAd[]                 @relation("LocalAdCreatedBy")
   enteredAdRevenueEntries        AdRevenueEntry[]          @relation("AdRevenueEnteredBy")
+  inviteCodesCreated             InviteCode[]              @relation("InviteCodeCreatedBy")
+  anomaliesResolved              AnomalyFinding[]          @relation("AnomalyResolvedBy")
+  secondLooksOriginal            ReviewSecondLook[]        @relation("SecondLookOriginalReviewer")
+  secondLooksSecond              ReviewSecondLook[]        @relation("SecondLookSecondReviewer")
+  feedbacks                      Feedback[]                @relation("UserFeedback")
+  supportRequests                SupportRequest[]          @relation("UserSupportRequests")
+  supportAssigned                SupportRequest[]          @relation("SupportAssignedTo")
+  pilotReportNotes               PilotReportNote[]         @relation("PilotReportNotes")
 
   @@map("users")
 }
@@ -1318,6 +1328,7 @@ model Photo {
   strikes           Strike[]
   posterFixSources  PosterFixNotice[] @relation("PosterFixSourcePhoto")
   posterFixResolved PosterFixNotice[] @relation("PosterFixResolvedPhoto")
+  secondLooks       ReviewSecondLook[]
 
   @@index([assignmentId])
   @@index([driverId])
@@ -2088,6 +2099,7 @@ enum ReportType {
   DRIVER_EARNINGS
   FINANCE_MONTHLY_PACK
   LOCAL_AD_PERFORMANCE
+  PILOT_WEEKLY
 }
 
 enum ReportStatus {
@@ -2295,5 +2307,177 @@ model AdRevenueEntry {
   @@index([month])
   @@index([source])
   @@map("ad_revenue_entries")
+}
+
+// ============================================================================
+// Phase 15: Pilot Launch Tools & Guardrails
+// ============================================================================
+
+model InviteCode {
+  id          String    @id @default(uuid()) @db.Uuid
+  code        String    @unique
+  role        Role
+  campaignId  String?   @map("campaign_id") @db.Uuid
+  cityId      String?   @map("city_id") @db.Uuid
+  maxUses     Int       @default(1) @map("max_uses")
+  usedCount   Int       @default(0) @map("used_count")
+  status      String    @default("ACTIVE") // ACTIVE, EXHAUSTED, REVOKED, EXPIRED
+  expiresAt   DateTime? @map("expires_at")
+  metadata    Json?
+  createdById String?   @map("created_by_id") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  createdBy   User?     @relation("InviteCodeCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([role, status])
+  @@index([code])
+  @@map("invite_codes")
+}
+
+model WaitlistEntry {
+  id          String   @id @default(uuid()) @db.Uuid
+  role        Role
+  phone       String?
+  email       String?
+  name        String?
+  cityId      String?  @map("city_id") @db.Uuid
+  cityName    String?  @map("city_name")
+  vehicleType String?  @map("vehicle_type")
+  companyName String?  @map("company_name")
+  status      String   @default("PENDING") // PENDING, INVITED, REJECTED, CONVERTED
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([role, status])
+  @@index([phone])
+  @@index([email])
+  @@map("waitlist_entries")
+}
+
+model AnomalyFinding {
+  id             String    @id @default(uuid()) @db.Uuid
+  ruleKey        String    @map("rule_key")
+  severity       String    // LOW, MEDIUM, HIGH, CRITICAL
+  entityType     String    @map("entity_type") // DRIVER, COMPANY, CAMPAIGN, PAYMENT, PAYOUT
+  entityId       String    @map("entity_id")
+  title          String
+  description    String
+  data           Json?
+  status         String    @default("OPEN") // OPEN, RESOLVED, FALSE_POSITIVE, IGNORED
+  resolvedById   String?   @map("resolved_by_id") @db.Uuid
+  resolvedAt     DateTime? @map("resolved_at")
+  resolutionNote String?   @map("resolution_note")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  resolvedBy     User?     @relation("AnomalyResolvedBy", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([status, severity])
+  @@index([entityType, entityId])
+  @@map("anomaly_findings")
+}
+
+model ReviewSecondLook {
+  id                 String    @id @default(uuid()) @db.Uuid
+  photoId            String    @map("photo_id") @db.Uuid
+  originalReviewerId String?   @map("original_reviewer_id") @db.Uuid
+  originalOutcome    String    @map("original_outcome")
+  secondReviewerId   String?   @map("second_reviewer_id") @db.Uuid
+  secondOutcome      String?   @map("second_outcome") // CONFIRMED, OVERTURNED, ESCALATED
+  decisionNote       String?   @map("decision_note")
+  status             String    @default("PENDING") // PENDING, COMPLETED, DISCREPANCY
+  createdAt          DateTime  @default(now()) @map("created_at")
+  reviewedAt         DateTime? @map("reviewed_at")
+
+  photo              Photo     @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  originalReviewer   User?     @relation("SecondLookOriginalReviewer", fields: [originalReviewerId], references: [id], onDelete: SetNull)
+  secondReviewer     User?     @relation("SecondLookSecondReviewer", fields: [secondReviewerId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([photoId])
+  @@map("review_second_looks")
+}
+
+model Feedback {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  role          Role
+  category      String   // DRIVER_APP, POSTER_INSTALL, DAILY_PHOTO, PAYOUT, COMPANY_PORTAL, GENERAL
+  rating        Int
+  npsScore      Int?     @map("nps_score")
+  comment       String?
+  attachmentUrl String?  @map("attachment_url")
+  status        String   @default("NEW") // NEW, REVIEWED, ACTIONED
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user          User     @relation("UserFeedback", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([role, category])
+  @@index([status])
+  @@map("feedbacks")
+}
+
+model SupportRequest {
+  id             String    @id @default(uuid()) @db.Uuid
+  ticketNumber   String    @unique @map("ticket_number")
+  userId         String?   @map("user_id") @db.Uuid
+  role           Role?
+  contactName    String    @map("contact_name")
+  contactPhone   String    @map("contact_phone")
+  category       String    // INSTALLATION, PAYOUT_ISSUE, ACCOUNT_VERIFICATION, APP_CRASH, OTHER
+  priority       String    @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  type           String    @default("TICKET") // TICKET, CALLBACK_REQUEST
+  preferredTime  String?   @map("preferred_time")
+  description    String
+  status         String    @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  assignedToId   String?   @map("assigned_to_id") @db.Uuid
+  resolutionNote String?   @map("resolution_note")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  user           User?     @relation("UserSupportRequests", fields: [userId], references: [id], onDelete: SetNull)
+  assignedTo     User?     @relation("SupportAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  @@index([status, priority])
+  @@index([type])
+  @@map("support_requests")
+}
+
+model PrintShop {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  cityId         String?  @map("city_id") @db.Uuid
+  cityName       String   @map("city_name")
+  address        String
+  latitude       Float
+  longitude      Float
+  phone          String
+  operatingHours String?  @map("operating_hours")
+  status         String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([cityName, status])
+  @@map("print_shops")
+}
+
+model PilotReportNote {
+  id         String   @id @default(uuid()) @db.Uuid
+  weekNumber Int      @map("week_number")
+  year       Int
+  authorId   String   @map("author_id") @db.Uuid
+  narrative  String
+  blockers   String?
+  highlights String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  author     User     @relation("PilotReportNotes", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@unique([year, weekNumber])
+  @@map("pilot_report_notes")
 }
 

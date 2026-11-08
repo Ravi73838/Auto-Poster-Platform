@@ -77,6 +77,18 @@ import type {
   LocalAdCtaType,
   LocalAdRejectReason,
   AdPlacement,
+  InviteCodeStatus,
+  WaitlistStatus,
+  AnomalySeverity,
+  AnomalyStatus,
+  SecondLookOutcome,
+  FeedbackCategory,
+  FeedbackStatus,
+  SupportRequestType,
+  SupportRequestStatus,
+  PrintShopStatus,
+  DbEnvironment,
+  PilotSignOffKey,
 } from '@ap/shared-constants';
 
 
@@ -1873,6 +1885,416 @@ export interface AdRevenueEntryDto {
   enteredByEmail?: string;
   createdAt: string;
 }
+
+// ============================================================================
+// Phase 15: Pilot Launch, Guardrails, Rehearsal and Operations
+// ============================================================================
+
+export interface InviteCodeDto {
+  id: string;
+  code: string;
+  targetRole: Role;
+  cityId?: string | null;
+  cityName?: string | null;
+  label?: string | null;
+  maxUses: number;
+  usedCount: number;
+  expiresAt?: string | null;
+  status: InviteCodeStatus;
+  createdById?: string | null;
+  createdByEmail?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  conversions?: {
+    registeredCount: number;
+    kycApprovedCount: number;
+    campaignSelectedCount: number;
+    firstPaymentCount: number;
+  };
+}
+
+export interface CreateInviteCodeInput {
+  code?: string;
+  targetRole: Role;
+  cityId?: string | null;
+  label?: string | null;
+  maxUses?: number;
+  expiresAt?: string | null;
+}
+
+export interface BatchCreateInviteCodesInput {
+  count: number;
+  targetRole: Role;
+  cityId?: string | null;
+  label?: string | null;
+  maxUses?: number;
+  expiresAt?: string | null;
+}
+
+export interface WaitlistEntryDto {
+  id: string;
+  role: Role;
+  name?: string | null;
+  contactMasked: string;
+  cityName: string;
+  language: string;
+  source: string;
+  status: WaitlistStatus;
+  invitedByCodeId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WaitlistSubmitInput {
+  role: Role;
+  name?: string;
+  contact: string;
+  cityName: string;
+  language?: string;
+  source?: string;
+  consent: boolean;
+  honeypot?: string;
+}
+
+export interface AnomalyFindingDto {
+  id: string;
+  rule: string;
+  severity: AnomalySeverity;
+  subjectType: string;
+  subjectId: string;
+  summary: string;
+  details?: Record<string, unknown> | null;
+  status: AnomalyStatus;
+  notes?: string | null;
+  resolvedById?: string | null;
+  resolvedByEmail?: string | null;
+  resolvedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReviewSecondLookDto {
+  id: string;
+  entityType: string;
+  entityId: string;
+  firstReviewerId: string;
+  firstReviewerEmail?: string;
+  secondReviewerId?: string | null;
+  secondReviewerEmail?: string | null;
+  firstDecision: string;
+  secondDecision?: string | null;
+  outcome: SecondLookOutcome;
+  note?: string | null;
+  escalatedToSuperAdmin: boolean;
+  superAdminResolution?: string | null;
+  createdAt: string;
+  completedAt?: string | null;
+}
+
+export interface FeedbackDto {
+  id: string;
+  userId?: string | null;
+  userEmail?: string | null;
+  role: Role;
+  category: FeedbackCategory;
+  rating?: number | null;
+  text: string;
+  screenName?: string | null;
+  appVersion?: string | null;
+  platform?: string | null;
+  attachmentFileKey?: string | null;
+  attachmentUrl?: string | null;
+  status: FeedbackStatus;
+  tags: string[];
+  handledById?: string | null;
+  handledByEmail?: string | null;
+  handledNotes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateFeedbackInput {
+  category: FeedbackCategory;
+  rating?: number;
+  text: string;
+  screenName?: string;
+  appVersion?: string;
+  platform?: string;
+  attachmentFileKey?: string;
+}
+
+export interface SupportRequestDto {
+  id: string;
+  userId: string;
+  userMobileMasked?: string;
+  userEmail?: string | null;
+  role: Role;
+  type: SupportRequestType;
+  body: string;
+  language: string;
+  preferredCallWindow?: string | null;
+  status: SupportRequestStatus;
+  assignedToId?: string | null;
+  assignedToEmail?: string | null;
+  notes?: string | null;
+  slaDueAt: string;
+  resolvedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateSupportRequestInput {
+  type: SupportRequestType;
+  body: string;
+  preferredCallWindow?: string;
+}
+
+export interface PrintShopDto {
+  id: string;
+  name: string;
+  address: string;
+  cityId?: string | null;
+  cityName?: string | null;
+  zoneId?: string | null;
+  zoneName?: string | null;
+  phone: string;
+  whatsapp?: string | null;
+  mapsUrl?: string | null;
+  priceNote?: string | null;
+  openingHours?: string | null;
+  languagesSpoken: string[];
+  status: PrintShopStatus;
+  notes?: string | null;
+  createdById?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePrintShopInput {
+  name: string;
+  address: string;
+  cityId?: string;
+  zoneId?: string;
+  phone: string;
+  whatsapp?: string;
+  mapsUrl?: string;
+  priceNote?: string;
+  openingHours?: string;
+  languagesSpoken?: string[];
+  notes?: string;
+}
+
+export interface UpdatePrintShopInput extends Partial<CreatePrintShopInput> {
+  status?: PrintShopStatus;
+}
+
+export interface PilotCountersDto {
+  driversCount: number;
+  driversCap: number;
+  companiesCount: number;
+  companiesCap: number;
+  activeCampaignsCount: number;
+  activeCampaignsCap: number;
+  totalEscrowPaise: string;
+  totalEscrowCapPaise: string;
+  todayPayoutPaise: string;
+  todayPayoutCapPaise: string;
+  openCityIds: string[];
+  inviteOnly: boolean;
+  pilotModeEnabled: boolean;
+}
+
+export interface PilotCounters {
+  activeDrivers: number;
+  maxDrivers: number;
+  activeCompanies: number;
+  maxCompanies: number;
+  activeCampaigns: number;
+  maxActiveCampaigns: number;
+  maxSlotsPerCampaign: number;
+  totalEscrowPaise: string;
+  maxTotalEscrowPaise: string;
+  todayPayoutsPaise: string;
+  maxDailyPayoutsPaise: string;
+  maxDriverDailyPayoutPaise: string;
+  isInviteOnlyDrivers: boolean;
+  isInviteOnlyCompanies: boolean;
+  isPilotActive: boolean;
+}
+
+export interface PilotCommandCenterDto {
+  counters: PilotCountersDto;
+  kycFunnel: {
+    submitted: number;
+    underReview: number;
+    approved: number;
+    rejected: number;
+    avgTurnaroundHours: number;
+  };
+  dailyPhotos: {
+    expected: number;
+    received: number;
+    verified: number;
+    underReview: number;
+    missed: number;
+    coveragePercent: number;
+  };
+  reviewQueues: {
+    kycPending: number;
+    campaignPending: number;
+    installationPending: number;
+    dailyPhotoPending: number;
+    disputesOpen: number;
+    settlementsPending: number;
+    payoutsPending: number;
+    refundsPending: number;
+    slaBreachesCount: number;
+  };
+  money: {
+    escrowPaise: string;
+    todayPaymentsPaise: string;
+    todayPayoutsPaise: string;
+    pendingPayoutsPaise: string;
+    reconciliationOk: boolean;
+  };
+  discipline: {
+    activeStrikes: number;
+    activeBans: number;
+    openFixNotices: number;
+  };
+  support: {
+    openCallbacks: number;
+    openHelpTickets: number;
+    feedbackCountToday: number;
+  };
+  reliability: {
+    errorRatePercent: number;
+    crashFreeSessionsPercent: number;
+    queueLagSeconds: number;
+    workerHeartbeatOk: boolean;
+  };
+  anomalies: AnomalyFindingDto[];
+  attentionItems: {
+    title: string;
+    severity: AnomalySeverity;
+    count: number;
+    link: string;
+  }[];
+}
+
+export interface PilotCommandCenter {
+  counters: PilotCounters;
+  readiness: LaunchReadiness;
+  anomalies: {
+    totalOpen: number;
+    critical: number;
+    high: number;
+    medium: number;
+    low: number;
+  };
+  pendingSecondLooks: number;
+  feedback: {
+    avgRating: number;
+    avgNps: number;
+    recent: any[];
+  };
+  support: {
+    openTickets: number;
+    openCallbacks: number;
+  };
+}
+
+export interface LaunchReadinessItem {
+  id: string;
+  title: string;
+  category: 'SECURITY' | 'DATABASE' | 'MONITORING' | 'SETTINGS' | 'LEGAL' | 'OPERATIONS';
+  status: 'PASS' | 'FAIL' | 'MANUAL';
+  blocking: boolean;
+  attestedBy?: string | null;
+  attestedAt?: string | null;
+  remediation: string;
+  details?: string | null;
+}
+
+export interface LaunchReadinessResponse {
+  isLaunchReady: boolean;
+  environment: DbEnvironment;
+  items: LaunchReadinessItem[];
+  missingBlockingCount: number;
+  totalItems: number;
+}
+
+export interface PilotSignOff {
+  key: PilotSignOffKey;
+  label: string;
+  description: string;
+  attested: boolean;
+  attestedBy?: string | null;
+  attestedByEmail?: string | null;
+  attestedAt?: string | null;
+  notes?: string | null;
+  ipAddress?: string | null;
+}
+
+export interface LaunchReadiness {
+  environment: DbEnvironment;
+  overallStatus: 'READY' | 'WARNING' | 'BLOCKED';
+  allSignOffsComplete: boolean;
+  signOffs: PilotSignOff[];
+  checks: Array<{
+    id: string;
+    name: string;
+    status: 'PASS' | 'WARN' | 'FAIL';
+    message: string;
+  }>;
+  checkedAt: string;
+}
+
+export interface ClockState {
+  simulatedTime: string;
+  simulatedTimeIst: string;
+  todayIst: string;
+  offsetMs: number;
+  isRealTime: boolean;
+  environment: string;
+}
+
+export interface LaunchSignOffAttestationInput {
+  signOffKey: PilotSignOffKey;
+  evidenceNote: string;
+}
+
+export interface ClockStateDto {
+  systemTime: string;
+  effectiveTime: string;
+  offsetSeconds: number;
+  isClockShifted: boolean;
+  clockControlEnabled: boolean;
+}
+
+export interface AdvanceClockInput {
+  days?: number;
+  hours?: number;
+  minutes?: number;
+}
+
+export interface PilotReportNoteDto {
+  id: string;
+  weekIdentifier: string;
+  narrative: string;
+  status: 'DRAFT' | 'FINALISED';
+  authorId: string;
+  authorEmail?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SavePilotReportNoteInput {
+  weekIdentifier: string;
+  narrative: string;
+  finalise?: boolean;
+}
+
 
 
 

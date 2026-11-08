@@ -79,6 +79,31 @@ import type {
   ServedLocalAdDto,
   AdPlacementHealthDto,
   AdRevenueEntryDto,
+  InviteCodeDto,
+  CreateInviteCodeInput,
+  BatchCreateInviteCodesInput,
+  WaitlistEntryDto,
+  WaitlistSubmitInput,
+  AnomalyFindingDto,
+  ReviewSecondLookDto,
+  FeedbackDto,
+  CreateFeedbackInput,
+  SupportRequestDto,
+  CreateSupportRequestInput,
+  PrintShopDto,
+  CreatePrintShopInput,
+  UpdatePrintShopInput,
+  PilotCountersDto,
+  PilotCommandCenterDto,
+  LaunchReadinessResponse,
+  LaunchReadiness,
+  LaunchSignOffAttestationInput,
+  ClockStateDto,
+  ClockState,
+  AdvanceClockInput,
+  PilotReportNoteDto,
+  SavePilotReportNoteInput,
+  PilotCommandCenter,
 } from '@ap/shared-types';
 import type {
   DriverOtpRequestInput,
@@ -2095,6 +2120,254 @@ export class ApiClient {
 
   async driverRecordAdBatchEvents(data: { events: Array<{ date: string; placement: string; source: string; type: string }> }): Promise<{ recorded: boolean; count: number }> {
     return this.request('driver/ad-events', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // ============================================================================
+  // Phase 15: Pilot Launch, Guardrails, Rehearsal and Operations
+  // ============================================================================
+
+  // Invite Codes
+  async validateInviteCode(code: string): Promise<{ valid: boolean; role?: string; cityName?: string; message?: string }> {
+    return this.request(`public/invite-codes/${encodeURIComponent(code)}/validate`, { method: 'GET' });
+  }
+
+  async adminListInviteCodes(params?: { page?: number; limit?: number; status?: string; role?: string }): Promise<{ items: InviteCodeDto[]; total: number }> {
+    const q = new URLSearchParams();
+    if (params?.page) q.set('page', String(params.page));
+    if (params?.limit) q.set('limit', String(params.limit));
+    if (params?.status) q.set('status', params.status);
+    if (params?.role) q.set('role', params.role);
+    return this.request(`admin/invite-codes?${q.toString()}`, { method: 'GET' });
+  }
+
+  async adminCreateInviteCode(data: CreateInviteCodeInput): Promise<InviteCodeDto> {
+    return this.request('admin/invite-codes', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminBatchCreateInviteCodes(data: BatchCreateInviteCodesInput): Promise<{ count: number; codes: InviteCodeDto[] }> {
+    return this.request('admin/invite-codes/batch', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminUpdateInviteCodeStatus(id: string, status: string): Promise<InviteCodeDto> {
+    return this.request(`admin/invite-codes/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  async adminDownloadInviteQrSheet(id: string): Promise<Blob | ArrayBuffer | string> {
+    return this.request(`admin/invite-codes/${id}/qr-sheet`, { method: 'GET' });
+  }
+
+  // Waitlist
+  async submitWaitlist(data: WaitlistSubmitInput): Promise<{ message: string }> {
+    return this.request('public/waitlist', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminListWaitlist(params?: { page?: number; limit?: number; status?: string; role?: string }): Promise<{ items: WaitlistEntryDto[]; total: number }> {
+    const q = new URLSearchParams();
+    if (params?.page) q.set('page', String(params.page));
+    if (params?.limit) q.set('limit', String(params.limit));
+    if (params?.status) q.set('status', params.status);
+    if (params?.role) q.set('role', params.role);
+    return this.request(`admin/waitlist?${q.toString()}`, { method: 'GET' });
+  }
+
+  async adminInviteWaitlistEntry(id: string): Promise<{ message: string; inviteCode: string }> {
+    return this.request(`admin/waitlist/${id}/invite`, {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+  }
+
+  // Pilot Counters & Command Center
+  async getPilotCounters(): Promise<PilotCountersDto> {
+    return this.request('admin/pilot/counters', { method: 'GET' });
+  }
+
+  async adminGetPilotCommandCenter(): Promise<PilotCommandCenter> {
+    return this.request('admin/pilot/command-center', { method: 'GET' });
+  }
+
+  // Anomalies
+  async adminListAnomalies(params?: { page?: number; limit?: number; status?: string; severity?: string }): Promise<{ items: AnomalyFindingDto[]; total: number }> {
+    const q = new URLSearchParams();
+    if (params?.page) q.set('page', String(params.page));
+    if (params?.limit) q.set('limit', String(params.limit));
+    if (params?.status) q.set('status', params.status);
+    if (params?.severity) q.set('severity', params.severity);
+    return this.request(`admin/pilot/anomalies?${q.toString()}`, { method: 'GET' });
+  }
+
+  async adminUpdateAnomalyStatus(id: string, data: { status: string; notes?: string }): Promise<AnomalyFindingDto> {
+    return this.request(`admin/pilot/anomalies/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Second-Look Quality Control
+  async adminListSecondLooks(params?: { page?: number; limit?: number; status?: string }): Promise<{ items: ReviewSecondLookDto[]; total: number; agreementPercent: number }> {
+    const q = new URLSearchParams();
+    if (params?.page) q.set('page', String(params.page));
+    if (params?.limit) q.set('limit', String(params.limit));
+    if (params?.status) q.set('status', params.status);
+    return this.request(`admin/quality/second-looks?${q.toString()}`, { method: 'GET' });
+  }
+
+  async adminDecideSecondLook(id: string, data: { decision: string; note?: string }): Promise<ReviewSecondLookDto> {
+    return this.request(`admin/quality/second-looks/${id}/decide`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Feedback & NPS
+  async submitFeedback(data: CreateFeedbackInput): Promise<{ message: string; id: string }> {
+    return this.request('me/feedback', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminListFeedback(params?: { page?: number; limit?: number; category?: string; status?: string }): Promise<{ items: FeedbackDto[]; total: number }> {
+    const q = new URLSearchParams();
+    if (params?.page) q.set('page', String(params.page));
+    if (params?.limit) q.set('limit', String(params.limit));
+    if (params?.category) q.set('category', params.category);
+    if (params?.status) q.set('status', params.status);
+    return this.request(`admin/feedback?${q.toString()}`, { method: 'GET' });
+  }
+
+  async adminUpdateFeedbackStatus(id: string, data: { status: string; handledNotes?: string; tags?: string[] }): Promise<FeedbackDto> {
+    return this.request(`admin/feedback/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Support Requests & Callbacks
+  async submitSupportRequest(data: CreateSupportRequestInput): Promise<{ message: string; id: string; slaDueAt: string }> {
+    return this.request('me/support-requests', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminListSupportRequests(params?: { page?: number; limit?: number; type?: string; status?: string }): Promise<{ items: SupportRequestDto[]; total: number }> {
+    const q = new URLSearchParams();
+    if (params?.page) q.set('page', String(params.page));
+    if (params?.limit) q.set('limit', String(params.limit));
+    if (params?.type) q.set('type', params.type);
+    if (params?.status) q.set('status', params.status);
+    return this.request(`admin/support-requests?${q.toString()}`, { method: 'GET' });
+  }
+
+  async adminUpdateSupportRequest(id: string, data: { status?: string; assignedToId?: string; notes?: string }): Promise<SupportRequestDto> {
+    return this.request(`admin/support-requests/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Partner Print Shops
+  async listPrintShops(params?: { cityId?: string; zoneId?: string }): Promise<{ items: PrintShopDto[] }> {
+    const q = new URLSearchParams();
+    if (params?.cityId) q.set('cityId', params.cityId);
+    if (params?.zoneId) q.set('zoneId', params.zoneId);
+    return this.request(`driver/print-shops?${q.toString()}`, { method: 'GET' });
+  }
+
+  async adminListPrintShops(params?: { page?: number; limit?: number; cityId?: string; status?: string }): Promise<{ items: PrintShopDto[]; total: number }> {
+    const q = new URLSearchParams();
+    if (params?.page) q.set('page', String(params.page));
+    if (params?.limit) q.set('limit', String(params.limit));
+    if (params?.cityId) q.set('cityId', params.cityId);
+    if (params?.status) q.set('status', params.status);
+    return this.request(`admin/print-shops?${q.toString()}`, { method: 'GET' });
+  }
+
+  async adminCreatePrintShop(data: CreatePrintShopInput): Promise<PrintShopDto> {
+    return this.request('admin/print-shops', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminUpdatePrintShop(id: string, data: UpdatePrintShopInput): Promise<PrintShopDto> {
+    return this.request(`admin/print-shops/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminDeletePrintShop(id: string): Promise<{ success: boolean }> {
+    return this.request(`admin/print-shops/${id}`, { method: 'DELETE' });
+  }
+
+  // Launch Readiness & Sign-off Gate
+  async adminGetLaunchReadiness(): Promise<LaunchReadiness> {
+    return this.request('admin/launch/readiness', { method: 'GET' });
+  }
+
+  async adminAttestLaunchSignOff(data: { key: string; notes?: string } | LaunchSignOffAttestationInput): Promise<any> {
+    return this.request('admin/launch/sign-offs', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminWithdrawLaunchSignOff(signOffKey: string): Promise<any> {
+    return this.request(`admin/launch/sign-offs/${signOffKey}`, { method: 'DELETE' });
+  }
+
+  async adminRevokeLaunchSignOff(signOffKey: string): Promise<any> {
+    return this.adminWithdrawLaunchSignOff(signOffKey);
+  }
+
+  // Clock Control (Rehearsals)
+  async devGetClockState(): Promise<ClockState> {
+    return this.request('dev/clock', { method: 'GET' });
+  }
+
+  async devGetClock(): Promise<ClockState> {
+    return this.devGetClockState();
+  }
+
+  async devAdvanceClock(data: AdvanceClockInput): Promise<ClockState> {
+    return this.request('dev/clock/advance', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async devResetClock(): Promise<ClockState> {
+    return this.request('dev/clock/reset', { method: 'POST' });
+  }
+
+  async devRunDueJobsNow(): Promise<{ message: string; jobsTriggered: string[] }> {
+    return this.request('dev/clock/run-due-jobs', { method: 'POST' });
+  }
+
+  // Weekly Pilot Report Notes
+  async adminGetPilotReportNote(weekIdentifier: string): Promise<PilotReportNoteDto | null> {
+    return this.request(`admin/pilot/report-notes/${weekIdentifier}`, { method: 'GET' });
+  }
+
+  async adminSavePilotReportNote(data: SavePilotReportNoteInput): Promise<PilotReportNoteDto> {
+    return this.request('admin/pilot/report-notes', {
       method: 'POST',
       body: JSON.stringify(data),
     });

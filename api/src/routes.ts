@@ -15,6 +15,7 @@ import { createNotificationsRouter } from './modules/notifications/notifications
 import { createMeNotificationsRouter } from './modules/notifications/me-notifications.routes.js';
 import { createDevicesRouter } from './modules/notifications/devices.routes.js';
 import { createDevCampaignRouter } from './modules/campaigns/dev.routes.js';
+import { devClockRouter } from './modules/dev/clock.routes.js';
 import { CampaignPaymentController } from './modules/payments/campaign-payment.controller.js';
 import { ContentController } from './modules/admin/content/content.controller.js';
 
@@ -43,6 +44,7 @@ export function createApiRouter(): Router {
   );
   router.use('/driver', requireRole(ROLES.DRIVER), createDriverRouter());
   router.use('/dev', createDevCampaignRouter());
+  router.use('/dev/clock', devClockRouter);
   router.use('/template', createExampleRouter());
 
   return router;

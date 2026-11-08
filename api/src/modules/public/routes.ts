@@ -6,6 +6,8 @@ export function createPublicRouter(): Router {
 
   router.get('/app-config', PublicController.getAppConfig);
   router.get('/environment', PublicController.getEnvironment);
+  router.get('/invite-codes/:code/validate', PublicController.validateInviteCode);
+  router.post('/waitlist', PublicController.submitWaitlist);
 
   return router;
 }

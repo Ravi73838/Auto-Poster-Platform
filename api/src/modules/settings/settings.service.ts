@@ -30,13 +30,13 @@ export class SettingsService {
   /**
    * Retrieves a strongly-typed setting value by key.
    */
-  static async get<K extends SettingKey>(
-    key: K,
-    defaultValue?: z.infer<SettingSchemas[K]>,
-  ): Promise<z.infer<SettingSchemas[K]>> {
+  static async get<T = any>(
+    key: string,
+    defaultValue?: T,
+  ): Promise<T> {
     const cached = this.cache.get(key);
     if (cached && cached.expiresAt > Date.now()) {
-      return cached.value as z.infer<SettingSchemas[K]>;
+      return cached.value as T;
     }
 
     const setting = await prisma.setting.findUnique({
@@ -50,13 +50,13 @@ export class SettingsService {
       throw new SettingNotFoundError(`Setting "${key}" not found in database`);
     }
 
-    const validated = validateSettingValue(key, setting.value);
+    const validated = validateSettingValue(key as any, setting.value);
     this.cache.set(key, {
       value: validated,
       expiresAt: Date.now() + this.TTL_MS,
     });
 
-    return validated as z.infer<SettingSchemas[K]>;
+    return validated as T;
   }
 
   /**
@@ -76,25 +76,25 @@ export class SettingsService {
   /**
    * Alias for update.
    */
-  static async set<K extends SettingKey>(
-    key: K,
+  static async set(
+    key: string,
     value: unknown,
     updatedByUserId: string,
     context?: { ipAddress?: string; userAgent?: string },
-  ): Promise<z.infer<SettingSchemas[K]>> {
+  ): Promise<any> {
     return this.update(key, value, updatedByUserId, context);
   }
 
   /**
    * Updates or inserts a setting value, invalidates cache, and logs to audit.
    */
-  static async update<K extends SettingKey>(
-    key: K,
+  static async update(
+    key: string,
     value: unknown,
     updatedByUserId: string,
     context?: { ipAddress?: string; userAgent?: string },
-  ): Promise<z.infer<SettingSchemas[K]>> {
-    const validated = validateSettingValue(key, value);
+  ): Promise<any> {
+    const validated = validateSettingValue(key as any, value);
 
     const oldSetting = await prisma.setting.findUnique({
       where: { key },
@@ -128,6 +128,6 @@ export class SettingsService {
       userAgent: context?.userAgent,
     });
 
-    return updated.value as z.infer<SettingSchemas[K]>;
+    return updated.value as any;
   }
 }

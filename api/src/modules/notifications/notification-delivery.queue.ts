@@ -15,6 +15,7 @@ import { getSmsProvider } from '../../integrations/sms/index.js';
 import { getEmailProvider } from '../../integrations/email/index.js';
 import { getNotificationDefinition } from './notification.registry.js';
 import { SettingsService } from '../settings/settings.service.js';
+import { isRecipientAllowlisted } from '../../shared/notifications/allowlist.js';
 
 export const NOTIFICATION_DELIVERY_QUEUE_NAME = 'notification-delivery';
 
@@ -126,6 +127,25 @@ export async function processNotificationDelivery(job: Job<NotificationDeliveryJ
           return;
         }
 
+        // Check notification allowlist in non-production
+        const pushRecipient = user.mobile || user.email || '';
+        if (!isRecipientAllowlisted(pushRecipient)) {
+          logger.info(
+            { userId, deliveryId, recipient: pushRecipient },
+            '[NotificationDelivery] Push skipped: recipient not on NOTIFY_ALLOWLIST',
+          );
+          await prisma.notificationDelivery.update({
+            where: { id: deliveryId },
+            data: {
+              status: DELIVERY_STATUS.DELIVERED,
+              error: 'Recipient not on NOTIFY_ALLOWLIST (suppressed in non-production)',
+              sentAt: new Date(),
+              attempts: { increment: 1 },
+            },
+          });
+          return;
+        }
+
         const tickets = await pushProvider.send(
           targetTokens.map((t) => ({
             to: t.token,
@@ -216,6 +236,24 @@ export async function processNotificationDelivery(job: Job<NotificationDeliveryJ
           return;
         }
 
+        // Check notification allowlist in non-production
+        if (!isRecipientAllowlisted(user.mobile)) {
+          logger.info(
+            { userId, deliveryId, mobile: user.mobile },
+            '[NotificationDelivery] SMS skipped: recipient not on NOTIFY_ALLOWLIST',
+          );
+          await prisma.notificationDelivery.update({
+            where: { id: deliveryId },
+            data: {
+              status: DELIVERY_STATUS.DELIVERED,
+              error: 'Recipient not on NOTIFY_ALLOWLIST (suppressed in non-production)',
+              sentAt: new Date(),
+              attempts: { increment: 1 },
+            },
+          });
+          return;
+        }
+
         const smsProvider = getSmsProvider();
         const templateKey = def?.smsTemplateId ?? 'DLT_OTP_LOGIN';
 
@@ -245,6 +283,24 @@ export async function processNotificationDelivery(job: Job<NotificationDeliveryJ
             data: {
               status: DELIVERY_STATUS.FAILED,
               error: 'User has no email address registered',
+              attempts: { increment: 1 },
+            },
+          });
+          return;
+        }
+
+        // Check notification allowlist in non-production
+        if (!isRecipientAllowlisted(user.email)) {
+          logger.info(
+            { userId, deliveryId, email: user.email },
+            '[NotificationDelivery] Email skipped: recipient not on NOTIFY_ALLOWLIST',
+          );
+          await prisma.notificationDelivery.update({
+            where: { id: deliveryId },
+            data: {
+              status: DELIVERY_STATUS.DELIVERED,
+              error: 'Recipient not on NOTIFY_ALLOWLIST (suppressed in non-production)',
+              sentAt: new Date(),
               attempts: { increment: 1 },
             },
           });

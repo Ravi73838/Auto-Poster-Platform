@@ -43,7 +43,12 @@ export function deriveTestDatabaseUrl(mainDbUrl: string, explicitTestUrl?: strin
 export const rawEnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-    DB_ENVIRONMENT: z.enum(['development', 'production']).default('development'),
+    DB_ENVIRONMENT: z.enum(['development', 'staging', 'production']).default('development'),
+    NOTIFY_ALLOWLIST: z.string().default(''),
+    CLOCK_CONTROL_ENABLED: z.preprocess(
+      (val) => val === 'true' || val === true,
+      z.boolean(),
+    ).default(false),
     API_PORT: z.coerce.number().default(4000),
     DATABASE_URL: z
       .string()
@@ -85,6 +90,8 @@ export const rawEnvSchema = z
     S3_ACCESS_KEY: z.string().default('minioadmin'),
     S3_SECRET_KEY: z.string().default('minioadmin123'),
     S3_FORCE_PATH_STYLE: z.preprocess((val) => val === 'true' || val === true, z.boolean()).default(true),
+    RAZORPAY_KEY_ID: z.string().optional(),
+    RAZORPAY_KEY_SECRET: z.string().optional(),
     ENABLE_DEV_PAYMENT_SIMULATION: z.preprocess(
       (val) => val === 'true' || val === true,
       z.boolean(),
@@ -117,7 +124,16 @@ export const envSchema = rawEnvSchema.superRefine((data, ctx) => {
       }
     }
 
-    if (data.NODE_ENV === 'production') {
+    const isProd = data.NODE_ENV === 'production' || data.DB_ENVIRONMENT === 'production';
+
+    if (isProd) {
+      if (data.CLOCK_CONTROL_ENABLED) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['CLOCK_CONTROL_ENABLED'],
+          message: 'CLOCK_CONTROL_ENABLED is strictly prohibited when DB_ENVIRONMENT is production',
+        });
+      }
       if (data.ENABLE_DEV_PAYMENT_SIMULATION) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -168,5 +184,10 @@ export const env = {
   HMAC_SECRET: resolvedHmacSecret,
   corsOriginsList: parsed.data.CORS_ORIGINS.split(',').map((origin) => origin.trim()),
   webOriginsList: parsed.data.CORS_ORIGINS.split(',').map((origin) => origin.trim()),
+  notifyAllowlist: parsed.data.NOTIFY_ALLOWLIST
+    ? parsed.data.NOTIFY_ALLOWLIST.split(',')
+        .map((target) => target.trim().toLowerCase())
+        .filter(Boolean)
+    : [],
 };
 

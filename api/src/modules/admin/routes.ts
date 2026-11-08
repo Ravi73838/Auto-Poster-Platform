@@ -22,6 +22,8 @@ import { AdminSettingsController } from './settings/admin-settings.controller.js
 import { RolesController } from './roles/roles.controller.js';
 import { ContentController } from './content/content.controller.js';
 import { SystemController } from './system/system.controller.js';
+import { LaunchController } from './launch/launch.controller.js';
+import { PilotAdminController } from './pilot/pilot-admin.controller.js';
 
 export function createAdminRouter(): Router {
   const router = Router();
@@ -138,6 +140,39 @@ export function createAdminRouter(): Router {
     requireStepUp(),
     SystemController.retryJob,
   );
+
+  // Phase 15 Launch Readiness & Sign-offs Gate
+  router.get('/launch/readiness', requirePermission('system.view', 'audit.view'), LaunchController.getReadiness);
+  router.get('/launch/sign-offs', requirePermission('system.view', 'audit.view'), LaunchController.getSignOffs);
+  router.post(
+    '/launch/sign-offs',
+    requireRole(ROLES.SUPER_ADMIN),
+    requireStepUp(),
+    LaunchController.attestSignOff,
+  );
+  router.delete(
+    '/launch/sign-offs/:key',
+    requireRole(ROLES.SUPER_ADMIN),
+    requireStepUp(),
+    LaunchController.revokeSignOff,
+  );
+
+  // Phase 15 Pilot Operations, Command Center, Quality Review & Print Shops
+  router.get('/pilot/command-center', requirePermission('system.view', 'audit.view'), PilotAdminController.getCommandCenter);
+  router.get('/pilot/anomalies', requirePermission('system.view', 'audit.view'), PilotAdminController.listAnomalies);
+  router.patch('/pilot/anomalies/:id', requirePermission('system.manage'), PilotAdminController.resolveAnomaly);
+  router.get('/pilot/quality-review', requirePermission('photo.approve', 'kyc.approve'), PilotAdminController.listSecondLooks);
+  router.post('/pilot/quality-review/:id/decide', requirePermission('photo.approve'), PilotAdminController.decideSecondLook);
+  router.get('/pilot/invite-codes', requirePermission('kyc.view', 'settings.view'), PilotAdminController.listInviteCodes);
+  router.post('/pilot/invite-codes', requirePermission('team.manage', 'settings.manage'), PilotAdminController.createInviteCode);
+  router.post('/pilot/invite-codes/batch', requirePermission('team.manage', 'settings.manage'), PilotAdminController.createInviteBatch);
+  router.delete('/pilot/invite-codes/:id', requirePermission('team.manage', 'settings.manage'), PilotAdminController.revokeInviteCode);
+  router.get('/pilot/waitlist', requirePermission('kyc.view'), PilotAdminController.listWaitlist);
+  router.post('/pilot/waitlist/:id/invite', requirePermission('kyc.review'), PilotAdminController.inviteWaitlist);
+  router.get('/pilot/print-shops', requirePermission('location.manage', 'kyc.view'), PilotAdminController.listPrintShops);
+  router.post('/pilot/print-shops', requirePermission('location.manage'), PilotAdminController.createPrintShop);
+  router.patch('/pilot/print-shops/:id', requirePermission('location.manage'), PilotAdminController.updatePrintShop);
+  router.delete('/pilot/print-shops/:id', requirePermission('location.manage'), PilotAdminController.deletePrintShop);
 
   return router;
 }

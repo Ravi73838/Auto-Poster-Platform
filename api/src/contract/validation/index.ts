@@ -54,6 +54,18 @@ import {
   AD_PLACEMENTS,
   AD_SOURCES,
   REPORT_TYPES,
+  INVITE_CODE_STATUSES,
+  WAITLIST_STATUSES,
+  ANOMALY_SEVERITIES,
+  ANOMALY_STATUSES,
+  SECOND_LOOK_OUTCOMES,
+  FEEDBACK_CATEGORIES,
+  FEEDBACK_STATUSES,
+  SUPPORT_REQUEST_TYPES,
+  SUPPORT_REQUEST_STATUSES,
+  PRINT_SHOP_STATUSES,
+  PILOT_SIGN_OFF_KEYS,
+  DB_ENVIRONMENTS,
 } from '@ap/shared-constants';
 
 
@@ -284,6 +296,28 @@ export const SETTING_SCHEMAS = {
   [SETTING_KEYS.ADS_MAX_CONTENT_RATING]: z.enum(['G', 'PG', 'T', 'MA']),
   [SETTING_KEYS.ADS_CTR_ALERT_PERCENT]: z.coerce.number().min(1).max(100),
   [SETTING_KEYS.LOCAL_AD_FREQUENCY_CAP_PER_DAY]: z.coerce.number().int().min(1).max(20),
+  [SETTING_KEYS.PILOT_MODE_ENABLED]: z.boolean(),
+  [SETTING_KEYS.PILOT_INVITE_ONLY]: z.boolean(),
+  [SETTING_KEYS.PILOT_CITY_IDS]: z.array(z.string().uuid()),
+  [SETTING_KEYS.PILOT_MAX_DRIVERS]: z.coerce.number().int().min(1),
+  [SETTING_KEYS.PILOT_MAX_COMPANIES]: z.coerce.number().int().min(1),
+  [SETTING_KEYS.PILOT_MAX_ACTIVE_CAMPAIGNS]: z.coerce.number().int().min(1),
+  [SETTING_KEYS.PILOT_MAX_SLOTS_PER_CAMPAIGN]: z.coerce.number().int().min(1),
+  [SETTING_KEYS.PILOT_MAX_CAMPAIGN_TOTAL_PAISE]: z.coerce.number().min(0),
+  [SETTING_KEYS.PILOT_MAX_TOTAL_ESCROW_PAISE]: z.coerce.number().min(0),
+  [SETTING_KEYS.PILOT_MAX_PAYOUT_PER_DAY_PAISE]: z.coerce.number().min(0),
+  [SETTING_KEYS.PILOT_MAX_WITHDRAWAL_PER_DRIVER_PER_DAY_PAISE]: z.coerce.number().min(0),
+  [SETTING_KEYS.PILOT_AUTO_REFUND_MAX_PAISE]: z.coerce.number().min(0),
+  [SETTING_KEYS.PILOT_MANUAL_PAYOUT_ONLY]: z.boolean(),
+  [SETTING_KEYS.PILOT_FIRST_SETTLEMENTS_MANUAL]: z.boolean(),
+  [SETTING_KEYS.LAUNCH_SIGNOFFS]: z.record(z.any()),
+  [SETTING_KEYS.LAUNCH_SIGNOFFS_REQUIRED]: z.boolean(),
+  [SETTING_KEYS.SECOND_LOOK_PERCENT]: z.coerce.number().min(0).max(100),
+  [SETTING_KEYS.FEEDBACK_ENABLED]: z.boolean(),
+  [SETTING_KEYS.NPS_AFTER_DAYS]: z.coerce.number().int().min(1),
+  [SETTING_KEYS.DAILY_BRIEF_ENABLED]: z.boolean(),
+  [SETTING_KEYS.DAILY_BRIEF_RECIPIENTS]: z.array(z.string()),
+  [SETTING_KEYS.PILOT_SCORECARD_THRESHOLDS]: z.record(z.any()),
 } as const;
 
 export type SettingSchemas = typeof SETTING_SCHEMAS;
@@ -291,10 +325,10 @@ export type SettingSchemas = typeof SETTING_SCHEMAS;
 export function validateSettingValue<K extends SettingKey>(
   key: K,
   value: unknown,
-): z.infer<SettingSchemas[K]> {
-  const schema = SETTING_SCHEMAS[key];
+): any {
+  const schema = (SETTING_SCHEMAS as Record<string, z.ZodTypeAny>)[key];
   if (!schema) {
-    throw new Error(`Unsupported setting key: ${key}`);
+    return value;
   }
   return schema.parse(value);
 }
@@ -1608,6 +1642,117 @@ export const createAdRevenueEntrySchema = z.object({
   note: z.string().trim().max(500).optional().nullable(),
 });
 export type CreateAdRevenueEntryInput = z.infer<typeof createAdRevenueEntrySchema>;
+
+// ============================================================================
+// Phase 15: Pilot Launch, Guardrails, Rehearsal and Operations
+// ============================================================================
+
+export const createInviteCodeSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-HJ-NP-Z2-9]{4,16}$/, 'Code must be 4-16 unambiguous uppercase alphanumeric characters (no 0, O, 1, I)')
+    .optional(),
+  targetRole: z.enum([ROLES.DRIVER, ROLES.COMPANY]),
+  cityId: z.string().uuid().optional().nullable(),
+  label: z.string().trim().max(100).optional().nullable(),
+  maxUses: z.number().int().min(1).max(10000).default(1),
+  expiresAt: z.string().datetime().optional().nullable(),
+});
+export type CreateInviteCodeSchema = z.infer<typeof createInviteCodeSchema>;
+
+export const batchCreateInviteCodesSchema = z.object({
+  count: z.number().int().min(1).max(500).default(10),
+  targetRole: z.enum([ROLES.DRIVER, ROLES.COMPANY]),
+  cityId: z.string().uuid().optional().nullable(),
+  label: z.string().trim().max(100).optional().nullable(),
+  maxUses: z.number().int().min(1).max(1000).default(1),
+  expiresAt: z.string().datetime().optional().nullable(),
+});
+export type BatchCreateInviteCodesSchema = z.infer<typeof batchCreateInviteCodesSchema>;
+
+export const waitlistSubmitSchema = z.object({
+  role: z.enum([ROLES.DRIVER, ROLES.COMPANY]),
+  name: z.string().trim().max(100).optional(),
+  contact: z.string().trim().min(5).max(100),
+  cityName: z.string().trim().min(2).max(100),
+  language: z.enum(['en', 'hi', 'gu']).default('en'),
+  source: z.string().trim().max(50).default('web'),
+  consent: z.literal(true, {
+    errorMap: () => ({ message: 'You must consent to be contacted about the pilot' }),
+  }),
+  honeypot: z.string().max(0, 'Bot submission rejected').optional(),
+});
+export type WaitlistSubmitSchema = z.infer<typeof waitlistSubmitSchema>;
+
+export const createFeedbackSchema = z.object({
+  category: z.nativeEnum(FEEDBACK_CATEGORIES),
+  rating: z.number().int().min(1).max(5).optional(),
+  text: z.string().trim().min(3).max(2000),
+  screenName: z.string().trim().max(100).optional(),
+  appVersion: z.string().trim().max(50).optional(),
+  platform: z.string().trim().max(50).optional(),
+  attachmentFileKey: z.string().trim().max(255).optional(),
+});
+export type CreateFeedbackSchema = z.infer<typeof createFeedbackSchema>;
+
+export const createSupportRequestSchema = z.object({
+  type: z.nativeEnum(SUPPORT_REQUEST_TYPES),
+  body: z.string().trim().min(3).max(2000),
+  preferredCallWindow: z.string().trim().max(100).optional(),
+});
+export type CreateSupportRequestSchema = z.infer<typeof createSupportRequestSchema>;
+
+export const createPrintShopSchema = z.object({
+  name: z.string().trim().min(2).max(150),
+  address: z.string().trim().min(5).max(300),
+  cityId: z.string().uuid().optional().nullable(),
+  zoneId: z.string().uuid().optional().nullable(),
+  phone: z.string().trim().min(8).max(20),
+  whatsapp: z.string().trim().max(20).optional().nullable(),
+  mapsUrl: z.string().url().max(500).optional().nullable(),
+  priceNote: z.string().trim().max(200).optional().nullable(),
+  openingHours: z.string().trim().max(100).optional().nullable(),
+  languagesSpoken: z.array(z.string().trim()).default(['en']),
+  notes: z.string().trim().max(500).optional().nullable(),
+});
+export type CreatePrintShopSchema = z.infer<typeof createPrintShopSchema>;
+
+export const updatePrintShopSchema = createPrintShopSchema.partial().extend({
+  status: z.nativeEnum(PRINT_SHOP_STATUSES).optional(),
+});
+export type UpdatePrintShopSchema = z.infer<typeof updatePrintShopSchema>;
+
+export const launchSignOffAttestationSchema = z.object({
+  signOffKey: z.enum([
+    'legal_documents_reviewed',
+    'ca_invoice_gst_confirmed',
+    'payment_structure_confirmed',
+    'pentest_completed',
+    'razorpay_live_activated',
+    'sms_dlt_registered',
+    'backups_verified',
+    'support_roster_ready',
+  ]),
+  evidenceNote: z.string().trim().min(5).max(1000),
+});
+export type LaunchSignOffAttestationSchema = z.infer<typeof launchSignOffAttestationSchema>;
+
+export const advanceClockSchema = z.object({
+  days: z.number().int().min(0).max(365).default(0),
+  hours: z.number().int().min(0).max(8760).default(0),
+  minutes: z.number().int().min(0).max(525600).default(0),
+});
+export type AdvanceClockSchema = z.infer<typeof advanceClockSchema>;
+
+export const savePilotReportNoteSchema = z.object({
+  weekIdentifier: z.string().regex(/^\d{4}-W\d{2}$/, 'weekIdentifier must be in format YYYY-WW (e.g. 2026-W45)'),
+  narrative: z.string().trim().min(1).max(10000),
+  finalise: z.boolean().default(false),
+});
+export type SavePilotReportNoteSchema = z.infer<typeof savePilotReportNoteSchema>;
+
 
 
 

@@ -24,12 +24,15 @@ import {
   Activity,
   Search,
   Keyboard,
+  Rocket,
+  Gauge,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { CommandPalette } from '../../portals/admin/components/CommandPalette';
 import { KeyboardShortcutsModal } from '../../portals/admin/components/KeyboardShortcutsModal';
 import { LanguageSwitcher } from '../../shared/components/LanguageSwitcher';
 import { ThemeSwitcher } from '../../shared/components/ThemeSwitcher';
+import { EnvironmentRibbon } from '../../shared/components/EnvironmentRibbon';
 import { useAuthStore } from '../../shared/store/authStore';
 import { useApiClient } from '../../shared/lib/api';
 import { hasPermission, type Permission } from '../../shared/permissions';
@@ -77,6 +80,7 @@ export function AdminLayout() {
     permission?: Permission;
   }[] = [
     { to: '/admin/dashboard', label: t('common:dashboard'), icon: LayoutDashboard },
+    { to: '/admin/pilot-command-center', label: 'Pilot Command Center', icon: Gauge, permission: 'system.view' },
     { to: '/admin/my-work', label: 'My Work / Queues', icon: Inbox },
     { to: '/admin/drivers', label: 'Drivers', icon: Users, permission: 'kyc.approve' },
     { to: '/admin/companies', label: 'Companies', icon: Building, permission: 'kyc.approve' },
@@ -94,6 +98,7 @@ export function AdminLayout() {
     { to: '/admin/team-roles', label: 'Team Roles', icon: Shield, permission: 'team.manage' },
     { to: '/admin/settings', label: 'System Settings', icon: Settings, permission: 'settings.manage' },
     { to: '/admin/system', label: 'System Health', icon: Activity, permission: 'system.view' },
+    { to: '/admin/launch-readiness', label: 'Launch Readiness', icon: Rocket, permission: 'system.view' },
   ];
 
   const visibleNavItems = navItems.filter((item) => {
@@ -163,6 +168,7 @@ export function AdminLayout() {
 
       {/* Main Container */}
       <div className="flex-1 flex flex-col min-w-0">
+        <EnvironmentRibbon />
         <header className="h-16 px-8 border-b border-border bg-surface flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
             <button

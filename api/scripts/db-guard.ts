@@ -8,10 +8,13 @@ export type ScriptTarget =
   | 'deploy'
   | 'seed:base'
   | 'seed:demo'
+  | 'seed:e2e'
   | 'seed:load'
   | 'test'
   | 'perf'
   | 'drop:perf'
+  | 'rehearsal'
+  | 'gameday'
   | 'cleanup:go-live';
 
 export interface GuardOptions {
@@ -93,18 +96,23 @@ export function assertDbGuard(target: ScriptTarget, options?: GuardOptions): voi
   // 1. Check DB_ENVIRONMENT requirement
   if (!dbEnv) {
     throw new Error(
-      `[DB GUARD REFUSAL] DB_ENVIRONMENT is not set. All database scripts require DB_ENVIRONMENT="development" (or "production" for production deploy/go-live).`,
+      `[DB GUARD REFUSAL] DB_ENVIRONMENT is not set. All database scripts require DB_ENVIRONMENT="development", "staging", or "production".`,
     );
   }
 
-  // 2. Prohibit development/destructive operations on production databases
+  const validEnvironments = ['development', 'staging', 'production'];
+  if (!validEnvironments.includes(dbEnv)) {
+    throw new Error(
+      `[DB GUARD REFUSAL] Unrecognized DB_ENVIRONMENT "${dbEnv}". Must be "development", "staging", or "production".`,
+    );
+  }
+
+  // 2. Production Environment Restrictions
   if (dbEnv === 'production') {
-    if (target === 'deploy') {
-      // Production migrations deploy is permitted
+    if (target === 'deploy' || target === 'seed:base') {
       return;
     }
     if (target === 'cleanup:go-live' && options?.allowProductionCleanup) {
-      // Go-live cleanup with explicit production flag
       return;
     }
     throw new Error(
@@ -112,14 +120,33 @@ export function assertDbGuard(target: ScriptTarget, options?: GuardOptions): voi
     );
   }
 
-  if (dbEnv !== 'development') {
+  // 3. Staging Environment Restrictions
+  if (dbEnv === 'staging') {
+    const allowedStagingTargets: ScriptTarget[] = [
+      'deploy',
+      'seed:base',
+      'seed:e2e',
+      'rehearsal',
+      'gameday',
+      'test',
+      'cleanup:go-live',
+    ];
+    if (!allowedStagingTargets.includes(target)) {
+      throw new Error(
+        `[DB GUARD REFUSAL] Operation "${target}" is PROHIBITED when DB_ENVIRONMENT="staging". Staging permits: ${allowedStagingTargets.join(', ')}.`,
+      );
+    }
+  }
+
+  // 4. Seed rules per environment
+  if (target === 'seed:demo' && dbEnv !== 'development') {
     throw new Error(
-      `[DB GUARD REFUSAL] Unrecognized DB_ENVIRONMENT "${dbEnv}". Must be either "development" or "production".`,
+      `[DB GUARD REFUSAL] "seed:demo" is strictly limited to development databases (DB_ENVIRONMENT="development"). Current DB_ENVIRONMENT="${dbEnv}".`,
     );
   }
 
-  // 3. Prohibit execution if NODE_ENV is production (unless target is deploy)
-  if (nodeEnv === 'production' && target !== 'deploy') {
+  // 5. Prohibit execution if NODE_ENV is production (unless target is deploy or seed:base)
+  if (nodeEnv === 'production' && target !== 'deploy' && target !== 'seed:base') {
     throw new Error(
       `[DB GUARD REFUSAL] Operation "${target}" cannot run when NODE_ENV="production".`,
     );

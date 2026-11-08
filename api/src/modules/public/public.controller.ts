@@ -3,6 +3,9 @@ import { SettingsService } from '../settings/settings.service.js';
 import { SETTING_KEYS } from '@ap/shared-constants';
 import type { PublicAppConfigDto } from '@ap/shared-types';
 import { env } from '../../config/env.js';
+import { InviteCodeService } from '../pilot/invite-code.service.js';
+import { WaitlistService } from '../pilot/waitlist.service.js';
+import { waitlistSubmitSchema } from '@ap/shared-validation';
 
 export class PublicController {
   static async getAppConfig(_req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -34,6 +37,27 @@ export class PublicController {
         dbEnvironment: env.DB_ENVIRONMENT || 'development',
       },
     });
+  }
+
+  static async validateInviteCode(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const code = req.params.code as string;
+      const role = req.query.role as any;
+      const result = await InviteCodeService.validateCode(code, role);
+      res.json({ success: true, data: result });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async submitWaitlist(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const input = waitlistSubmitSchema.parse(req.body);
+      const result = await WaitlistService.submit(input);
+      res.status(201).json({ success: true, data: result });
+    } catch (err) {
+      next(err);
+    }
   }
 }
 

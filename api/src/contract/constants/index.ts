@@ -17,6 +17,13 @@ export const ACCOUNT_STATUS = {
 } as const;
 export type AccountStatus = (typeof ACCOUNT_STATUS)[keyof typeof ACCOUNT_STATUS];
 
+export const DB_ENVIRONMENTS = {
+  DEVELOPMENT: 'development',
+  STAGING: 'staging',
+  PRODUCTION: 'production',
+} as const;
+export type DbEnvironment = (typeof DB_ENVIRONMENTS)[keyof typeof DB_ENVIRONMENTS];
+
 export const CAMPAIGN_STATUS = {
   DRAFT: 'DRAFT',
   SUBMITTED: 'SUBMITTED',
@@ -559,6 +566,7 @@ export const FILE_PURPOSES = {
   VEHICLE_PHOTO: 'VEHICLE_PHOTO',
   LOCAL_AD_IMAGE: 'LOCAL_AD_IMAGE',
   REPORT_DOCUMENT: 'REPORT_DOCUMENT',
+  FEEDBACK_ATTACHMENT: 'FEEDBACK_ATTACHMENT',
 } as const;
 export type FilePurpose = (typeof FILE_PURPOSES)[keyof typeof FILE_PURPOSES];
 
@@ -833,6 +841,24 @@ export const ERROR_CODES = {
   AD_POLICY_VIOLATION: 'AD_POLICY_VIOLATION',
   AD_INVALID_CTA: 'AD_INVALID_CTA',
   ADVERTISER_NOT_FOUND: 'ADVERTISER_NOT_FOUND',
+  PILOT_INVITE_REQUIRED: 'PILOT_INVITE_REQUIRED',
+  PILOT_CITY_NOT_OPEN: 'PILOT_CITY_NOT_OPEN',
+  PILOT_DRIVER_CAP_REACHED: 'PILOT_DRIVER_CAP_REACHED',
+  PILOT_COMPANY_CAP_REACHED: 'PILOT_COMPANY_CAP_REACHED',
+  PILOT_CAMPAIGN_CAP_REACHED: 'PILOT_CAMPAIGN_CAP_REACHED',
+  PILOT_ESCROW_CAP_REACHED: 'PILOT_ESCROW_CAP_REACHED',
+  PILOT_PAYOUT_CAP_REACHED: 'PILOT_PAYOUT_CAP_REACHED',
+  LAUNCH_SIGNOFFS_MISSING: 'LAUNCH_SIGNOFFS_MISSING',
+  CLOCK_CONTROL_DISABLED: 'CLOCK_CONTROL_DISABLED',
+  CLOCK_CONTROL_PROD_REFUSED: 'CLOCK_CONTROL_PROD_REFUSED',
+  INVITE_CODE_INVALID: 'INVITE_CODE_INVALID',
+  INVITE_CODE_EXPIRED: 'INVITE_CODE_EXPIRED',
+  INVITE_CODE_EXHAUSTED: 'INVITE_CODE_EXHAUSTED',
+  WAITLIST_ALREADY_REGISTERED: 'WAITLIST_ALREADY_REGISTERED',
+  PRINT_SHOP_NOT_FOUND: 'PRINT_SHOP_NOT_FOUND',
+  FEEDBACK_NOT_FOUND: 'FEEDBACK_NOT_FOUND',
+  SUPPORT_REQUEST_NOT_FOUND: 'SUPPORT_REQUEST_NOT_FOUND',
+  ANOMALY_NOT_FOUND: 'ANOMALY_NOT_FOUND',
 } as const;
 export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
 
@@ -981,6 +1007,28 @@ export const SETTING_KEYS = {
   ADS_MAX_CONTENT_RATING: 'ads_max_content_rating',
   ADS_CTR_ALERT_PERCENT: 'ads_ctr_alert_percent',
   LOCAL_AD_FREQUENCY_CAP_PER_DAY: 'local_ad_frequency_cap_per_day',
+  PILOT_MODE_ENABLED: 'pilot_mode_enabled',
+  PILOT_INVITE_ONLY: 'pilot_invite_only',
+  PILOT_CITY_IDS: 'pilot_city_ids',
+  PILOT_MAX_DRIVERS: 'pilot_max_drivers',
+  PILOT_MAX_COMPANIES: 'pilot_max_companies',
+  PILOT_MAX_ACTIVE_CAMPAIGNS: 'pilot_max_active_campaigns',
+  PILOT_MAX_SLOTS_PER_CAMPAIGN: 'pilot_max_slots_per_campaign',
+  PILOT_MAX_CAMPAIGN_TOTAL_PAISE: 'pilot_max_campaign_total_paise',
+  PILOT_MAX_TOTAL_ESCROW_PAISE: 'pilot_max_total_escrow_paise',
+  PILOT_MAX_PAYOUT_PER_DAY_PAISE: 'pilot_max_payout_per_day_paise',
+  PILOT_MAX_WITHDRAWAL_PER_DRIVER_PER_DAY_PAISE: 'pilot_max_withdrawal_per_driver_per_day_paise',
+  PILOT_AUTO_REFUND_MAX_PAISE: 'pilot_auto_refund_max_paise',
+  PILOT_MANUAL_PAYOUT_ONLY: 'pilot_manual_payout_only',
+  PILOT_FIRST_SETTLEMENTS_MANUAL: 'pilot_first_settlements_manual',
+  LAUNCH_SIGNOFFS: 'launch_signoffs',
+  LAUNCH_SIGNOFFS_REQUIRED: 'launch_signoffs_required',
+  SECOND_LOOK_PERCENT: 'second_look_percent',
+  FEEDBACK_ENABLED: 'feedback_enabled',
+  NPS_AFTER_DAYS: 'nps_after_days',
+  DAILY_BRIEF_ENABLED: 'daily_brief_enabled',
+  DAILY_BRIEF_RECIPIENTS: 'daily_brief_recipients',
+  PILOT_SCORECARD_THRESHOLDS: 'pilot_scorecard_thresholds',
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
@@ -1007,6 +1055,7 @@ export const LEGAL_DOCUMENT_TYPES = {
   PRIVACY: 'PRIVACY',
   POSTER_POLICY: 'POSTER_POLICY',
   DRIVER_AGREEMENT: 'DRIVER_AGREEMENT',
+  PILOT_TERMS: 'PILOT_TERMS',
 } as const;
 export type LegalDocumentType = (typeof LEGAL_DOCUMENT_TYPES)[keyof typeof LEGAL_DOCUMENT_TYPES];
 
@@ -1128,6 +1177,7 @@ export const REPORT_TYPES = {
   DRIVER_EARNINGS: 'DRIVER_EARNINGS',
   FINANCE_MONTHLY_PACK: 'FINANCE_MONTHLY_PACK',
   LOCAL_AD_PERFORMANCE: 'LOCAL_AD_PERFORMANCE',
+  PILOT_WEEKLY: 'PILOT_WEEKLY',
 } as const;
 export type ReportType = (typeof REPORT_TYPES)[keyof typeof REPORT_TYPES];
 
@@ -1202,5 +1252,103 @@ export const AD_PLACEMENTS = {
   OFFERS: 'offers',
 } as const;
 export type AdPlacement = (typeof AD_PLACEMENTS)[keyof typeof AD_PLACEMENTS];
+
+// ============================================================================
+// Phase 15: Pilot Launch, Guardrails, Rehearsal and Operations
+// ============================================================================
+
+export const INVITE_CODE_STATUSES = {
+  ACTIVE: 'ACTIVE',
+  PAUSED: 'PAUSED',
+  EXPIRED: 'EXPIRED',
+  EXHAUSTED: 'EXHAUSTED',
+  REVOKED: 'REVOKED',
+} as const;
+export type InviteCodeStatus = (typeof INVITE_CODE_STATUSES)[keyof typeof INVITE_CODE_STATUSES];
+
+export const WAITLIST_STATUSES = {
+  NEW: 'NEW',
+  INVITED: 'INVITED',
+  JOINED: 'JOINED',
+  REMOVED: 'REMOVED',
+} as const;
+export type WaitlistStatus = (typeof WAITLIST_STATUSES)[keyof typeof WAITLIST_STATUSES];
+
+export const ANOMALY_SEVERITIES = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL',
+} as const;
+export type AnomalySeverity = (typeof ANOMALY_SEVERITIES)[keyof typeof ANOMALY_SEVERITIES];
+
+export const ANOMALY_STATUSES = {
+  OPEN: 'OPEN',
+  ACKNOWLEDGED: 'ACKNOWLEDGED',
+  RESOLVED: 'RESOLVED',
+  FALSE_POSITIVE: 'FALSE_POSITIVE',
+} as const;
+export type AnomalyStatus = (typeof ANOMALY_STATUSES)[keyof typeof ANOMALY_STATUSES];
+
+export const SECOND_LOOK_OUTCOMES = {
+  PENDING: 'PENDING',
+  AGREE: 'AGREE',
+  DISAGREE: 'DISAGREE',
+} as const;
+export type SecondLookOutcome = (typeof SECOND_LOOK_OUTCOMES)[keyof typeof SECOND_LOOK_OUTCOMES];
+
+export const FEEDBACK_CATEGORIES = {
+  BUG: 'BUG',
+  IDEA: 'IDEA',
+  CONFUSING: 'CONFUSING',
+  PRAISE: 'PRAISE',
+  OTHER: 'OTHER',
+} as const;
+export type FeedbackCategory = (typeof FEEDBACK_CATEGORIES)[keyof typeof FEEDBACK_CATEGORIES];
+
+export const FEEDBACK_STATUSES = {
+  NEW: 'NEW',
+  TRIAGED: 'TRIAGED',
+  PLANNED: 'PLANNED',
+  DONE: 'DONE',
+  DECLINED: 'DECLINED',
+} as const;
+export type FeedbackStatus = (typeof FEEDBACK_STATUSES)[keyof typeof FEEDBACK_STATUSES];
+
+export const SUPPORT_REQUEST_TYPES = {
+  CALLBACK: 'CALLBACK',
+  HELP: 'HELP',
+  PAYMENT_QUESTION: 'PAYMENT_QUESTION',
+  KYC_QUESTION: 'KYC_QUESTION',
+  OTHER: 'OTHER',
+} as const;
+export type SupportRequestType = (typeof SUPPORT_REQUEST_TYPES)[keyof typeof SUPPORT_REQUEST_TYPES];
+
+export const SUPPORT_REQUEST_STATUSES = {
+  NEW: 'NEW',
+  ASSIGNED: 'ASSIGNED',
+  CONTACTED: 'CONTACTED',
+  RESOLVED: 'RESOLVED',
+} as const;
+export type SupportRequestStatus = (typeof SUPPORT_REQUEST_STATUSES)[keyof typeof SUPPORT_REQUEST_STATUSES];
+
+export const PRINT_SHOP_STATUSES = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+export type PrintShopStatus = (typeof PRINT_SHOP_STATUSES)[keyof typeof PRINT_SHOP_STATUSES];
+
+export const PILOT_SIGN_OFF_KEYS = [
+  'legal_documents_reviewed',
+  'ca_invoice_gst_confirmed',
+  'payment_structure_confirmed',
+  'pentest_completed',
+  'razorpay_live_activated',
+  'sms_dlt_registered',
+  'backups_verified',
+  'support_roster_ready',
+] as const;
+export type PilotSignOffKey = (typeof PILOT_SIGN_OFF_KEYS)[number];
+
 
 
