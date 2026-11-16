@@ -97,7 +97,7 @@ test.describe('Batch 5: Campaign Detail & Progress Tracking (with Privacy Leaks 
     await loginViaUI(page, TEST_CREDENTIALS.OWNER.email, TEST_CREDENTIALS.OWNER.password);
 
     await page.goto('/company/campaigns');
-    await page.getByRole('heading', { name: 'Festival Mega Sale 2026', exact: true }).click();
+    await page.getByRole('heading', { name: 'Festival Mega Sale 2026', exact: true }).first().click();
 
     // Click Clone button
     await page.locator('button:has-text("Clone")').click();
@@ -113,7 +113,7 @@ test.describe('Batch 5: Campaign Detail & Progress Tracking (with Privacy Leaks 
     await loginViaUI(page, TEST_CREDENTIALS.OWNER.email, TEST_CREDENTIALS.OWNER.password);
 
     await page.goto('/company/campaigns');
-    await page.getByRole('heading', { name: 'Festival Mega Sale 2026', exact: true }).click();
+    await page.getByRole('heading', { name: 'Festival Mega Sale 2026', exact: true }).first().click();
 
     // 1. Scan Overview tab HTML
     const overviewHtml = await page.content();

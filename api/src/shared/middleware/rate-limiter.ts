@@ -9,7 +9,7 @@ export function createRateLimiter(options?: {
 }) {
   return rateLimit({
     windowMs: options?.windowMs ?? 15 * 60 * 1000,
-    max: options?.max ?? 300,
+    max: process.env.NODE_ENV === 'test' ? 100000 : (options?.max ?? 300),
     standardHeaders: true,
     legacyHeaders: false,
     handler: (_req, res) => {

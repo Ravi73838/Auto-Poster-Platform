@@ -38,8 +38,8 @@ test.describe('Batch 4: Campaigns Marketplace & Create Campaign Wizard', () => {
     await expect(page.locator('button:has-text("Active")')).toBeVisible();
 
     // Verify seeded campaign is displayed with ₹69,300 pricing
-    await expect(page.locator('text=Festival Mega Sale 2026')).toBeVisible();
-    await expect(page.locator('text=/₹69,300/')).toBeVisible();
+    await expect(page.locator('text=Festival Mega Sale 2026').first()).toBeVisible();
+    await expect(page.locator('text=/₹69,300/').first()).toBeVisible();
 
     await expectNoRawI18nKeys(page);
     await captureScreenshot(page, 'campaigns-listing-overview', { subfolder: 'batch4-campaigns' });
@@ -56,7 +56,7 @@ test.describe('Batch 4: Campaigns Marketplace & Create Campaign Wizard', () => {
     await searchInput.fill('Festival Mega');
     await page.waitForTimeout(500);
 
-    await expect(page.locator('text=Festival Mega Sale 2026')).toBeVisible();
+    await expect(page.locator('text=Festival Mega Sale 2026').first()).toBeVisible();
 
     // Search for non-existent campaign
     await searchInput.fill('NonExistentCampaignX99');
@@ -65,7 +65,7 @@ test.describe('Batch 4: Campaigns Marketplace & Create Campaign Wizard', () => {
 
     await searchInput.clear();
     await page.waitForTimeout(500);
-    await expect(page.locator('text=Festival Mega Sale 2026')).toBeVisible();
+    await expect(page.locator('text=Festival Mega Sale 2026').first()).toBeVisible();
   });
 
   test('4.3: Create Campaign Wizard Step 1 to Step 4 verifies 50 slots = ₹69,300 live calculation', async ({ page }) => {
