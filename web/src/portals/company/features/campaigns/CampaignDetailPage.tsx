@@ -111,7 +111,8 @@ export function CampaignDetailPage() {
     setIsActionLoading(true);
     setActionError(null);
     try {
-      await api.cancelCampaign(id, cancelReason.trim() || undefined);
+      const reason = cancelReason.trim() || 'Cancelled by advertiser';
+      await api.cancelCampaign(id, reason);
       setIsCancelModalOpen(false);
       await loadCampaign();
     } catch (err) {
