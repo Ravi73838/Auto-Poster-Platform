@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import '../src/config/env.js';
@@ -10,6 +11,41 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const API_ROOT = path.resolve(REPO_ROOT, 'api');
+
+function splitSqlStatements(sql: string): string[] {
+  const statements: string[] = [];
+  let current = '';
+  let inDollarQuote = false;
+
+  const lines = sql.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('--')) continue;
+
+    const count = (line.match(/\$\$/g) || []).length;
+    if (count % 2 !== 0) {
+      inDollarQuote = !inDollarQuote;
+    }
+
+    if (!inDollarQuote && line.includes(';')) {
+      const parts = line.split(';');
+      for (let i = 0; i < parts.length - 1; i++) {
+        current += (current ? '\n' : '') + parts[i];
+        if (current.trim().length > 0) {
+          statements.push(current.trim());
+        }
+        current = '';
+      }
+      current = parts[parts.length - 1] ?? '';
+    } else {
+      current += (current ? '\n' : '') + line;
+    }
+  }
+  if (current.trim().length > 0) {
+    statements.push(current.trim());
+  }
+  return statements;
+}
 
 async function main() {
   const rawTestUrl = env.DATABASE_URL_TEST;
@@ -77,6 +113,21 @@ async function main() {
         console.error(`Statement ${i + 1} failed: ${stmt.slice(0, 100)}...`);
         throw err;
       }
+    }
+
+    // 5. Apply custom raw SQL constraints, partial indexes and triggers
+    const customConstraintsPath = path.resolve(
+      API_ROOT,
+      'prisma/migrations/20261029115211_raw_sql_constraints/migration.sql',
+    );
+    if (fs.existsSync(customConstraintsPath)) {
+      console.log(`[db:test:prepare] Applying custom constraints, partial indexes & triggers...`);
+      const customSql = fs.readFileSync(customConstraintsPath, 'utf-8');
+      const customStatements = splitSqlStatements(customSql);
+      for (const cStmt of customStatements) {
+        await client.$executeRawUnsafe(cStmt);
+      }
+      console.log(`[db:test:prepare] Applied ${customStatements.length} custom constraints & triggers.`);
     }
 
     console.log(`[db:test:prepare] SUCCESS: Test database schema "test" successfully initialized (${rawStatements.length} statements).`);

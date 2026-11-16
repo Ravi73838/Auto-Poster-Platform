@@ -5,7 +5,7 @@ This document tracks the milestones AG-1 through AG-10 for the Auto Poster Platf
 | Milestone | Title | Status | Completion Date | Key Highlights / Notes |
 |:---|:---|:---|:---|:---|
 | **AG-1** | Authentication Simplification (OTP Off) & Testing Foundation | COMPLETED | 2026-11-16 | Baseline health check, reversible AUTH_OTP_ENABLED toggle, driver/company password auth, password step-up, dev test accounts, 49/49 auth tests passing in Supabase test schema |
-| **AG-2** | API Testing & Core Route Verification | NOT STARTED | - | Comprehensive API test coverage across all domain modules |
+| **AG-2** | API Testing & Core Route Verification | IN PROGRESS | - | Comprehensive API test coverage across all domain modules |
 | **AG-3** | Driver Mobile App Hardening & Flow Verification | NOT STARTED | - | Mobile end-to-end user flows, offline queue, location mock verification |
 | **AG-4** | Company Web Portal Hardening & Self-Serve Flows | NOT STARTED | - | Campaign builder, wallet top-up, analytics, report exports |
 | **AG-5** | Admin Portal Operations & Queue Hardening | NOT STARTED | - | Review queues, dispute resolution, financial reconciliations |

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
-import { PrismaClient, type LedgerAccount } from '@prisma/client';
+import type { LedgerAccount } from '@prisma/client';
 import {
   ROLES,
   ACCOUNT_STATUS,
@@ -25,15 +25,7 @@ import {
 } from '../shared/errors/index.js';
 import { disconnectRedis } from '../shared/redis/index.js';
 
-const testDbUrl =
-  process.env.DATABASE_URL_TEST ??
-  'postgresql://autoposter:autoposter_local_secret@127.0.0.1:5432/autoposter_test?schema=public';
-
-const testPrisma = new PrismaClient({
-  datasources: {
-    db: { url: testDbUrl },
-  },
-});
+import { prisma as testPrisma } from '../shared/db/index.js';
 
 describe('Database & Backend Core Integration Tests (autoposter_test)', () => {
   const app = createApp();
@@ -63,12 +55,14 @@ describe('Database & Backend Core Integration Tests (autoposter_test)', () => {
     `);
 
     // Seed default settings for SettingsService testing
-    await testPrisma.setting.create({
-      data: {
+    await testPrisma.setting.upsert({
+      where: { key: SETTING_KEYS.COMMISSION_RATE_BPS },
+      create: {
         key: SETTING_KEYS.COMMISSION_RATE_BPS,
         value: 1500,
         description: 'Commission rate 15%',
       },
+      update: { value: 1500 },
     });
   }, 30000);
 

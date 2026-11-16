@@ -50,3 +50,4 @@ POST /api/v1/admin/users/:userId/reset-password
 Authorization: Bearer <SUPER_ADMIN_TOKEN>
 ```
 Response returns a temporary random password (e.g. `Temp-Abc123xyz!`) and flags the account for `mustChangePassword: true`.
+
