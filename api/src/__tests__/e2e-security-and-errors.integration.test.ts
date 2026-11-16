@@ -160,7 +160,7 @@ describe('Suite 6: Security, RBAC & Negative Boundary Matrix', () => {
         mobile: `+9196${Math.floor(10000000 + Math.random() * 90000000)}`,
         passwordHash,
         role: ROLES.DRIVER,
-        status: ACCOUNT_STATUS.PENDING_APPROVAL,
+        status: ACCOUNT_STATUS.PENDING,
         mobileVerifiedAt: new Date(),
       },
     });

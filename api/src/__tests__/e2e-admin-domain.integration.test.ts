@@ -147,7 +147,7 @@ describe('Suite 4: Admin Domain Flow Endpoints', () => {
       userId: adminUserId,
       platform: 'WEB',
     });
-    adminSessionId = sessionRes.sessionId;
+    adminSessionId = sessionRes.session.id;
     adminToken = sessionRes.accessToken;
 
     // 4. Seed Company User & Profile
@@ -284,7 +284,7 @@ describe('Suite 4: Admin Domain Flow Endpoints', () => {
         lng: 72.56,
         accuracyMeters: 10,
         capturedAt: new Date(),
-        status: DAILY_PHOTO_STATUS.SUBMITTED,
+        status: DAILY_PHOTO_STATUS.PENDING_CHECK,
       },
     });
     dailyPhotoId = photo.id;
