@@ -6,9 +6,9 @@ This document tracks the milestones AG-1 through AG-10 for the Auto Poster Platf
 |:---|:---|:---|:---|:---|
 | **AG-1** | Authentication Simplification (OTP Off) & Testing Foundation | COMPLETED | 2026-11-16 | Baseline health check, reversible AUTH_OTP_ENABLED toggle, driver/company password auth, password step-up, dev test accounts, 49/49 auth tests passing in Supabase test schema |
 | **AG-2** | API Testing & Core Route Verification | COMPLETED | 2026-11-16 | Comprehensive API test coverage across all domain modules: 6 suites, 219 tests (100% pass rate in Supabase test schema); 0 typecheck errors across api, web, mobile; shared contract pure and synced |
-| **AG-3** | Driver Mobile App Hardening & Flow Verification | NOT STARTED | - | Mobile end-to-end user flows, offline queue, location mock verification |
-| **AG-4** | Company Web Portal Hardening & Self-Serve Flows | NOT STARTED | - | Campaign builder, wallet top-up, analytics, report exports |
-| **AG-5** | Admin Portal Operations & Queue Hardening | NOT STARTED | - | Review queues, dispute resolution, financial reconciliations |
+| **AG-3** | Company Web Portal UI Testing, Page-by-Page | IN PROGRESS | - | Page-by-page browser testing, Playwright fixtures, role matrix, i18n & a11y, read-only exploratory pass |
+| **AG-4** | Admin Portal UI Testing, Queue & Flow Hardening | NOT STARTED | - | Review queues, dispute resolution, financial reconciliations, team & settings |
+| **AG-5** | Driver Mobile App Hardening & Flow Verification | NOT STARTED | - | Mobile end-to-end user flows, offline queue, location mock verification |
 | **AG-6** | Daily Photo Proof & Automated Verification Pipeline | NOT STARTED | - | Image analysis pipeline, EXIF/GPS tampering checks, re-review queue |
 | **AG-7** | Ledger, Escrow & Financial Integrity | NOT STARTED | - | Double-entry invariant verification, settlement engine, payout safety |
 | **AG-8** | Security Hardening & Penetration Defense | NOT STARTED | - | Rate limiting, header security, PII encryption at rest, audit immutability |
