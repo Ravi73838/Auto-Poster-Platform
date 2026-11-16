@@ -164,14 +164,18 @@ test.describe('Batch 1: Public & Authentication', () => {
 
     // Navigates to dashboard
     await page.waitForURL(/\/company\/dashboard/, { timeout: 15000 });
-    await expect(page.locator('aside')).toBeVisible();
+    const isMobile = page.viewportSize() ? page.viewportSize()!.width < 768 : false;
+    if (!isMobile) {
+      await expect(page.locator('aside')).toBeVisible();
+    }
+    await expect(page.locator('header')).toBeVisible();
     await expect(page.locator('header')).toContainText(TEST_CREDENTIALS.OWNER.email);
 
     await expectNoRawI18nKeys(page);
     await captureScreenshot(page, 'company-dashboard-after-login', { subfolder: 'batch1-auth' });
 
     // Perform Logout
-    const logoutBtn = page.locator('button:has-text("Log out"), button:has-text("Logout"), button:has(.lucide-log-out)').first();
+    const logoutBtn = page.locator('button:visible:has-text("Log out"), button:visible:has-text("Logout"), button:visible:has(.lucide-log-out)').first();
     await logoutBtn.click();
 
     // Verify redirected back to /login

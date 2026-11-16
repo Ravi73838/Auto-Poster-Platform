@@ -107,6 +107,14 @@ export function CompanyLayout() {
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
             <ThemeSwitcher />
+            <button
+              onClick={handleLogout}
+              className="md:hidden flex items-center p-1.5 text-danger hover:bg-surfaceAlt rounded-lg transition-colors"
+              title={t('auth:logout')}
+              aria-label="Logout"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
           </div>
         </header>
 
