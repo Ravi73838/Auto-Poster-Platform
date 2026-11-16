@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { CompanyCampaignsService } from './company-campaigns.service.js';
 import {
+  uuidSchema,
   createCampaignDraftSchema,
   updateCampaignDraftSchema,
   campaignPricePreviewSchema,
@@ -62,10 +63,11 @@ export class CompanyCampaignsController {
 
   static async updateDraft(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const id = uuidSchema.parse(req.params.id);
       const input = updateCampaignDraftSchema.parse(req.body);
       const result = await CompanyCampaignsService.updateDraft(
         req.auth!.userId,
-        req.params.id!,
+        id,
         input,
       );
       res.status(200).json({ success: true, data: result });
@@ -76,7 +78,8 @@ export class CompanyCampaignsController {
 
   static async deleteDraft(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      await CompanyCampaignsService.deleteDraft(req.auth!.userId, req.params.id!);
+      const id = uuidSchema.parse(req.params.id);
+      await CompanyCampaignsService.deleteDraft(req.auth!.userId, id);
       res.status(200).json({ success: true, data: { success: true } });
     } catch (err) {
       next(err);
@@ -85,7 +88,8 @@ export class CompanyCampaignsController {
 
   static async clone(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const result = await CompanyCampaignsService.clone(req.auth!.userId, req.params.id!);
+      const id = uuidSchema.parse(req.params.id);
+      const result = await CompanyCampaignsService.clone(req.auth!.userId, id);
       res.status(201).json({ success: true, data: result });
     } catch (err) {
       next(err);
@@ -115,7 +119,8 @@ export class CompanyCampaignsController {
 
   static async getDetail(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const result = await CompanyCampaignsService.getDetail(req.auth!.userId, req.params.id!);
+      const id = uuidSchema.parse(req.params.id);
+      const result = await CompanyCampaignsService.getDetail(req.auth!.userId, id);
       res.status(200).json({ success: true, data: result });
     } catch (err) {
       next(err);
@@ -124,7 +129,8 @@ export class CompanyCampaignsController {
 
   static async submit(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const result = await CompanyCampaignsService.submit(req.auth!.userId, req.params.id!);
+      const id = uuidSchema.parse(req.params.id);
+      const result = await CompanyCampaignsService.submit(req.auth!.userId, id);
       res.status(200).json({ success: true, data: result });
     } catch (err) {
       next(err);
@@ -133,10 +139,11 @@ export class CompanyCampaignsController {
 
   static async cancel(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const id = uuidSchema.parse(req.params.id);
       const input = cancelCampaignSchema.parse(req.body);
       const result = await CompanyCampaignsService.cancel(
         req.auth!.userId,
-        req.params.id!,
+        id,
         input.reason,
       );
       res.status(200).json({ success: true, data: result });
@@ -147,7 +154,8 @@ export class CompanyCampaignsController {
 
   static async reopen(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const result = await CompanyCampaignsService.reopen(req.auth!.userId, req.params.id!);
+      const id = uuidSchema.parse(req.params.id);
+      const result = await CompanyCampaignsService.reopen(req.auth!.userId, id);
       res.status(200).json({ success: true, data: result });
     } catch (err) {
       next(err);
@@ -156,7 +164,8 @@ export class CompanyCampaignsController {
 
   static async getPaymentSummary(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const detail = await CompanyCampaignsService.getDetail(req.auth!.userId, req.params.id!);
+      const id = uuidSchema.parse(req.params.id);
+      const detail = await CompanyCampaignsService.getDetail(req.auth!.userId, id);
       res.status(200).json({
         success: true,
         data: detail.paymentSummary,
