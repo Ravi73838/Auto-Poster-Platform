@@ -50,8 +50,8 @@ export function CompanyLayout() {
 
   return (
     <div className="min-h-screen flex bg-background text-textPrimary">
-      {/* Sidebar */}
-      <aside className="w-64 border-e border-border bg-surface flex flex-col justify-between shrink-0">
+      {/* Sidebar (Desktop) */}
+      <aside className="hidden md:flex w-64 border-e border-border bg-surface flex-col justify-between shrink-0">
         <div>
           <div className="p-6 border-b border-border">
             <h2 className="text-lg font-bold text-primary">{t('common:appName')}</h2>
@@ -98,9 +98,9 @@ export function CompanyLayout() {
       </aside>
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
         <EnvironmentRibbon />
-        <header className="h-16 px-8 border-b border-border bg-surface flex items-center justify-between shrink-0">
+        <header className="h-16 px-4 md:px-8 border-b border-border bg-surface flex items-center justify-between shrink-0">
           <div className="text-sm font-medium text-textSecondary truncate">
             {user?.email || user?.mobile}
           </div>
@@ -112,7 +112,7 @@ export function CompanyLayout() {
 
         {/* Account status banners */}
         {user?.status === ACCOUNT_STATUS.PENDING ? (
-          <div className="bg-warning/10 border-b border-warning/20 px-8 py-3 flex items-center gap-3 text-warning">
+          <div className="bg-warning/10 border-b border-warning/20 px-4 md:px-8 py-3 flex items-center gap-3 text-warning">
             <Clock className="w-5 h-5 shrink-0" />
             <p className="text-sm">
               Your company account is pending review by the admin team. Certain features will be enabled once approved.
@@ -121,7 +121,7 @@ export function CompanyLayout() {
         ) : null}
 
         {user?.status === ACCOUNT_STATUS.SUSPENDED ? (
-          <div className="bg-danger/10 border-b border-danger/20 px-8 py-3 flex items-center gap-3 text-danger">
+          <div className="bg-danger/10 border-b border-danger/20 px-4 md:px-8 py-3 flex items-center gap-3 text-danger">
             <AlertCircle className="w-5 h-5 shrink-0" />
             <p className="text-sm">
               Your account has been suspended. Modification actions are disabled. Please contact support.
@@ -129,10 +129,31 @@ export function CompanyLayout() {
           </div>
         ) : null}
 
-        <main className="flex-1 p-8 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto">
           <Outlet />
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-surface border-t border-border flex items-center justify-around py-2 px-1">
+        {navItems.slice(0, 5).map((item) => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `flex flex-col items-center gap-1 p-1 text-xs font-medium transition-colors ${
+                  isActive ? 'text-primary' : 'text-textSecondary hover:text-textPrimary'
+                }`
+              }
+            >
+              <Icon className="w-5 h-5" />
+              <span className="truncate max-w-[64px] text-[10px]">{item.label}</span>
+            </NavLink>
+          );
+        })}
+      </nav>
     </div>
   );
 }

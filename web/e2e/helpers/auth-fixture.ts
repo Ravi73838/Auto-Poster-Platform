@@ -49,7 +49,7 @@ export async function loginViaUI(
 
   // Verify URL moved to company portal
   await page.waitForURL(/\/company\/dashboard/, { timeout: 15000 });
-  await expect(page.locator('aside, header')).toBeVisible();
+  await expect(page.locator('header')).toBeVisible();
 }
 
 export async function loginViaApi(
