@@ -50,9 +50,10 @@ export function CompanyDisputesPage() {
       setIsLoading(true);
       setError(null);
       const res = await api.listDisputes('company', 1, 50);
-      setDisputes(res.data || []);
-      if (!selectedDisputeId && res.data && res.data[0]) {
-        setSelectedDisputeId(res.data[0].id);
+      const items = Array.isArray(res) ? res : ((res as any)?.data || (res as any)?.items || []);
+      setDisputes(items);
+      if (!selectedDisputeId && items.length > 0 && items[0]) {
+        setSelectedDisputeId(items[0].id);
       }
     } catch (err: any) {
       setError(err?.message || 'Failed to load disputes');
@@ -91,9 +92,10 @@ export function CompanyDisputesPage() {
   const openCreateModal = async () => {
     try {
       const res = await api.listCompanyCampaigns({ pageSize: 100 });
-      setCampaigns(res.items || []);
-      if (res.items && res.items[0]) {
-        setSelectedCampaignId(res.items[0].id);
+      const items = res?.items || (Array.isArray(res) ? res : []);
+      setCampaigns(items);
+      if (items.length > 0 && items[0]) {
+        setSelectedCampaignId(items[0].id);
       }
       setIsCreateModalOpen(true);
     } catch {
