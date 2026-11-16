@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/main.ts",
+    "dev:test": "tsx scripts/start-test-server.ts",
     "worker": "tsx src/jobs/worker.ts",
     "build": "tsup",
     "start": "node dist/main.js",
