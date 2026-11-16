@@ -54,9 +54,15 @@ export class CampaignPaymentController {
 
   static async listAllCompanyPayments(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const member = await prisma.companyMember.findFirst({
+        where: { userId: req.auth!.userId, status: 'ACTIVE' },
+        include: { company: true },
+      });
+      const effectiveCompanyId = member?.company?.userId ?? req.auth!.userId;
+
       const payments = await prisma.campaignPayment.findMany({
         where: {
-          companyId: req.auth!.userId,
+          companyId: effectiveCompanyId,
         },
         include: {
           campaign: { select: { id: true, title: true } },
@@ -168,8 +174,14 @@ export class CampaignPaymentController {
         throw new NotFoundError('Tax document not found');
       }
 
-      // If user is company, ensure ownership
-      if (req.auth?.role === 'COMPANY' && doc.companyId !== req.auth.userId) {
+      // If user is company, ensure ownership (resolving effective company tenant for team members)
+      const member = await prisma.companyMember.findFirst({
+        where: { userId: req.auth!.userId, status: 'ACTIVE' },
+        include: { company: true },
+      });
+      const effectiveCompanyId = member?.company?.userId ?? req.auth?.userId;
+
+      if (req.auth?.role === 'COMPANY' && doc.companyId !== effectiveCompanyId) {
         throw new NotFoundError('Tax document not found');
       }
 

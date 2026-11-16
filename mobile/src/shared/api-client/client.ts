@@ -1147,7 +1147,8 @@ export class ApiClient {
     const token = this.getAuthToken ? await this.getAuthToken() : null;
     const headers: Record<string, string> = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    const res = await fetch(`${this.baseUrl}tax-documents/${taxDocId}/pdf`, {
+    const cleanBase = this.baseUrl.replace(/\/+$/, '');
+    const res = await fetch(`${cleanBase}/company/tax-documents/${taxDocId}/pdf`, {
       method: 'GET',
       headers,
     });

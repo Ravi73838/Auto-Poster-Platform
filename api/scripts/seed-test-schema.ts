@@ -444,6 +444,49 @@ export async function seedTestSchema() {
     });
   }
 
+  // 9. Seed Sample Payment and Tax Document for demo.company if not present
+  const existingPayments = await prisma.campaignPayment.findMany({
+    where: { companyId: primaryCompanyUser.id },
+  });
+  if (existingPayments.length === 0) {
+    const camp = await prisma.campaign.findFirst({
+      where: { companyId: primaryCompanyUser.id, title: 'Festival Mega Sale 2026' },
+    });
+    if (camp) {
+      const payment = await prisma.campaignPayment.create({
+        data: {
+          campaignId: camp.id,
+          companyId: primaryCompanyUser.id,
+          amountPaise: BigInt(6930000),
+          currency: 'INR',
+          gateway: 'RAZORPAY',
+          gatewayPaymentId: 'pay_festival_2026_001',
+          gatewayOrderId: 'order_festival_2026_001',
+          status: 'PAID' as any,
+          capturedAt: new Date(),
+          signatureVerifiedAt: new Date(),
+        },
+      });
+
+      await prisma.taxDocument.create({
+        data: {
+          documentType: 'TAX_INVOICE' as any,
+          documentNumber: 'INV/2026-27/0001',
+          financialYear: '2026-2027',
+          sequenceNumber: 1,
+          campaignId: camp.id,
+          companyId: primaryCompanyUser.id,
+          paymentId: payment.id,
+          taxableAmountPaise: BigInt(500000),
+          cgstPaise: BigInt(45000),
+          sgstPaise: BigInt(45000),
+          igstPaise: BigInt(0),
+          totalAmountPaise: BigInt(6930000),
+        },
+      });
+    }
+  }
+
   console.log('[seed-test-schema] SUCCESS: Test database populated with test accounts and sample data.');
 }
 
