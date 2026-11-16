@@ -16,9 +16,9 @@ export async function ensureRedisServer(): Promise<void> {
 
   if (host !== '127.0.0.1' && host !== 'localhost') return;
 
-  const check = () =>
+  const check = (p: number = port) =>
     new Promise<boolean>((resolve) => {
-      const socket = net.createConnection({ host, port }, () => {
+      const socket = net.createConnection({ host, port: p }, () => {
         socket.end();
         resolve(true);
       });
@@ -29,7 +29,7 @@ export async function ensureRedisServer(): Promise<void> {
       });
     });
 
-  if (await check()) return;
+  if (await check(port)) return;
 
   const candidates = [
     path.join(os.homedir(), '.redis', 'redis-server.exe'),
@@ -39,7 +39,7 @@ export async function ensureRedisServer(): Promise<void> {
   if (!binary) return;
 
   try {
-    const child = spawn(binary, ['--port', String(port)], {
+    const child = spawn(binary, ['--port', String(port), '--save', '', '--appendonly', 'no'], {
       detached: true,
       stdio: 'ignore',
       cwd: path.dirname(binary),
@@ -48,7 +48,7 @@ export async function ensureRedisServer(): Promise<void> {
 
     for (let i = 0; i < 25; i++) {
       await new Promise((r) => setTimeout(r, 100));
-      if (await check()) {
+      if (await check(port)) {
         logger.info(`Redis 8 server auto-started on port ${port}`);
         return;
       }
@@ -56,6 +56,10 @@ export async function ensureRedisServer(): Promise<void> {
   } catch (err) {
     logger.warn({ err }, 'Could not auto-start Redis server');
   }
+}
+
+export function getEffectiveRedisUrl(): string {
+  return env.REDIS_URL;
 }
 
 export function getRedisClient(): Redis {

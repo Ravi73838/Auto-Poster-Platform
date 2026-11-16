@@ -3,12 +3,16 @@ import {
   ROLES,
   OTP_PURPOSES,
   ACCOUNT_STATUS,
+  ERROR_CODES,
   type Role,
   type AccountStatus,
   type Language,
 } from '@ap/shared-constants';
 import {
   type DriverOtpVerifyInput,
+  type DriverPasswordRegisterInput,
+  type DriverPasswordLoginInput,
+  type AdminUserResetPasswordInput,
   type CompanyRegisterInput,
   type CompanyLoginInput,
   type AdminLoginInput,
@@ -21,11 +25,13 @@ import {
   type AuthUser,
   type LoginResponse,
   type AdminLoginChallengeResponse,
+  type AdminUserResetPasswordResponse,
   type AuthMeResponse,
   type AdminUserDto,
   type CreateAdminResponse,
 } from '@ap/shared-types';
 import { prisma } from '../../shared/db/index.js';
+import { env } from '../../config/env.js';
 import { redisClient } from '../../shared/redis/index.js';
 import { OtpService } from './otp.service.js';
 import { LegalService } from '../admin/content/legal.service.js';
@@ -34,6 +40,7 @@ import { SessionService } from './session.service.js';
 import { PasswordService } from './password.service.js';
 import { AuditService } from '../audit/audit.service.js';
 import {
+  AppError,
   InvalidCredentialsError,
   EmailAlreadyRegisteredError,
   MobileAlreadyRegisteredError,
@@ -93,6 +100,10 @@ export class AuthService {
     context?: RequestContext,
     language?: Language,
   ): Promise<{ expiresAt: Date }> {
+    if (!env.AUTH_OTP_ENABLED) {
+      throw new AppError(ERROR_CODES.OTP_DISABLED, 'OTP authentication is disabled in this environment', 400);
+    }
+
     const result = await OtpService.requestOtp({
       target: mobile,
       purpose: OTP_PURPOSES.LOGIN,
@@ -108,6 +119,10 @@ export class AuthService {
     input: DriverOtpVerifyInput,
     context?: RequestContext,
   ): Promise<LoginResponse> {
+    if (!env.AUTH_OTP_ENABLED) {
+      throw new AppError(ERROR_CODES.OTP_DISABLED, 'OTP authentication is disabled in this environment', 400);
+    }
+
     const { mobile, code, device } = input;
 
     await OtpService.verifyOtp({
@@ -192,6 +207,130 @@ export class AuthService {
     };
   }
 
+  static async driverRegisterWithPassword(
+    input: DriverPasswordRegisterInput,
+    context?: RequestContext,
+  ): Promise<LoginResponse> {
+    const { mobile, password, language } = input;
+
+    // Check duplicate mobile
+    const existing = await prisma.user.findFirst({
+      where: { mobile },
+    });
+    if (existing) {
+      throw new MobileAlreadyRegisteredError('An account with this mobile number already exists');
+    }
+
+    const passwordHash = await PasswordService.hash(password);
+
+    const user = await prisma.user.create({
+      data: {
+        role: ROLES.DRIVER,
+        mobile,
+        status: ACCOUNT_STATUS.PENDING,
+        preferredLanguage: language ?? 'en',
+        passwordHash,
+        mobileVerifiedAt: new Date(),
+      },
+    });
+
+    await prisma.driverProfile.create({
+      data: {
+        userId: user.id,
+      },
+    });
+
+    await AuditService.log({
+      actorId: user.id,
+      actorType: 'USER',
+      action: 'auth.driver_registered',
+      entityType: 'User',
+      entityId: user.id,
+      ipAddress: context?.ipAddress,
+      userAgent: context?.userAgent,
+    });
+
+    const { session, rawRefreshToken, accessToken } = await TokenService.createSession({
+      userId: user.id,
+      platform: 'ANDROID',
+      userAgent: context?.userAgent,
+      ipAddress: context?.ipAddress,
+    });
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+
+    return {
+      accessToken,
+      refreshToken: rawRefreshToken,
+      user: this.formatAuthUser(user),
+      isNewUser: true,
+    };
+  }
+
+  static async driverLoginWithPassword(
+    input: DriverPasswordLoginInput,
+    context?: RequestContext,
+  ): Promise<LoginResponse> {
+    const { mobile, password, device } = input;
+
+    await PasswordService.checkLockout(mobile);
+
+    const user = await prisma.user.findFirst({
+      where: { mobile, role: ROLES.DRIVER, deletedAt: null },
+    });
+
+    if (!user || !user.passwordHash) {
+      await PasswordService.performDummyVerify(password);
+      await PasswordService.recordFailedAttempt(mobile);
+      throw new InvalidCredentialsError('Invalid mobile number or password');
+    }
+
+    const isValid = await PasswordService.verify(password, user.passwordHash);
+    if (!isValid) {
+      await PasswordService.recordFailedAttempt(mobile);
+      throw new InvalidCredentialsError('Invalid mobile number or password');
+    }
+
+    await PasswordService.clearFailedAttempts(mobile);
+
+    if (user.status === ACCOUNT_STATUS.BLOCKED) {
+      throw new AccountBlockedError('Driver account has been blocked or deactivated');
+    }
+
+    const { session, rawRefreshToken, accessToken } = await TokenService.createSession({
+      userId: user.id,
+      platform: device?.platform ?? 'ANDROID',
+      userAgent: context?.userAgent,
+      ipAddress: context?.ipAddress,
+      appVersion: device?.appVersion,
+    });
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+
+    await AuditService.log({
+      actorId: user.id,
+      actorType: 'USER',
+      action: 'auth.login_success',
+      entityType: 'Session',
+      entityId: session.id,
+      ipAddress: context?.ipAddress,
+      userAgent: context?.userAgent,
+    });
+
+    return {
+      accessToken,
+      refreshToken: rawRefreshToken,
+      user: this.formatAuthUser(user),
+      isNewUser: false,
+    };
+  }
+
   // ---------------------------------------------------------
   // COMPANY AUTH FLOW
   // ---------------------------------------------------------
@@ -244,6 +383,19 @@ export class AuthService {
       },
     });
 
+    // When OTP is disabled, verify mobile immediately and allow login
+    if (!env.AUTH_OTP_ENABLED) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { mobileVerifiedAt: new Date() },
+      });
+
+      return {
+        message: 'Company registered successfully. You may log in directly with your email and password.',
+        mobile,
+      };
+    }
+
     // Send REGISTER OTP to verify mobile
     await OtpService.requestOtp({
       target: mobile,
@@ -273,6 +425,10 @@ export class AuthService {
     code: string,
     context?: RequestContext,
   ): Promise<{ accessToken: string; rawRefreshToken: string; user: AuthUser }> {
+    if (!env.AUTH_OTP_ENABLED) {
+      throw new AppError(ERROR_CODES.OTP_DISABLED, 'OTP authentication is disabled in this environment', 400);
+    }
+
     await OtpService.verifyOtp({
       target: mobile,
       purpose: OTP_PURPOSES.REGISTER,
@@ -346,7 +502,7 @@ export class AuthService {
       throw new AccountBlockedError('Your account has been blocked. Please contact support.');
     }
 
-    if (!user.mobileVerifiedAt) {
+    if (!user.mobileVerifiedAt && env.AUTH_OTP_ENABLED) {
       throw new MobileNotVerifiedError(
         'Your mobile number has not been verified. Please complete mobile verification to proceed.',
       );
@@ -419,6 +575,41 @@ export class AuthService {
       throw new AccountBlockedError('Admin account has been blocked');
     }
 
+    // When OTP is disabled, single-step admin login
+    if (!env.AUTH_OTP_ENABLED) {
+      const { session, rawRefreshToken, accessToken } = await TokenService.createSession({
+        userId: user.id,
+        platform: 'WEB',
+        userAgent: context?.userAgent,
+        ipAddress: context?.ipAddress,
+      });
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { lastLoginAt: new Date() },
+      });
+
+      await AuditService.log({
+        actorId: user.id,
+        actorType: 'USER',
+        action: 'auth.admin_login_success',
+        entityType: 'Session',
+        entityId: session.id,
+        ipAddress: context?.ipAddress,
+        userAgent: context?.userAgent,
+      });
+
+      return {
+        twoFactorRequired: false,
+        challengeId: '',
+        maskedMobile: '',
+        accessToken,
+        rawRefreshToken,
+        user: this.formatAuthUser(user),
+        mustChangePassword: user.mustChangePassword,
+      } as any;
+    }
+
     // Generate 2FA Challenge ID
     const challengeId = crypto.randomUUID();
 
@@ -468,6 +659,10 @@ export class AuthService {
     user: AuthUser;
     mustChangePassword: boolean;
   }> {
+    if (!env.AUTH_OTP_ENABLED) {
+      throw new AppError(ERROR_CODES.OTP_DISABLED, 'OTP authentication is disabled in this environment', 400);
+    }
+
     let userId: string | null = null;
 
     if (redisClient) {
@@ -535,6 +730,12 @@ export class AuthService {
     email: string,
     context?: RequestContext,
   ): Promise<{ message: string }> {
+    if (!env.AUTH_OTP_ENABLED) {
+      return {
+        message: 'OTP authentication is disabled in this environment. Please contact support or an administrator to reset your password.',
+      };
+    }
+
     const user = await prisma.user.findFirst({
       where: { email, deletedAt: null },
     });
@@ -571,6 +772,10 @@ export class AuthService {
     input: ResetPasswordInput,
     context?: RequestContext,
   ): Promise<{ message: string }> {
+    if (!env.AUTH_OTP_ENABLED) {
+      throw new AppError(ERROR_CODES.OTP_DISABLED, 'OTP authentication is disabled in this environment', 400);
+    }
+
     const { email, code, newPassword } = input;
 
     const user = await prisma.user.findFirst({
@@ -919,6 +1124,64 @@ export class AuthService {
       mustChangePassword: updated.mustChangePassword,
       lastLoginAt: updated.lastLoginAt ? updated.lastLoginAt.toISOString() : null,
       createdAt: updated.createdAt.toISOString(),
+    };
+  }
+
+  static async adminResetUserPassword(
+    adminUserId: string,
+    targetUserId: string,
+    input?: AdminUserResetPasswordInput,
+    context?: RequestContext,
+  ): Promise<AdminUserResetPasswordResponse> {
+    const adminUser = await prisma.user.findUnique({
+      where: { id: adminUserId },
+    });
+    if (!adminUser) throw new NotFoundError('Admin user not found');
+
+    const targetUser = await prisma.user.findUnique({
+      where: { id: targetUserId },
+    });
+    if (!targetUser) throw new NotFoundError('User not found');
+
+    // Rule: Only SUPER_ADMIN can reset another SUPER_ADMIN's password
+    if (targetUser.role === ROLES.SUPER_ADMIN && adminUser.role !== ROLES.SUPER_ADMIN) {
+      throw new ForbiddenError('Only a Super Admin can reset another Super Admin password');
+    }
+
+    // High-entropy random temporary password: >= 10 chars, letter + digit
+    const randomSuffix = crypto.randomBytes(4).toString('hex');
+    const temporaryPassword = `Temp_${randomSuffix}1a`;
+
+    const passwordHash = await PasswordService.hash(temporaryPassword);
+
+    await prisma.user.update({
+      where: { id: targetUserId },
+      data: {
+        passwordHash,
+        mustChangePassword: true,
+        passwordChangedAt: new Date(),
+      },
+    });
+
+    // Revoke all active sessions of target user
+    await SessionService.revokeAllSessions(targetUserId);
+
+    await AuditService.log({
+      actorId: adminUserId,
+      actorType: 'USER',
+      action: 'ADMIN_USER_PASSWORD_RESET',
+      entityType: 'User',
+      entityId: targetUserId,
+      newValues: { mustChangePassword: true, sessionsRevoked: true },
+      ipAddress: context?.ipAddress,
+      userAgent: context?.userAgent,
+    });
+
+    return {
+      userId: targetUserId,
+      temporaryPassword,
+      mustChangePassword: true,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     };
   }
 }

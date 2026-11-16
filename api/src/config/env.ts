@@ -49,6 +49,10 @@ export const rawEnvSchema = z
       (val) => val === 'true' || val === true,
       z.boolean(),
     ).default(false),
+    AUTH_OTP_ENABLED: z.preprocess(
+      (val) => val === 'true' || val === true,
+      z.boolean(),
+    ).default(false),
     API_PORT: z.coerce.number().default(4000),
     DATABASE_URL: z
       .string()
@@ -127,6 +131,13 @@ export const envSchema = rawEnvSchema.superRefine((data, ctx) => {
     const isProd = data.NODE_ENV === 'production' || data.DB_ENVIRONMENT === 'production';
 
     if (isProd) {
+      if (!data.AUTH_OTP_ENABLED) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['AUTH_OTP_ENABLED'],
+          message: 'AUTH_OTP_ENABLED must be true when DB_ENVIRONMENT is production or NODE_ENV is production',
+        });
+      }
       if (data.CLOCK_CONTROL_ENABLED) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

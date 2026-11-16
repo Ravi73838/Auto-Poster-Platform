@@ -38,6 +38,12 @@ export function RegisterPage() {
     setServerError(null);
     try {
       const res = await client.companyRegister(data);
+      if (res.message && res.message.toLowerCase().includes('log in directly')) {
+        navigate('/login', {
+          state: { successMessage: 'Registration successful! Please log in with your email and password.' },
+        });
+        return;
+      }
       // Navigate to verify-mobile with mobile state
       navigate(`/verify-mobile?mobile=${encodeURIComponent(res.mobile || data.mobile)}`, {
         state: { mobile: res.mobile || data.mobile, devCode: res.devCode },

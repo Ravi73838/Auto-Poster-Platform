@@ -107,10 +107,15 @@ import type {
   PilotReportNoteDto,
   SavePilotReportNoteInput,
   PilotCommandCenter,
+  AdminUserResetPasswordResponse,
 } from '@ap/shared-types';
 import type {
   DriverOtpRequestInput,
   DriverOtpVerifyInput,
+  DriverPasswordRegisterInput,
+  DriverPasswordLoginInput,
+  AdminUserResetPasswordInput,
+  StepUpVerifyInput,
   CompanyRegisterInput,
   CompanyVerifyMobileInput,
   CompanyLoginInput,
@@ -345,6 +350,20 @@ export class ApiClient {
 
   async driverOtpVerify(data: DriverOtpVerifyInput): Promise<LoginResponse> {
     return this.request('auth/driver/otp/verify', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async driverPasswordRegister(data: DriverPasswordRegisterInput): Promise<LoginResponse> {
+    return this.request('auth/driver/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async driverPasswordLogin(data: DriverPasswordLoginInput): Promise<LoginResponse> {
+    return this.request('auth/driver/login', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -1605,10 +1624,23 @@ export class ApiClient {
     });
   }
 
-  async adminVerifyStepUp(code: string): Promise<{ stepUpVerified: boolean; verifiedAt: string; validUntil: string; ttlMinutes: number }> {
+  async adminVerifyStepUp(
+    input: string | StepUpVerifyInput,
+  ): Promise<{ stepUpVerified: boolean; verifiedAt: string; validUntil: string; ttlMinutes: number }> {
+    const body = typeof input === 'string' ? { code: input } : input;
     return this.request('admin/step-up/verify', {
       method: 'POST',
-      body: JSON.stringify({ code }),
+      body: JSON.stringify(body),
+    });
+  }
+
+  async adminResetUserPassword(
+    userId: string,
+    data?: AdminUserResetPasswordInput,
+  ): Promise<AdminUserResetPasswordResponse> {
+    return this.request(`admin/users/${userId}/reset-password`, {
+      method: 'POST',
+      body: JSON.stringify(data ?? {}),
     });
   }
 

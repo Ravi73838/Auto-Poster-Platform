@@ -9,9 +9,28 @@ const isTest =
   process.env.VITEST === 'true' ||
   Boolean(process.env.VITEST_WORKER_ID);
 
-const effectiveDbUrl = isTest
+function toReachableSupabaseUrl(rawUrl: string): string {
+  try {
+    const u = new URL(rawUrl);
+    if (u.hostname.startsWith('db.') && u.hostname.endsWith('.supabase.co')) {
+      const parts = u.hostname.split('.');
+      const ref = parts[1]!;
+      u.hostname = 'aws-0-ap-northeast-1.pooler.supabase.com';
+      u.username = `postgres.${ref}`;
+      u.port = '5432';
+      return u.toString();
+    }
+  } catch {
+    // ignore
+  }
+  return rawUrl;
+}
+
+const rawUrl = isTest
   ? (process.env.DATABASE_URL_TEST || env.DATABASE_URL_TEST || env.DATABASE_URL)
   : env.DATABASE_URL;
+
+const effectiveDbUrl = toReachableSupabaseUrl(rawUrl);
 
 export const prisma =
   globalForPrisma.prisma ??

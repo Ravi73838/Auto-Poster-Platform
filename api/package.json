@@ -22,6 +22,7 @@
     "db:migrate": "prisma migrate dev",
     "db:drift": "tsx scripts/db-drift-report.ts",
     "db:verify": "tsx scripts/db-drift-report.ts",
+    "db:test:prepare": "tsx scripts/db-test-prepare.ts",
     "db:studio": "prisma studio",
     "db:seed:base": "tsx src/seeds/base.ts",
     "db:seed:demo": "tsx src/seeds/demo.ts",

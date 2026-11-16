@@ -2,6 +2,8 @@ import { type Request, type Response, type NextFunction } from 'express';
 import {
   driverOtpRequestSchema,
   driverOtpVerifySchema,
+  driverPasswordRegisterSchema,
+  driverPasswordLoginSchema,
   companyRegisterSchema,
   companyVerifyMobileSchema,
   companyLoginSchema,
@@ -61,6 +63,38 @@ export class AuthController {
     try {
       const input = driverOtpVerifySchema.parse(req.body);
       const result = await AuthService.verifyDriverOtp(input, extractRequestContext(req));
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async registerDriverPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const input = driverPasswordRegisterSchema.parse(req.body);
+      const result = await AuthService.driverRegisterWithPassword(input, extractRequestContext(req));
+      if (result.refreshToken) {
+        setRefreshTokenCookie(res, result.refreshToken);
+      }
+      res.status(201).json({
+        success: true,
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async loginDriverPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const input = driverPasswordLoginSchema.parse(req.body);
+      const result = await AuthService.driverLoginWithPassword(input, extractRequestContext(req));
+      if (result.refreshToken) {
+        setRefreshTokenCookie(res, result.refreshToken);
+      }
       res.status(200).json({
         success: true,
         data: result,
@@ -132,6 +166,18 @@ export class AuthController {
     try {
       const input = adminLoginSchema.parse(req.body);
       const result = await AuthService.loginAdminStep1(input, extractRequestContext(req));
+      if ('accessToken' in result && (result as any).accessToken) {
+        setRefreshTokenCookie(res, (result as any).rawRefreshToken);
+        res.status(200).json({
+          success: true,
+          data: {
+            accessToken: (result as any).accessToken,
+            user: (result as any).user,
+            mustChangePassword: (result as any).mustChangePassword,
+          },
+        });
+        return;
+      }
       res.status(200).json({
         success: true,
         data: result,

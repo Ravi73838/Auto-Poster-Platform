@@ -7,6 +7,8 @@ export const authRouter = Router();
 // Public Authentication Endpoints
 authRouter.post('/driver/otp/request', AuthController.requestDriverOtp);
 authRouter.post('/driver/otp/verify', AuthController.verifyDriverOtp);
+authRouter.post('/driver/register', AuthController.registerDriverPassword);
+authRouter.post('/driver/login', AuthController.loginDriverPassword);
 
 authRouter.post('/company/register', AuthController.registerCompany);
 authRouter.post('/company/verify-mobile', AuthController.verifyCompanyMobile);

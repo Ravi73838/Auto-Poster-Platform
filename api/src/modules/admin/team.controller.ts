@@ -3,6 +3,7 @@ import {
   createAdminSchema,
   updateAdminRoleSchema,
   updateAdminStatusSchema,
+  adminUserResetPasswordSchema,
 } from '@ap/shared-validation';
 import { AuthService } from '../auth/auth.service.js';
 import { UnauthorizedError } from '../../shared/errors/index.js';
@@ -71,6 +72,30 @@ export class AdminTeamController {
         req.auth.userId,
         targetId,
         input.status,
+        {
+          ipAddress: req.ip ?? req.socket.remoteAddress,
+          userAgent: req.headers['user-agent'],
+          requestId: req.id ? String(req.id) : undefined,
+        },
+      );
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async resetUserPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.auth) throw new UnauthorizedError();
+      const input = adminUserResetPasswordSchema.parse(req.body ?? {});
+      const targetId = req.params['id'] as string;
+      const result = await AuthService.adminResetUserPassword(
+        req.auth.userId,
+        targetId,
+        input,
         {
           ipAddress: req.ip ?? req.socket.remoteAddress,
           userAgent: req.headers['user-agent'],

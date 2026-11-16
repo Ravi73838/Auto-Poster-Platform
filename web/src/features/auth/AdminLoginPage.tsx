@@ -64,9 +64,30 @@ export function AdminLoginPage() {
     setIsLoading(true);
     setServerError(null);
     try {
-      const challenge = await client.adminLoginStep1(data);
-      setChallengeId(challenge.challengeId);
-      setMaskedMobile(challenge.maskedMobile);
+      const res = await client.adminLoginStep1(data);
+      if ('accessToken' in res && (res as any).accessToken) {
+        const loginRes = res as any;
+        setAuth({
+          user: loginRes.user,
+          token: loginRes.accessToken,
+          permissions: loginRes.user.role === 'SUPER_ADMIN' ? ['*'] : [],
+        });
+
+        if (loginRes.mustChangePassword) {
+          navigate('/change-password', { replace: true });
+          return;
+        }
+
+        const origin = (location.state as { from?: { pathname: string } })?.from?.pathname;
+        if (origin && origin.startsWith('/admin')) {
+          navigate(origin, { replace: true });
+        } else {
+          navigate('/admin/dashboard', { replace: true });
+        }
+        return;
+      }
+      setChallengeId(res.challengeId);
+      setMaskedMobile(res.maskedMobile);
       setStep(2);
     } catch (err: unknown) {
       if (err instanceof ApiError) {

@@ -21,6 +21,10 @@ export class PublicController {
         maintenance: Boolean(maintenance),
         maintenanceMessage: maintenanceMessage || null,
         environment: env.NODE_ENV || 'development',
+        auth: {
+          otpEnabled: env.AUTH_OTP_ENABLED,
+          passwordLogin: true,
+        },
       };
 
       res.status(200).json({ success: true, data });

@@ -44,6 +44,7 @@ export function createAdminRouter(): Router {
   router.get('/team', requirePermission('team.manage'), AdminTeamController.listAdmins);
   router.patch('/team/:id/status', requirePermission('team.manage'), AdminTeamController.updateAdminStatus);
   router.patch('/team/:id', requirePermission('team.manage'), requireStepUp(), AdminTeamController.updateAdminRole);
+  router.post('/users/:id/reset-password', requirePermission('user.manage'), requireStepUp(), AdminTeamController.resetUserPassword);
 
   // Campaigns & Locations
   router.use('/campaigns', createAdminCampaignsRouter());

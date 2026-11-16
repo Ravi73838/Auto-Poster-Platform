@@ -76,6 +76,12 @@ export function LoginPage() {
           </p>
         </div>
 
+        {location.state?.successMessage ? (
+          <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-500 text-sm font-medium">
+            {location.state.successMessage}
+          </div>
+        ) : null}
+
         {serverError ? (
           <div className="mb-4 p-3 bg-danger/10 border border-danger/20 rounded-lg flex items-center gap-2 text-danger text-sm">
             <AlertCircle className="w-4 h-4 shrink-0" />

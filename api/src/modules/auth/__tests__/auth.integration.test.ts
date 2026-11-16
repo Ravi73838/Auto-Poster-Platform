@@ -4,6 +4,7 @@ import { prisma } from '../../../shared/db/index.js';
 import { createApp } from '../../../app.js';
 import { ROLES, ACCOUNT_STATUS, SETTING_KEYS } from '@ap/shared-constants';
 import { disconnectRedis, redisClient } from '../../../shared/redis/index.js';
+import { env } from '../../../config/env.js';
 import { PasswordService } from '../password.service.js';
 import { TokenService } from '../token.service.js';
 
@@ -20,6 +21,7 @@ describe('Phase 3: Auth & Roles Integration Test Suite (autoposter_test)', () =>
   const companyPass = 'StrongPass123';
 
   beforeAll(async () => {
+    (env as any).AUTH_OTP_ENABLED = true;
     // Flush Redis to reset rate limits
     await redisClient.flushdb();
 
@@ -48,6 +50,7 @@ describe('Phase 3: Auth & Roles Integration Test Suite (autoposter_test)', () =>
         { key: SETTING_KEYS.LOGIN_LOCK_MINUTES, value: 15, description: 'Lockout duration' },
         { key: SETTING_KEYS.MAX_SESSIONS_PER_USER, value: 5, description: 'Max sessions' },
       ],
+      skipDuplicates: true,
     });
 
     // Seed Super Admin with mustChangePassword = true

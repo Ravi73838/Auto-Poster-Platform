@@ -16,6 +16,7 @@
   "OTP_EXPIRED": "Verification code has expired. Please request a new code.",
   "OTP_TOO_MANY_ATTEMPTS": "Too many incorrect attempts. Please request a new verification code.",
   "OTP_RATE_LIMITED": "Too many verification requests. Please wait before requesting another code.",
+  "OTP_DISABLED": "OTP authentication is currently disabled. Please use password login or contact support.",
   "TOO_MANY_LOGIN_ATTEMPTS": "Too many failed login attempts. Your account has been temporarily locked.",
   "ACCOUNT_BLOCKED": "Your account has been blocked. Please contact support.",
   "ACCOUNT_SUSPENDED": "Your account is suspended. Write operations are restricted.",

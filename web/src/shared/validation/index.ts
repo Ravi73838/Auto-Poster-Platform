@@ -359,6 +359,35 @@ export const driverOtpVerifySchema = z.object({
 });
 export type DriverOtpVerifyInput = z.infer<typeof driverOtpVerifySchema>;
 
+export const driverPasswordRegisterSchema = z.object({
+  mobile: mobileSchema,
+  password: passwordSchema,
+  language: languageSchema.optional().default('en'),
+});
+export type DriverPasswordRegisterInput = z.infer<typeof driverPasswordRegisterSchema>;
+
+export const driverPasswordLoginSchema = z.object({
+  mobile: mobileSchema,
+  password: z.string().min(1, { message: 'Password is required' }),
+  device: deviceMetadataSchema.optional(),
+});
+export type DriverPasswordLoginInput = z.infer<typeof driverPasswordLoginSchema>;
+
+export const adminUserResetPasswordSchema = z.object({
+  notify: z.boolean().default(false),
+});
+export type AdminUserResetPasswordInput = z.infer<typeof adminUserResetPasswordSchema>;
+
+export const stepUpVerifySchema = z
+  .object({
+    code: z.string().trim().min(4).max(10).optional(),
+    password: z.string().min(1).optional(),
+  })
+  .refine((data) => Boolean(data.code || data.password), {
+    message: 'Either verification code or password is required for step-up verification',
+  });
+export type StepUpVerifyInput = z.infer<typeof stepUpVerifySchema>;
+
 export const companyRegisterSchema = z.object({
   email: emailSchema,
   mobile: mobileSchema,

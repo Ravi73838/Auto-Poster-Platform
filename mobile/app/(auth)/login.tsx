@@ -34,6 +34,7 @@ export default function LoginScreen() {
       ) : step === 'mobile' ? (
         <MobileInputScreen
           onOtpSent={handleOtpSent}
+          onLoginSuccess={handleLoginSuccess}
           onChangeLanguage={() => setStep('language')}
         />
       ) : (

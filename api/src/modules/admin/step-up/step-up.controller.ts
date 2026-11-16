@@ -8,10 +8,13 @@ import {
 } from '@ap/shared-constants';
 import { prisma } from '../../../shared/db/index.js';
 import { decrypt } from '../../../shared/crypto/index.js';
+import { env } from '../../../config/env.js';
 import { OtpService } from '../../auth/otp.service.js';
+import { PasswordService } from '../../auth/password.service.js';
 import { SettingsService } from '../../settings/settings.service.js';
 import { AuditService } from '../../audit/audit.service.js';
 import { AppError, NotFoundError, ValidationError } from '../../../shared/errors/index.js';
+import { stepUpVerifySchema } from '@ap/shared-validation';
 import {
   maskPhone,
   maskEmail,
@@ -23,10 +26,6 @@ import {
 
 const stepUpRequestSchema = z.object({
   channel: z.enum(['SMS', 'EMAIL']).optional().default('SMS'),
-});
-
-const stepUpVerifySchema = z.object({
-  code: z.string().min(4).max(10),
 });
 
 const revealSchema = z.object({
@@ -41,6 +40,14 @@ export class StepUpController {
    */
   static async requestChallenge(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      if (!env.AUTH_OTP_ENABLED) {
+        throw new AppError(
+          ERROR_CODES.OTP_DISABLED,
+          'OTP authentication is disabled in this environment. Step-up requires password verification.',
+          400,
+        );
+      }
+
       const { channel } = stepUpRequestSchema.parse(req.body);
       const user = await prisma.user.findUnique({
         where: { id: req.auth!.userId },
@@ -93,13 +100,63 @@ export class StepUpController {
    */
   static async verifyChallenge(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { code } = stepUpVerifySchema.parse(req.body);
+      const { code, password } = stepUpVerifySchema.parse(req.body);
       const user = await prisma.user.findUnique({
         where: { id: req.auth!.userId },
       });
 
       if (!user) {
         throw new NotFoundError('User not found');
+      }
+
+      if (!env.AUTH_OTP_ENABLED) {
+        if (!password) {
+          throw new AppError(ERROR_CODES.STEP_UP_INVALID, 'Password is required for step-up verification', 400);
+        }
+        if (!user.passwordHash) {
+          throw new AppError(ERROR_CODES.STEP_UP_INVALID, 'User has no password configured', 400);
+        }
+        const isValid = await PasswordService.verify(password, user.passwordHash);
+        if (!isValid) {
+          throw new AppError(ERROR_CODES.STEP_UP_INVALID, 'Incorrect password for step-up verification', 400);
+        }
+
+        const now = new Date();
+        await prisma.session.update({
+          where: { id: req.auth!.sessionId },
+          data: { stepUpVerifiedAt: now },
+        });
+
+        req.auth!.stepUpVerifiedAt = now;
+
+        await AuditService.log({
+          actorId: req.auth!.userId,
+          actorType: ACTOR_TYPES.USER,
+          action: 'STEP_UP_VERIFIED',
+          entityType: 'Session',
+          entityId: req.auth!.sessionId,
+          newValues: { method: 'PASSWORD' },
+          ipAddress: req.ip,
+          userAgent: req.headers['user-agent'],
+        });
+
+        const ttlMinutes = await SettingsService.get(SETTING_KEYS.STEP_UP_TTL_MINUTES).catch(() => 15);
+        const validUntil = new Date(now.getTime() + ttlMinutes * 60 * 1000);
+
+        res.json({
+          success: true,
+          data: {
+            stepUpVerified: true,
+            verifiedAt: now.toISOString(),
+            validUntil: validUntil.toISOString(),
+            ttlMinutes,
+          },
+        });
+        return;
+      }
+
+      if (!code) {
+        throw new AppError(ERROR_CODES.STEP_UP_INVALID, 'Verification code is required', 400);
       }
 
       const activeOtp = await prisma.otpRequest.findFirst({

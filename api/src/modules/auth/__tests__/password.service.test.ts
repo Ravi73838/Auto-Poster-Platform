@@ -1,5 +1,7 @@
 import { describe, it, expect, afterAll } from 'vitest';
+import { SETTING_KEYS } from '@ap/shared-constants';
 import { PasswordService } from '../password.service.js';
+import { SettingsService } from '../../settings/settings.service.js';
 import {
   TooManyLoginAttemptsError,
   WeakPasswordError,
@@ -39,12 +41,14 @@ describe('PasswordService Unit Tests', () => {
     const email = 'test-lockout-user@example.com';
     await PasswordService.clearFailedAttempts(email);
 
-    // Record failures up to threshold
-    for (let i = 0; i < 4; i++) {
+    const maxFailures = await SettingsService.get(SETTING_KEYS.LOGIN_MAX_FAILURES).catch(() => 5);
+
+    // Record failures up to threshold - 1
+    for (let i = 0; i < maxFailures - 1; i++) {
       await PasswordService.recordFailedAttempt(email);
     }
 
-    // 5th failure triggers lockout
+    // Threshold failure triggers lockout
     await expect(PasswordService.recordFailedAttempt(email)).rejects.toThrow(
       TooManyLoginAttemptsError,
     );

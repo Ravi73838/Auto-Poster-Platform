@@ -3,6 +3,7 @@
 // Run `npm run sync:shared` in api.
 import type {
   ErrorCode,
+  Language,
   Role,
   AccountStatus,
   DocumentType,
@@ -1684,7 +1685,43 @@ export interface PublicAppConfigDto {
   maintenance: boolean;
   maintenanceMessage: string | null;
   environment: string;
+  auth?: {
+    otpEnabled: boolean;
+    passwordLogin: boolean;
+  };
   ads?: AppConfigAdsDto;
+}
+
+export interface DriverPasswordRegisterRequest {
+  mobile: string;
+  password: string;
+  language?: Language;
+}
+
+export interface DriverPasswordLoginRequest {
+  mobile: string;
+  password: string;
+  device?: {
+    platform: 'ANDROID' | 'IOS' | 'WEB';
+    userAgent?: string;
+    appVersion?: string;
+  };
+}
+
+export interface AdminUserResetPasswordRequest {
+  notify?: boolean;
+}
+
+export interface AdminUserResetPasswordResponse {
+  userId: string;
+  temporaryPassword: string;
+  mustChangePassword: boolean;
+  expiresAt: string;
+}
+
+export interface StepUpVerifyRequest {
+  code?: string;
+  password?: string;
 }
 
 export interface DriverOnboardingDto {

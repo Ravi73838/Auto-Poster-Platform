@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ShieldCheck, Mail, Phone, Loader2, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ShieldCheck, Mail, Phone, Loader2, AlertCircle, KeyRound } from 'lucide-react';
 import { useApiClient } from '../lib/api';
 
 interface StepUpModalProps {
@@ -20,12 +20,45 @@ export function StepUpModal({
   const client = useApiClient();
   const [channel, setChannel] = useState<'SMS' | 'EMAIL'>('SMS');
   const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [isOtpDisabled, setIsOtpDisabled] = useState(false);
   const [step, setStep] = useState<'CHALLENGE' | 'VERIFY'>('CHALLENGE');
   const [maskedDestination, setMaskedDestination] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    client.getPublicAppConfig().then((config) => {
+      if (config.auth && config.auth.otpEnabled === false) {
+        setIsOtpDisabled(true);
+      }
+    }).catch(() => {
+      // fallback
+    });
+  }, [isOpen, client]);
+
   if (!isOpen) return null;
+
+  const handlePasswordVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!password) {
+      setError('Please enter your password');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      await client.adminVerifyStepUp({ password });
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      setError(err?.message || 'Incorrect password. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRequestOtp = async () => {
     try {
@@ -51,7 +84,7 @@ export function StepUpModal({
     try {
       setLoading(true);
       setError(null);
-      await client.adminVerifyStepUp(code.trim());
+      await client.adminVerifyStepUp({ code: code.trim() });
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -66,11 +99,15 @@ export function StepUpModal({
       <div className="bg-surface border border-border rounded-xl shadow-2xl max-w-md w-full p-6 text-textPrimary animate-in fade-in zoom-in-95 duration-150">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2.5 rounded-full bg-primary/10 text-primary">
-            <ShieldCheck className="w-6 h-6" />
+            {isOtpDisabled ? <KeyRound className="w-6 h-6" /> : <ShieldCheck className="w-6 h-6" />}
           </div>
           <div>
             <h3 className="text-lg font-bold">{title}</h3>
-            <p className="text-xs text-textSecondary">{description}</p>
+            <p className="text-xs text-textSecondary">
+              {isOtpDisabled
+                ? 'OTP is disabled in testing mode. Re-enter your password to authorize this action.'
+                : description}
+            </p>
           </div>
         </div>
 
@@ -81,7 +118,42 @@ export function StepUpModal({
           </div>
         )}
 
-        {step === 'CHALLENGE' ? (
+        {isOtpDisabled ? (
+          <form onSubmit={handlePasswordVerify} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-textSecondary mb-1.5">
+                Current Password
+              </label>
+              <input
+                type="password"
+                autoFocus
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your account password"
+                className="w-full px-3.5 py-2.5 bg-surfaceAlt border border-border rounded-lg text-sm focus:outline-none focus:border-primary text-textPrimary"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-4 border-t border-border">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={loading}
+                className="px-4 py-2 text-sm text-textSecondary hover:bg-surfaceAlt rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading || !password}
+                className="px-5 py-2 text-sm font-medium bg-primary text-primaryText hover:bg-primaryHover rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
+              >
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                <span>Verify Password & Proceed</span>
+              </button>
+            </div>
+          </form>
+        ) : step === 'CHALLENGE' ? (
           <div className="space-y-4">
             <p className="text-sm text-textSecondary">
               Select verification delivery channel:
