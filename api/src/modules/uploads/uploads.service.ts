@@ -171,9 +171,13 @@ export class UploadsService {
     userId: string,
     input: ConfirmUploadInput,
   ): Promise<UploadedFileDto> {
-    const file = await prisma.uploadedFile.findUnique({
-      where: { fileKey: input.fileKey },
-    });
+    const file = input.fileKey
+      ? await prisma.uploadedFile.findUnique({
+          where: { fileKey: input.fileKey },
+        })
+      : await prisma.uploadedFile.findUnique({
+          where: { id: input.fileId },
+        });
 
     if (!file) {
       throw new AppError(ERROR_CODES.FILE_NOT_FOUND, 404, 'Uploaded file record not found');

@@ -232,10 +232,11 @@ export function CreateCampaignWizard() {
           mimeType: file.type,
           metadata: { width: img.width, height: img.height },
         });
-        setPosterFileId(uploaded.fileId);
+        const targetFileId = (uploaded as any).fileId ?? (uploaded as any).id;
+        setPosterFileId(targetFileId);
 
         // Fetch display preview
-        const urlRes = await api.getFileUrl(uploaded.fileId, 'preview');
+        const urlRes = await api.getFileUrl(targetFileId, 'preview');
         setPosterPreviewUrl(urlRes.url);
       } catch (err) {
         setPosterUploadError(err instanceof Error ? err.message : 'Poster upload failed');

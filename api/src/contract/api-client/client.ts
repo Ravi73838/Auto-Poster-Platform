@@ -711,33 +711,46 @@ export class ApiClient {
   // Uploads
   // -------------------------------------------------------------
   async presignUpload(data: {
-    fileType: string;
+    fileType?: string;
+    purpose?: string;
     mimeType: string;
-    fileSize: number;
-    fileName: string;
+    fileSize?: number;
+    sizeBytes?: number;
+    fileName?: string;
     metadata?: Record<string, unknown>;
   }): Promise<{
     fileId: string;
     uploadUrl: string;
-    objectKey: string;
+    fileKey: string;
+    objectKey?: string;
     headers?: Record<string, string>;
   }> {
+    const payload = {
+      purpose: data.purpose ?? data.fileType,
+      mimeType: data.mimeType,
+      sizeBytes: data.sizeBytes ?? data.fileSize,
+      fileName: data.fileName,
+      metadata: data.metadata,
+    };
     return this.request('uploads/presign', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
   }
 
-  async confirmUpload(fileId: string): Promise<{
+  async confirmUpload(fileIdOrKey: { fileId?: string; fileKey?: string } | string): Promise<{
     fileId: string;
     status: string;
     originalName: string;
     mimeType: string;
     sizeBytes: number;
   }> {
+    const payload = typeof fileIdOrKey === 'string'
+      ? { fileId: fileIdOrKey }
+      : fileIdOrKey;
     return this.request('uploads/confirm', {
       method: 'POST',
-      body: JSON.stringify({ fileId }),
+      body: JSON.stringify(payload),
     });
   }
 
@@ -752,17 +765,18 @@ export class ApiClient {
   async uploadFile(
     file: File | Blob,
     options: {
-      fileType: string;
+      fileType?: string;
+      purpose?: string;
       fileName: string;
       mimeType: string;
       metadata?: Record<string, unknown>;
     },
   ): Promise<{ fileId: string; status: string; originalName: string }> {
     const presign = await this.presignUpload({
-      fileType: options.fileType,
+      purpose: options.purpose ?? options.fileType,
       fileName: options.fileName,
       mimeType: options.mimeType,
-      fileSize: file.size,
+      sizeBytes: file.size,
       metadata: options.metadata,
     });
 
@@ -785,7 +799,13 @@ export class ApiClient {
       );
     }
 
-    return this.confirmUpload(presign.fileId);
+    const confirmed: any = await this.confirmUpload({ fileId: presign.fileId, fileKey: presign.fileKey });
+    const resolvedId = confirmed?.id ?? confirmed?.fileId ?? presign.fileId;
+    return {
+      ...confirmed,
+      id: resolvedId,
+      fileId: resolvedId,
+    };
   }
 
   // ---------------------------------------------------------------------------

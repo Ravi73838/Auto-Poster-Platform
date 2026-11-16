@@ -552,9 +552,14 @@ export const presignUploadSchema = z
   );
 export type PresignUploadInput = z.infer<typeof presignUploadSchema>;
 
-export const confirmUploadSchema = z.object({
-  fileKey: z.string().min(1, { message: 'fileKey is required' }),
-});
+export const confirmUploadSchema = z
+  .object({
+    fileKey: z.string().min(1).optional(),
+    fileId: z.string().uuid().optional(),
+  })
+  .refine((data) => !!(data.fileKey || data.fileId), {
+    message: 'Either fileKey or fileId must be provided',
+  });
 export type ConfirmUploadInput = z.infer<typeof confirmUploadSchema>;
 
 // =============================================================================

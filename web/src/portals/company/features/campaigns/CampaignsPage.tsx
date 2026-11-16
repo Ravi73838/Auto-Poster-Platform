@@ -43,32 +43,54 @@ export function CampaignsPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<CampaignStatus | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
-
-  const loadCampaigns = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res: any = await api.listCompanyCampaigns({
-        status: selectedStatus,
-        search: searchQuery.trim() || undefined,
-        page: 1,
-        pageSize: 50,
-        sortOrder: 'desc',
-      });
-      const items = Array.isArray(res) ? res : (res?.items ?? []);
-      const countsData = (!Array.isArray(res) && res?.counts) ? res.counts : {};
-      setCampaigns(items);
-      setCounts(countsData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load campaigns');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [api, selectedStatus, searchQuery]);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
-    loadCampaigns();
-  }, [loadCampaigns]);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    let isCancelled = false;
+    async function fetchCampaigns() {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res: any = await api.listCompanyCampaigns({
+          status: selectedStatus,
+          search: debouncedSearch.trim() || undefined,
+          page: 1,
+          pageSize: 50,
+          sortOrder: 'desc',
+        });
+        if (!isCancelled) {
+          const items = Array.isArray(res) ? res : (res?.items ?? []);
+          const countsData = (!Array.isArray(res) && res?.counts) ? res.counts : {};
+          setCampaigns(items);
+          setCounts(countsData);
+        }
+      } catch (err) {
+        if (!isCancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load campaigns');
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    fetchCampaigns();
+    return () => {
+      isCancelled = true;
+    };
+  }, [api, selectedStatus, debouncedSearch]);
+
+  const loadCampaigns = useCallback(() => {
+    setDebouncedSearch((s) => s.slice());
+  }, []);
 
   const getStatusBadge = (status: CampaignStatus) => {
     switch (status) {
