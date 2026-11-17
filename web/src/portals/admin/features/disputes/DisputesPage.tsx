@@ -301,6 +301,7 @@ export function DisputesPage() {
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-textSecondary" />
             <select
+              aria-label="Filter disputes by status"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="bg-surfaceAlt border border-border rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none"
@@ -313,6 +314,7 @@ export function DisputesPage() {
             </select>
 
             <select
+              aria-label="Filter disputes by queue"
               value={queueFilter}
               onChange={(e) => setQueueFilter(e.target.value)}
               className="bg-surfaceAlt border border-border rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none"
@@ -322,7 +324,7 @@ export function DisputesPage() {
               <option value={DISPUTE_QUEUES.FINANCE}>Finance</option>
             </select>
 
-            <Button variant="outline" size="sm" onClick={loadDisputes}>
+            <Button aria-label="Refresh disputes" variant="outline" size="sm" onClick={loadDisputes}>
               <RefreshCw className="w-4 h-4" />
             </Button>
           </div>
@@ -674,6 +676,7 @@ export function DisputesPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-textSecondary">Visible to:</span>
                     <select
+                      aria-label="Message visibility"
                       value={messageVisibility}
                       onChange={(e) => setMessageVisibility(e.target.value)}
                       className="bg-surfaceAlt border border-border rounded px-2 py-1 text-xs text-textPrimary"
@@ -721,6 +724,7 @@ export function DisputesPage() {
           <div>
             <label className="text-xs font-semibold text-textSecondary block mb-1">Target Party</label>
             <select
+              aria-label="Target Party"
               value={requestInfoTarget}
               onChange={(e) => setRequestInfoTarget(e.target.value as any)}
               className="w-full bg-surfaceAlt border border-border rounded-lg px-3 py-2 text-sm text-textPrimary"
@@ -763,6 +767,7 @@ export function DisputesPage() {
           <div>
             <label className="text-xs font-semibold text-textSecondary block mb-1">Resolution Outcome</label>
             <select
+              aria-label="Resolution Outcome"
               value={decisionType}
               onChange={(e) => setDecisionType(e.target.value)}
               className="w-full bg-surfaceAlt border border-border rounded-lg px-3 py-2 text-sm text-textPrimary"

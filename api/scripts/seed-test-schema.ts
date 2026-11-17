@@ -693,6 +693,51 @@ export async function seedTestSchema() {
     }
   }
 
+  // 10. Seed Sample Strike for approvedDriverUser if not present
+  const adminUser = await prisma.user.findUnique({ where: { email: 'admin@autoposter.in' } });
+  const existingStrike = await prisma.strike.findFirst({
+    where: { driverId: approvedDriverUser.id },
+  });
+  if (!existingStrike && adminUser) {
+    await prisma.strike.create({
+      data: {
+        driverId: approvedDriverUser.id,
+        reason: 'FAKE_OR_OLD_PHOTO' as any,
+        status: 'ACTIVE' as any,
+        source: 'ADMIN_MANUAL' as any,
+        notes: 'Automated test sample strike: duplicate photo submitted',
+        issuedByUserId: adminUser.id,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      },
+    });
+  }
+
+  // 11. Seed Sample Announcement if not present
+  const existingAnnouncement = await prisma.announcement.findFirst();
+  if (!existingAnnouncement && adminUser) {
+    await prisma.announcement.create({
+      data: {
+        createdById: adminUser.id,
+        titleByLanguage: {
+          en: 'Platform Maintenance Notice',
+          hi: 'प्लेटफ़ॉर्म रखरखाव सूचना',
+          gu: 'પ્લેટફોર્મ મેન્ટેનન્સ સૂચના',
+        },
+        bodyByLanguage: {
+          en: 'Scheduled routine server maintenance on Sunday at 2:00 AM IST.',
+          hi: 'रविवार को रात 2:00 बजे निर्धारित नियमित सर्वर रखरखाव।',
+          gu: 'રવિવારે સવારે 2:00 વાગ્યે સુનિશ્ચિત નિયમિત સર્વર જાળવણી.',
+        },
+        audience: {
+          targetRoles: ['DRIVER', 'COMPANY'],
+          targetStatuses: ['APPROVED'],
+        },
+        status: 'SENT' as any,
+        sentAt: new Date(),
+      },
+    });
+  }
+
   console.log('[seed-test-schema] SUCCESS: Test database populated with test accounts and sample data.');
 }
 

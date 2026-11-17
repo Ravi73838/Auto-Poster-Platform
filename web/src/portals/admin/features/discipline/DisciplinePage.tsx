@@ -225,6 +225,7 @@ export function DisciplinePage() {
 
           {activeTab === 'strikes' && (
             <select
+              aria-label="Filter strikes by status"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="bg-surfaceAlt border border-border rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none"
@@ -452,6 +453,7 @@ export function DisciplinePage() {
           <div>
             <label className="text-xs font-semibold text-textSecondary block mb-1">Reason</label>
             <select
+              aria-label="Strike Reason"
               value={strikeReason}
               onChange={(e) => setStrikeReason(e.target.value as StrikeReason)}
               className="w-full bg-surfaceAlt border border-border rounded-lg px-3 py-2 text-sm text-textPrimary"
