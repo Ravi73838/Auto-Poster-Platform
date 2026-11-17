@@ -11,6 +11,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useMobileTheme } from '../../theme/ThemeProvider';
 import { apiClient } from '../../services/api';
+import { container } from '../../services/container';
 import { DAY_STATUS, ERROR_CODES } from '@ap/shared-constants';
 import type { TodayStatusDto, DailyPhotoSubmissionDto } from '@ap/shared-types';
 
@@ -68,40 +69,34 @@ export function DailyPhotoCaptureScreen({
       setIsSubmitting(true);
       setError(null);
 
-      // In real Expo app, camera picker + Location.getCurrentPositionAsync()
-      // Simulate clean capture with GPS coordinates inside city zone
-      const now = new Date();
-      const mockFileKey = `daily-proofs/dev-sim-${Date.now()}.jpg`;
+      // Obtain device location and device info via injected container adapters
+      const location = await container.location.getCurrentLocation();
+      const devInfo = await container.deviceInfo.getDeviceInfo();
+      const capturedAt = container.clock.nowIso();
 
-      // Simulating upload through api client presign
-      const uploadInit = await apiClient.request<{
-        uploadedFileId: string;
-        uploadUrl?: string;
-      }>('uploads/presign', {
-        method: 'POST',
-        body: JSON.stringify({
-          purpose: 'DAILY_PHOTO',
-          mimeType: 'image/jpeg',
-          sizeBytes: 150000,
-          fileName: 'daily_auto.jpg',
-        }),
+      // Request upload presign
+      const uploadInit = await apiClient.presignUpload({
+        purpose: 'DAILY_PHOTO',
+        mimeType: 'image/jpeg',
+        sizeBytes: 150000,
+        fileName: 'daily_auto.jpg',
       });
 
       // Submit daily photo
       const result = await apiClient.submitDailyPhoto(assignmentId, {
-        uploadedFileId: uploadInit.uploadedFileId,
-        latitude: 21.205, // Standard city zone center
-        longitude: 72.855,
-        accuracyMeters: 12.0,
-        capturedAt: now.toISOString(),
-        clientSentAt: now.toISOString(),
-        isMockLocation: false,
+        uploadedFileId: uploadInit.fileId || uploadInit.fileKey,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        accuracyMeters: location.accuracy,
+        capturedAt,
+        clientSentAt: container.clock.nowIso(),
+        isMockLocation: location.isMock,
         deviceInfo: {
           platform: 'android',
-          model: 'Driver Device',
-          osVersion: '14',
-          appVersion: '1.0.0',
-          deviceInstallId: 'dev-install-device',
+          model: devInfo.model,
+          osVersion: devInfo.osVersion,
+          appVersion: devInfo.appVersion,
+          deviceInstallId: devInfo.installId,
         },
       });
 

@@ -45,6 +45,7 @@
   "CAMPAIGN_INVALID_DATES": "Invalid campaign dates. End date must be after start date.",
   "CAMPAIGN_DURATION_OUT_OF_RANGE": "Campaign duration is outside the allowed range of days.",
   "CAMPAIGN_SLOTS_OUT_OF_RANGE": "The number of requested auto slots is outside the allowed range.",
+  "CAMPAIGN_SLOTS_FULL": "All driver advertising slots for this campaign are already reserved.",
   "CAMPAIGN_RENT_OUT_OF_RANGE": "The proposed rent is outside the allowed limits.",
   "CAMPAIGN_ALLOWANCE_OUT_OF_RANGE": "The printing allowance is outside the allowed limit.",
   "CAMPAIGN_POSTER_REQUIRED": "A confirmed campaign poster is required to submit.",

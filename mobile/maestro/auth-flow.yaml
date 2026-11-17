@@ -1,0 +1,50 @@
+# Maestro E2E Flow: Authentication, Language Selection & Session Management
+# App: Auto Poster Driver Mobile (in.autoposter.driver)
+# Execution Status: NEEDS MANUAL RUN (No active emulator/AVD on build host)
+
+appId: in.autoposter.driver
+---
+- launchApp:
+    clearState: true
+
+# 1. Language Selection Screen on first launch
+- assertVisible: "select_language_title"
+- tapOn: "lang_option_hi"
+- assertVisible: "आगे बढ़ें"
+- tapOn: "lang_option_en"
+- assertVisible: "Continue"
+- tapOn: "btn_continue_language"
+
+# 2. Welcome / Login Screen
+- assertVisible: "login_screen_title"
+- assertVisible: "otp_testing_mode_banner"
+
+# 3. Validation errors on empty submission
+- tapOn: "btn_login_submit"
+- assertVisible: "error_mobile_required"
+
+# 4. Input credentials
+- tapOn: "input_mobile"
+- inputText: "9876543210"
+- tapOn: "input_password"
+- inputText: "Driver@12345"
+
+# 5. Forgot Password Callback Flow
+- tapOn: "link_forgot_password"
+- assertVisible: "forgot_password_sheet_title"
+- assertVisible: "btn_request_support_callback"
+- tapOn: "btn_close_sheet"
+
+# 6. Switch to Registration
+- tapOn: "link_go_to_register"
+- assertVisible: "register_screen_title"
+- tapOn: "input_reg_mobile"
+- inputText: "9876543211"
+- tapOn: "input_reg_password"
+- inputText: "SecurePass@2026"
+- tapOn: "input_reg_confirm_password"
+- inputText: "SecurePass@2026"
+- tapOn: "btn_register_submit"
+
+# 7. Navigation gating after register (new driver lands on KYC Wizard)
+- assertVisible: "kyc_wizard_title"

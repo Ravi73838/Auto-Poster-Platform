@@ -1,0 +1,59 @@
+# Maestro E2E Flow: KYC 6-Step Onboarding Wizard
+# App: Auto Poster Driver Mobile (in.autoposter.driver)
+# Execution Status: NEEDS MANUAL RUN (No active emulator/AVD on build host)
+
+appId: in.autoposter.driver
+---
+- launchApp:
+    clearState: false
+
+# 1. Step 1: Personal Profile
+- assertVisible: "kyc_step_1_title"
+- tapOn: "input_full_name"
+- inputText: "Rameshbhai Auto Driver"
+- tapOn: "picker_city"
+- tapOn: "city_ahmedabad"
+- tapOn: "picker_zone"
+- tapOn: "zone_west"
+- tapOn: "btn_step_next"
+
+# 2. Step 2: Vehicle Information
+- assertVisible: "kyc_step_2_title"
+- tapOn: "input_vehicle_number"
+- inputText: "GJ01AB1234"
+- tapOn: "radio_is_owner_yes"
+- tapOn: "btn_step_next"
+
+# 3. Step 3: Document Uploads
+- assertVisible: "kyc_step_3_title"
+- assertVisible: "doc_card_license"
+- assertVisible: "doc_card_rc"
+- assertVisible: "doc_card_auto_photo"
+- tapOn: "btn_upload_license"
+- assertVisible: "upload_success_indicator"
+- tapOn: "btn_step_next"
+
+# 4. Step 4: Payout Details (UPI / Bank)
+- assertVisible: "kyc_step_4_title"
+- tapOn: "tab_payout_upi"
+- tapOn: "input_upi_id"
+- inputText: "ramesh.auto@oksbi"
+- tapOn: "btn_step_next"
+
+# 5. Step 5: Legal Consents Gate
+- assertVisible: "kyc_step_5_title"
+- tapOn: "checkbox_consent_terms"
+- tapOn: "checkbox_consent_privacy"
+- tapOn: "checkbox_consent_location"
+- tapOn: "checkbox_consent_camera"
+- tapOn: "btn_step_next"
+
+# 6. Step 6: Review & Final Submission
+- assertVisible: "kyc_step_6_review_title"
+- assertVisible: "review_summary_name"
+- assertVisible: "review_summary_vehicle"
+- tapOn: "btn_submit_kyc_final"
+
+# 7. Verification: Redirect to KYC Status Screen
+- assertVisible: "kyc_status_under_review"
+- assertVisible: "kyc_submitted_badge"

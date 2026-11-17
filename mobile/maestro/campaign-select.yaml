@@ -1,0 +1,38 @@
+# Maestro E2E Flow: Campaign Discovery, Details & Slot Reservation
+# App: Auto Poster Driver Mobile (in.autoposter.driver)
+# Execution Status: NEEDS MANUAL RUN (No active emulator/AVD on build host)
+
+appId: in.autoposter.driver
+---
+- launchApp:
+    clearState: false
+
+# 1. Navigate to Campaigns Tab
+- tapOn: "tab_campaigns"
+- assertVisible: "campaigns_screen_title"
+
+# 2. Filter campaigns by Zone
+- tapOn: "filter_chip_all_zones"
+- tapOn: "filter_zone_west"
+- assertVisible: "campaign_card_0"
+
+# 3. Open Campaign Detail Screen
+- tapOn: "campaign_card_0"
+- assertVisible: "campaign_detail_title"
+- assertVisible: "campaign_daily_rate"
+- assertVisible: "campaign_duration_days"
+- assertVisible: "campaign_poster_preview"
+- assertVisible: "btn_reserve_campaign_slot"
+
+# 4. Open Reservation Bottom Sheet
+- tapOn: "btn_reserve_campaign_slot"
+- assertVisible: "reservation_sheet_title"
+- assertVisible: "reservation_instructions"
+- assertVisible: "checkbox_confirm_terms"
+- tapOn: "checkbox_confirm_terms"
+- tapOn: "btn_confirm_reservation"
+
+# 5. Verify Transition to Assignment Screen
+- assertVisible: "assignment_detail_title"
+- assertVisible: "status_badge_reserved"
+- assertVisible: "step_installation_countdown"

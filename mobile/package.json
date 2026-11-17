@@ -14,7 +14,9 @@
     "web": "expo start --web",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "sim:driver": "npx --prefix ../api tsx tools/driver-sim/run-all.ts",
+    "sim:driver:all": "npx --prefix ../api tsx tools/driver-sim/run-all.ts"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

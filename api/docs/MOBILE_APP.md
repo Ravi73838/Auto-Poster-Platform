@@ -98,3 +98,14 @@ The mobile application utilizes **Expo Router** with strict file-based routing a
    - `/disputes`: Driver disputes, evidence attachments, and support messaging.
    - `/help`: Help center articles and FAQ.
 
+---
+
+## 4. Ports & Adapters Composition Architecture
+
+To enable deterministic testing in headless Node environments (unit tests and the app-faithful driver simulator) without native crashes, core business logic, the offline upload queue, capture validation, and token storage do NOT import native platform modules directly.
+
+* **Port Interfaces** (`src/services/adapters/types.ts`): `IStorage`, `ISecureStore`, `INetwork`, `IClock`, `ILocationProvider`, `ICameraProvider`, `IDeviceInfoProvider`, `IFileStore`, `INotifier`.
+* **Production Adapters** (`src/services/adapters/production.ts`): Default implementations wrapping Expo and React Native modules (`@react-native-async-storage/async-storage`, `expo-secure-store`, `@react-native-community/netinfo`, `expo-location`, `expo-file-system`, `expo-notifications`).
+* **In-Memory Fakes** (`src/services/adapters/fakes.ts`): High-fidelity, controllable in-memory fakes for unit testing and simulator scenarios.
+* **Composition Root** (`src/services/container.ts`): Exposes singleton adapter access and allows injecting fake adapters via `setContainerAdapters()` for tests.
+

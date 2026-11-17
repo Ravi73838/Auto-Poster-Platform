@@ -4,7 +4,7 @@ import { useMobileTheme } from '../../src/theme/ThemeProvider';
 
 export default function TabLayout() {
   const { colors } = useMobileTheme();
-  const { t } = useTranslation(['common', 'settings']);
+  const { t } = useTranslation(['common', 'settings', 'notifications']);
 
   return (
     <Tabs
@@ -24,7 +24,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: t('common:dashboard'),
+          title: t('common:dashboard', { defaultValue: 'Home' }),
         }}
       />
       <Tabs.Screen
@@ -40,12 +40,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="notifications"
+        options={{
+          title: 'Alerts',
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
-          title: t('settings:title'),
+          title: t('settings:title', { defaultValue: 'Settings' }),
         }}
       />
     </Tabs>
   );
 }
-

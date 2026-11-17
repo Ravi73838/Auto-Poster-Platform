@@ -78,8 +78,13 @@
     }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx"
+    "app/**/*",
+    "src/**/*",
+    "expo-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "tools"
   ],
   "extends": "expo/tsconfig.base"
 }

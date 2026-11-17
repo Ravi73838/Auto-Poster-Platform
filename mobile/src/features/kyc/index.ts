@@ -1,3 +1,2 @@
-// KYC document capture and driving license verification
-export {};
-
+export * from './KycWizardScreen';
+export * from './KycStatusScreen';

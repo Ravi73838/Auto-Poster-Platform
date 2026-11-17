@@ -1,0 +1,42 @@
+# Maestro E2E Flow: 5-Tab Shell Navigation & Deep Links
+# App: Auto Poster Driver Mobile (in.autoposter.driver)
+# Execution Status: NEEDS MANUAL RUN (No active emulator/AVD on build host)
+
+appId: in.autoposter.driver
+---
+- launchApp:
+    clearState: false
+
+# 1. Home Tab (Active assignment hero & daily checkin)
+- assertVisible: "tab_home"
+- tapOn: "tab_home"
+- assertVisible: "home_hero_greeting"
+- assertVisible: "today_action_card"
+
+# 2. Campaigns Tab (Browse & Mine)
+- tapOn: "tab_campaigns"
+- assertVisible: "campaigns_screen_title"
+- assertVisible: "tab_browse_campaigns"
+- tapOn: "tab_mine_campaigns"
+- assertVisible: "mine_assignments_list"
+- tapOn: "tab_browse_campaigns"
+
+# 3. Wallet Tab (Balance & Settlements)
+- tapOn: "tab_wallet"
+- assertVisible: "wallet_balance_card"
+- assertVisible: "btn_withdraw_funds"
+- assertVisible: "statement_list_header"
+
+# 4. Notifications Tab (Badge & History)
+- tapOn: "tab_notifications"
+- assertVisible: "notifications_screen_title"
+- assertVisible: "btn_mark_all_read"
+
+# 5. Profile Tab (Driver info, settings, legal, support)
+- tapOn: "tab_profile"
+- assertVisible: "profile_screen_title"
+- assertVisible: "driver_name_display"
+- assertVisible: "row_language_settings"
+- assertVisible: "row_theme_settings"
+- assertVisible: "row_help_center"
+- assertVisible: "btn_logout"

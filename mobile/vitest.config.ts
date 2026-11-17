@@ -8,6 +8,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      'react-native': path.resolve(__dirname, './src/__tests__/mocks/react-native.ts'),
       '@': path.resolve(__dirname, './src'),
       '@ap/shared-constants': path.resolve(__dirname, './src/shared/constants/index.ts'),
       '@ap/shared-types': path.resolve(__dirname, './src/shared/types/index.ts'),

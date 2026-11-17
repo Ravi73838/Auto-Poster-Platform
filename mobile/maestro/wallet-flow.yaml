@@ -1,0 +1,42 @@
+# Maestro E2E Flow: Wallet Balances, Ledger Statement & Withdrawal Modal
+# App: Auto Poster Driver Mobile (in.autoposter.driver)
+# Execution Status: NEEDS MANUAL RUN (No active emulator/AVD on build host)
+
+appId: in.autoposter.driver
+---
+- launchApp:
+    clearState: false
+
+# 1. Open Wallet Tab
+- tapOn: "tab_wallet"
+- assertVisible: "wallet_balance_card"
+- assertVisible: "available_balance_amount"
+- assertVisible: "pending_clearance_amount"
+
+# 2. View Statement History
+- assertVisible: "statement_list_header"
+- assertVisible: "statement_entry_0"
+- tapOn: "statement_entry_0"
+- assertVisible: "statement_entry_detail_sheet"
+- tapOn: "btn_close_sheet"
+
+# 3. Open Withdrawal Modal
+- tapOn: "btn_withdraw_funds"
+- assertVisible: "withdraw_modal_title"
+- assertVisible: "input_withdraw_amount"
+- assertVisible: "payout_destination_upi"
+
+# 4. Minimum limit validation (< ₹100)
+- tapOn: "input_withdraw_amount"
+- inputText: "50"
+- tapOn: "btn_confirm_withdraw"
+- assertVisible: "error_withdrawal_minimum"
+
+# 5. Valid withdrawal submission (₹500)
+- tapOn: "input_withdraw_amount"
+- eraseText: 2
+- inputText: "500"
+- tapOn: "btn_confirm_withdraw"
+
+# 6. Verification
+- assertVisible: "payout_initiated_toast"

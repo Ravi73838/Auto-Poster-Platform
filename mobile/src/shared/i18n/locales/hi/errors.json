@@ -45,6 +45,7 @@
   "CAMPAIGN_INVALID_DATES": "अमान्य अभियान तिथियां। समाप्ति तिथि आरंभ तिथि के बाद होनी चाहिए।",
   "CAMPAIGN_DURATION_OUT_OF_RANGE": "अभियान की अवधि अनुमत सीमा से बाहर है।",
   "CAMPAIGN_SLOTS_OUT_OF_RANGE": "ऑटो स्लॉट की संख्या अनुमत सीमा से बाहर है।",
+  "CAMPAIGN_SLOTS_FULL": "इस अभियान के सभी ड्राइवर विज्ञापन स्लॉट पहले से ही आरक्षित हैं।",
   "CAMPAIGN_RENT_OUT_OF_RANGE": "प्रस्तावित किराया अनुमत सीमा से बाहर है।",
   "CAMPAIGN_ALLOWANCE_OUT_OF_RANGE": "मुद्रण भत्ता अनुमत सीमा से बाहर है।",
   "CAMPAIGN_POSTER_REQUIRED": "अभियान जमा करने के लिए पोस्टर आवश्यक है।",

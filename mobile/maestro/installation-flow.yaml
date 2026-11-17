@@ -1,0 +1,44 @@
+# Maestro E2E Flow: Print Guide, Poster Specs & Installation Verification
+# App: Auto Poster Driver Mobile (in.autoposter.driver)
+# Execution Status: NEEDS MANUAL RUN (No active emulator/AVD on build host)
+
+appId: in.autoposter.driver
+---
+- launchApp:
+    clearState: false
+
+# 1. Open Active Reserved Assignment
+- tapOn: "tab_home"
+- tapOn: "card_active_assignment"
+- assertVisible: "assignment_detail_title"
+
+# 2. Open Print Guide
+- tapOn: "btn_open_print_guide"
+- assertVisible: "print_guide_title"
+- assertVisible: "print_specs_material"
+- assertVisible: "print_specs_size"
+- assertVisible: "btn_download_artwork_pdf"
+- assertVisible: "btn_share_artwork"
+- tapOn: "btn_back"
+
+# 3. Start Installation
+- tapOn: "btn_start_installing"
+- assertVisible: "status_badge_installing"
+
+# 4. Open Installation Camera
+- tapOn: "btn_capture_installation_photo"
+- assertVisible: "camera_viewport"
+- assertVisible: "overlay_guideline_plate"
+- assertVisible: "overlay_guideline_poster"
+
+# 5. Capture & Review Photo
+- tapOn: "btn_camera_shutter"
+- assertVisible: "photo_preview_container"
+- assertVisible: "gps_accuracy_badge"
+- assertVisible: "btn_retake_photo"
+- assertVisible: "btn_confirm_submit_photo"
+- tapOn: "btn_confirm_submit_photo"
+
+# 6. Verification: Enqueued & Submitted
+- assertVisible: "install_submitted_banner"
+- assertVisible: "status_badge_under_review"

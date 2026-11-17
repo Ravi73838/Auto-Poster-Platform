@@ -1,0 +1,42 @@
+# Maestro E2E Flow: Language Switcher, Theme Toggle & Logout
+# App: Auto Poster Driver Mobile (in.autoposter.driver)
+# Execution Status: NEEDS MANUAL RUN (No active emulator/AVD on build host)
+
+appId: in.autoposter.driver
+---
+- launchApp:
+    clearState: false
+
+# 1. Open Profile Tab
+- tapOn: "tab_profile"
+- assertVisible: "profile_screen_title"
+
+# 2. Switch Language to Hindi
+- tapOn: "row_language_settings"
+- assertVisible: "language_modal_title"
+- tapOn: "radio_lang_hi"
+- assertVisible: "प्रोफ़ाइल"
+
+# 3. Switch Language to Gujarati
+- tapOn: "row_language_settings"
+- tapOn: "radio_lang_gu"
+- assertVisible: "પ્રોફાઇલ"
+
+# 4. Switch Language back to English
+- tapOn: "row_language_settings"
+- tapOn: "radio_lang_en"
+- assertVisible: "Profile"
+
+# 5. Toggle Theme (Dark Mode)
+- tapOn: "row_theme_settings"
+- tapOn: "toggle_dark_mode"
+- assertVisible: "dark_theme_active_indicator"
+
+# 6. Logout Flow
+- tapOn: "btn_logout"
+- assertVisible: "logout_confirmation_modal"
+- tapOn: "btn_confirm_logout"
+
+# 7. Verification: Redirected to Login
+- assertVisible: "login_screen_title"
+- assertVisible: "btn_login_submit"
