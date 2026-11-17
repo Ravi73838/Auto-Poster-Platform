@@ -114,6 +114,7 @@ export function PayoutsPage() {
           <input
             type="file"
             ref={fileInputRef}
+            aria-label="Upload Bank UTR CSV"
             accept=".csv"
             onChange={handleFileSelect}
             className="hidden"
@@ -138,7 +139,7 @@ export function PayoutsPage() {
             {isExporting ? <Spinner className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
             Export Batch CSV ({approvedPayoutsCount})
           </Button>
-          <Button variant="outline" size="sm" onClick={loadPayouts} disabled={isLoading} className="gap-2">
+          <Button aria-label="Refresh payouts" variant="outline" size="sm" onClick={loadPayouts} disabled={isLoading} className="gap-2">
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
         </div>

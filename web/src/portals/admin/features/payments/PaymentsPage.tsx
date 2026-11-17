@@ -63,9 +63,9 @@ export function AdminPaymentsPage() {
       ]);
       setDashboard(dash);
       setTrialBalance(tb);
-      setSettlements(stl);
-      setRefunds(rfd.data);
-      setAccounts(acc);
+      setSettlements(Array.isArray(stl) ? stl : (stl as any)?.data || []);
+      setRefunds(Array.isArray(rfd) ? rfd : (rfd as any)?.data || []);
+      setAccounts(Array.isArray(acc) ? acc : (acc as any)?.data || []);
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Failed to load finance data');
     } finally {
@@ -589,6 +589,7 @@ export function AdminPaymentsPage() {
             <div>
               <label className="block text-xs font-medium text-textPrimary mb-1">Reason</label>
               <select
+                aria-label="Refund Reason"
                 className="w-full text-xs p-2 border border-border rounded-lg bg-surface text-textPrimary"
                 value={refundReason}
                 onChange={(e) => setRefundReason(e.target.value as any)}
