@@ -104,6 +104,7 @@ export function LegalDocsPage() {
           <button
             onClick={loadDocs}
             disabled={loading}
+            aria-label="Refresh legal documents"
             className="p-2 rounded-xl border border-border bg-surface text-textSecondary hover:text-textPrimary hover:bg-surfaceAlt transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -201,6 +202,7 @@ export function LegalDocsPage() {
                   <select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
+                    aria-label="Document Type"
                     className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-textPrimary outline-none focus:border-primary text-xs"
                   >
                     <option value="TERMS">Terms of Service</option>

@@ -88,6 +88,7 @@ export function SystemPage() {
         <button
           onClick={loadData}
           disabled={loading}
+          aria-label="Refresh metrics"
           className="p-2 rounded-xl border border-border bg-surface text-textSecondary hover:text-textPrimary hover:bg-surfaceAlt transition-colors"
           title="Refresh metrics"
         >

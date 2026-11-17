@@ -168,6 +168,7 @@ export function AuditLogPage() {
           <select
             value={entityType}
             onChange={(e) => updateFilter('entityType', e.target.value)}
+            aria-label="Filter audit log by entity type"
             className="px-3 py-1.5 rounded-xl border border-border bg-surface text-xs text-textPrimary outline-none"
           >
             <option value="">All Entities</option>
@@ -204,6 +205,7 @@ export function AuditLogPage() {
               </div>
               <button
                 onClick={() => setActiveDiffLog(null)}
+                aria-label="Close modal"
                 className="p-1 rounded-lg text-textSecondary hover:text-textPrimary hover:bg-surfaceAlt transition-colors"
               >
                 <X className="w-5 h-5" />

@@ -120,6 +120,7 @@ export function HelpArticlesPage() {
           <button
             onClick={loadArticles}
             disabled={loading}
+            aria-label="Refresh help articles"
             className="p-2 rounded-xl border border-border bg-surface text-textSecondary hover:text-textPrimary hover:bg-surfaceAlt transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -238,6 +239,7 @@ export function HelpArticlesPage() {
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
+                    aria-label="Category"
                     className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-textPrimary outline-none focus:border-primary text-xs"
                   >
                     <option value="GENERAL">General</option>
@@ -252,6 +254,7 @@ export function HelpArticlesPage() {
                   <select
                     value={audience}
                     onChange={(e) => setAudience(e.target.value)}
+                    aria-label="Audience"
                     className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-textPrimary outline-none focus:border-primary text-xs"
                   >
                     <option value="ALL">Public / Everyone</option>

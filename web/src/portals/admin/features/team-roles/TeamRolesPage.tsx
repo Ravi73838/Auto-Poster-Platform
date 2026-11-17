@@ -316,6 +316,7 @@ export function TeamRolesPage() {
                         <select
                           value={adm.role}
                           onChange={(e) => handleRoleChange(adm.id, e.target.value as Role)}
+                          aria-label="Change admin role"
                           className="px-2.5 py-1 text-xs font-medium rounded-lg bg-surface border border-border text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary"
                         >
                           <option value={ROLES.SUPER_ADMIN}>SUPER_ADMIN</option>
@@ -334,6 +335,7 @@ export function TeamRolesPage() {
                         <select
                           value={adm.status}
                           onChange={(e) => handleStatusChange(adm.id, e.target.value as AccountStatus)}
+                          aria-label="Change account status"
                           className="px-2.5 py-1 text-xs font-medium rounded-lg bg-surface border border-border text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary"
                         >
                           <option value={ACCOUNT_STATUS.APPROVED}>APPROVED</option>
