@@ -148,6 +148,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<Role, string[]> = {
     'dispute.view',
     'dispute.resolve.finance',
     'settings:read',
+    'report.view',
     'report.export',
     'pii.reveal',
     'settings.view',

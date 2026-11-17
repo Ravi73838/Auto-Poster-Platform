@@ -132,6 +132,91 @@ export async function seedTestSchema() {
     },
   });
 
+  // 3b. Secondary Admins for Maker-Checker and Concurrency testing
+  await prisma.user.upsert({
+    where: { email: 'admin2@autoposter.in' },
+    create: {
+      email: 'admin2@autoposter.in',
+      mobile: '+919999999998',
+      role: ROLES.SUPER_ADMIN,
+      status: ACCOUNT_STATUS.APPROVED,
+      passwordHash: adminPasswordHash,
+      preferredLanguage: 'en',
+      preferredTheme: 'system',
+      mustChangePassword: false,
+      mobileVerifiedAt: new Date(),
+      emailVerifiedAt: new Date(),
+    },
+    update: {
+      passwordHash: adminPasswordHash,
+      status: ACCOUNT_STATUS.APPROVED,
+      mustChangePassword: false,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'moderator2@autoposter.in' },
+    create: {
+      email: 'moderator2@autoposter.in',
+      mobile: '+919888888887',
+      role: ROLES.MODERATOR,
+      status: ACCOUNT_STATUS.APPROVED,
+      passwordHash: modPasswordHash,
+      preferredLanguage: 'en',
+      preferredTheme: 'system',
+      mustChangePassword: false,
+      mobileVerifiedAt: new Date(),
+      emailVerifiedAt: new Date(),
+    },
+    update: {
+      passwordHash: modPasswordHash,
+      status: ACCOUNT_STATUS.APPROVED,
+      mustChangePassword: false,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'mustchange.admin@autoposter.in' },
+    create: {
+      email: 'mustchange.admin@autoposter.in',
+      mobile: '+919999999997',
+      role: ROLES.SUPER_ADMIN,
+      status: ACCOUNT_STATUS.APPROVED,
+      passwordHash: adminPasswordHash,
+      preferredLanguage: 'en',
+      preferredTheme: 'system',
+      mustChangePassword: true,
+      mobileVerifiedAt: new Date(),
+      emailVerifiedAt: new Date(),
+    },
+    update: {
+      passwordHash: adminPasswordHash,
+      status: ACCOUNT_STATUS.APPROVED,
+      mustChangePassword: true,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'mustchange.tablet@autoposter.in' },
+    create: {
+      email: 'mustchange.tablet@autoposter.in',
+      mobile: '+919999999996',
+      role: ROLES.SUPER_ADMIN,
+      status: ACCOUNT_STATUS.APPROVED,
+      passwordHash: adminPasswordHash,
+      preferredLanguage: 'en',
+      preferredTheme: 'system',
+      mustChangePassword: true,
+      mobileVerifiedAt: new Date(),
+      emailVerifiedAt: new Date(),
+    },
+    update: {
+      passwordHash: adminPasswordHash,
+      status: ACCOUNT_STATUS.APPROVED,
+      mustChangePassword: true,
+    },
+  });
+
   // 4. Primary Company: demo.company@autoposter.in (OWNER)
   const primaryCompanyUser = await prisma.user.upsert({
     where: { email: 'demo.company@autoposter.in' },

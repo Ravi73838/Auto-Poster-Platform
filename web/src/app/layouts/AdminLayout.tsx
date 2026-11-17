@@ -107,7 +107,7 @@ export function AdminLayout() {
   });
 
   return (
-    <div className="min-h-screen flex bg-background text-textPrimary">
+    <div className="min-h-screen flex bg-background text-textPrimary overflow-x-hidden">
       {/* Sidebar */}
       <aside className="w-64 border-e border-border bg-surface flex flex-col justify-between shrink-0">
         <div>
@@ -167,31 +167,31 @@ export function AdminLayout() {
       </aside>
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
         <EnvironmentRibbon />
-        <header className="h-16 px-8 border-b border-border bg-surface flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-4">
+        <header className="h-16 px-4 sm:px-8 border-b border-border bg-surface flex items-center justify-between shrink-0 gap-2">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             <button
               onClick={() => setIsCommandPaletteOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border bg-surfaceAlt/60 text-textSecondary hover:text-textPrimary hover:bg-surfaceAlt text-xs font-medium transition-colors w-64"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border bg-surfaceAlt/60 text-textSecondary hover:text-textPrimary hover:bg-surfaceAlt text-xs font-medium transition-colors w-40 sm:w-64"
             >
               <Search className="w-3.5 h-3.5" />
-              <span>Search or jump to...</span>
-              <kbd className="ml-auto px-1.5 py-0.5 rounded bg-surface border border-border text-[10px] font-mono">
+              <span className="truncate">Search or jump to...</span>
+              <kbd className="hidden sm:inline ml-auto px-1.5 py-0.5 rounded bg-surface border border-border text-[10px] font-mono">
                 Ctrl+K
               </kbd>
             </button>
             <button
               onClick={() => setIsShortcutsOpen(true)}
-              className="p-1.5 rounded-lg border border-border text-textSecondary hover:text-textPrimary hover:bg-surfaceAlt text-xs"
+              className="p-1.5 rounded-lg border border-border text-textSecondary hover:text-textPrimary hover:bg-surfaceAlt text-xs shrink-0"
               title="Keyboard Shortcuts (?)"
             >
               <Keyboard className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="flex items-center gap-4">
-            <span className="text-xs text-textSecondary hidden md:inline">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            <span className="text-xs text-textSecondary hidden xl:inline">
               {user?.role} &bull; {user?.email}
             </span>
             <LanguageSwitcher />

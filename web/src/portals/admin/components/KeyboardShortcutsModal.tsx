@@ -40,6 +40,9 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
         if (isOpen) {
           onClose();
         }
+      } else if (e.key === 'Escape' && isOpen) {
+        e.preventDefault();
+        onClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);

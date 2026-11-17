@@ -32,7 +32,7 @@ export function AdminDashboardPage() {
       const res = await client.adminGetAnalyticsOverview();
       setAnalytics(res);
     } catch (err) {
-      console.error('Failed to load admin analytics:', err);
+      console.warn('Failed to load admin analytics:', err);
     } finally {
       setLoading(false);
     }
@@ -49,7 +49,7 @@ export function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
         <PageHeader
           title={t('dashboard')}
           description="Nationwide operational analytics, review queues, and financial summary."

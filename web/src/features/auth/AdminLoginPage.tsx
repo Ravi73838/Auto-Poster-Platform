@@ -218,7 +218,7 @@ export function AdminLoginPage() {
             />
 
             <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>
-              Next: Send 2FA Code
+              Sign In
             </Button>
 
             <div className="pt-2 text-center border-t border-border mt-3">

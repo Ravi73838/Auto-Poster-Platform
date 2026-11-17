@@ -18,8 +18,14 @@ function toReachableSupabaseUrl(rawUrl: string): string {
       u.hostname = 'aws-0-ap-northeast-1.pooler.supabase.com';
       u.username = `postgres.${ref}`;
       u.port = '5432';
-      return u.toString();
     }
+    if (!u.searchParams.has('connection_limit')) {
+      u.searchParams.set('connection_limit', '5');
+    }
+    if (!u.searchParams.has('pool_timeout')) {
+      u.searchParams.set('pool_timeout', '20');
+    }
+    return u.toString();
   } catch {
     // ignore
   }
