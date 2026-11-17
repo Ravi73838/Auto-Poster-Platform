@@ -24,6 +24,7 @@ export async function seedTestSchema() {
   const adminPasswordHash = await hashPassword('AdminPassword123!');
   const modPasswordHash = await hashPassword('ModeratorPassword123!');
   const finPasswordHash = await hashPassword('FinancePassword123!');
+  const driverPasswordHash = await hashPassword('DriverPassword123!');
 
   // 2. Upsert City & Zones
   let city = await prisma.city.findFirst({ where: { name: 'Ahmedabad' } });
@@ -417,6 +418,126 @@ export async function seedTestSchema() {
     },
     update: {},
   });
+
+  // 6b. Standard Driver Accounts (Approved & Pending)
+  const approvedDriverUser = await prisma.user.upsert({
+    where: { mobile: '+919555555555' },
+    create: {
+      mobile: '+919555555555',
+      role: ROLES.DRIVER,
+      status: ACCOUNT_STATUS.APPROVED,
+      passwordHash: driverPasswordHash,
+      preferredLanguage: 'en',
+      preferredTheme: 'system',
+      mustChangePassword: false,
+      mobileVerifiedAt: new Date(),
+    },
+    update: {
+      status: ACCOUNT_STATUS.APPROVED,
+      passwordHash: driverPasswordHash,
+      mustChangePassword: false,
+    },
+  });
+
+  let v1 = await prisma.vehicle.findUnique({ where: { registrationNumber: 'GJ01AA1234' } });
+  if (!v1) {
+    v1 = await prisma.vehicle.create({
+      data: {
+        registrationNumber: 'GJ01AA1234',
+        vehicleType: 'AUTO_RICKSHAW',
+        ownerName: 'Ramesh Patel',
+        isVerified: true,
+      },
+    });
+  }
+
+  await prisma.driverProfile.upsert({
+    where: { userId: approvedDriverUser.id },
+    create: {
+      userId: approvedDriverUser.id,
+      fullName: 'Ramesh Patel',
+      cityId: city.id,
+      currentVehicleId: v1.id,
+      isAvailable: true,
+      rating: 4.8,
+    },
+    update: {
+      fullName: 'Ramesh Patel',
+      currentVehicleId: v1.id,
+    },
+  });
+
+  const pendingDriverUser = await prisma.user.upsert({
+    where: { mobile: '+919444444444' },
+    create: {
+      mobile: '+919444444444',
+      role: ROLES.DRIVER,
+      status: ACCOUNT_STATUS.PENDING,
+      passwordHash: driverPasswordHash,
+      preferredLanguage: 'en',
+      preferredTheme: 'system',
+      mustChangePassword: false,
+      mobileVerifiedAt: new Date(),
+    },
+    update: {
+      status: ACCOUNT_STATUS.PENDING,
+      passwordHash: driverPasswordHash,
+      mustChangePassword: false,
+    },
+  });
+
+  let v2 = await prisma.vehicle.findUnique({ where: { registrationNumber: 'GJ01BB5678' } });
+  if (!v2) {
+    v2 = await prisma.vehicle.create({
+      data: {
+        registrationNumber: 'GJ01BB5678',
+        vehicleType: 'AUTO_RICKSHAW',
+        ownerName: 'Suresh Kumar',
+        isVerified: false,
+      },
+    });
+  }
+
+  await prisma.driverProfile.upsert({
+    where: { userId: pendingDriverUser.id },
+    create: {
+      userId: pendingDriverUser.id,
+      fullName: 'Suresh Kumar',
+      cityId: city.id,
+      currentVehicleId: v2.id,
+      isAvailable: true,
+    },
+    update: {
+      fullName: 'Suresh Kumar',
+      currentVehicleId: v2.id,
+    },
+  });
+
+  const existingKyc1 = await prisma.kycSubmission.findFirst({
+    where: { userId: approvedDriverUser.id },
+  });
+  if (!existingKyc1) {
+    await prisma.kycSubmission.create({
+      data: {
+        userId: approvedDriverUser.id,
+        status: 'APPROVED',
+        profileSnapshot: { fullName: 'Ramesh Patel', vehicleNumber: 'GJ01AA1234' },
+      },
+    });
+  }
+
+  const existingKyc2 = await prisma.kycSubmission.findFirst({
+    where: { userId: pendingDriverUser.id },
+  });
+  if (!existingKyc2) {
+    await prisma.kycSubmission.create({
+      data: {
+        userId: pendingDriverUser.id,
+        status: 'SUBMITTED',
+        profileSnapshot: { fullName: 'Suresh Kumar', vehicleNumber: 'GJ01BB5678' },
+      },
+    });
+  }
 
   // 7. Seed Sample Campaigns for demo.company
   const existingCampaigns = await prisma.campaign.findMany({

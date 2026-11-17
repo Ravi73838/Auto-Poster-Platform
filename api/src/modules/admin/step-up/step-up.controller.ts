@@ -256,6 +256,7 @@ export class StepUpController {
   static async revealPii(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { entityType, entityId, field } = revealSchema.parse(req.body);
+      const f = field.toLowerCase();
 
       let value: string | null = null;
 
@@ -263,8 +264,8 @@ export class StepUpController {
         case 'USER': {
           const user = await prisma.user.findUnique({ where: { id: entityId } });
           if (!user) throw new NotFoundError('User not found');
-          if (field === 'mobile') value = user.mobile ?? '';
-          else if (field === 'email') value = user.email ?? '';
+          if (f === 'mobile' || f === 'phone') value = user.mobile ?? '';
+          else if (f === 'email') value = user.email ?? '';
           else throw new ValidationError(`Field ${field} is not available for reveal`);
           break;
         }
@@ -275,13 +276,13 @@ export class StepUpController {
             include: { user: true },
           });
           if (!driver) throw new NotFoundError('Driver profile not found');
-          if (field === 'mobile') value = driver.user.mobile ?? '';
-          else if (field === 'email') value = driver.user.email ?? '';
-          else if (field === 'bankAccountNumber') {
+          if (f === 'mobile' || f === 'phone') value = driver.user.mobile ?? '';
+          else if (f === 'email') value = driver.user.email ?? '';
+          else if (f === 'bankaccountnumber' || field === 'bankAccountNumber') {
             value = driver.bankAccountNumberEncrypted ? decrypt(driver.bankAccountNumberEncrypted) : '';
-          } else if (field === 'bankIfsc') value = driver.bankIfsc ?? '';
-          else if (field === 'bankAccountName') value = driver.bankAccountName ?? '';
-          else if (field === 'upiId') {
+          } else if (f === 'bankifsc' || field === 'bankIfsc') value = driver.bankIfsc ?? '';
+          else if (f === 'bankaccountname' || field === 'bankAccountName') value = driver.bankAccountName ?? '';
+          else if (f === 'upiid' || field === 'upiId') {
             value = driver.upiIdEncrypted ? decrypt(driver.upiIdEncrypted) : '';
           } else throw new ValidationError(`Field ${field} is not available for reveal`);
           break;
@@ -290,12 +291,14 @@ export class StepUpController {
         case 'COMPANY': {
           const company = await prisma.companyProfile.findUnique({
             where: { id: entityId },
+            include: { user: true },
           });
           if (!company) throw new NotFoundError('Company profile not found');
-          if (field === 'gstin') value = company.gstin ?? '';
-          else if (field === 'pan') value = company.pan ?? '';
-          else if (field === 'contactPersonPhone') value = company.contactPersonPhone ?? '';
-          else if (field === 'contactPersonName') value = company.contactPersonName ?? '';
+          if (f === 'gstin') value = company.gstin ?? '';
+          else if (f === 'pan') value = company.pan ?? '';
+          else if (f === 'contactpersonphone' || field === 'contactPersonPhone' || f === 'mobile' || f === 'phone') value = company.contactPersonPhone ?? '';
+          else if (f === 'contactpersonname' || field === 'contactPersonName') value = company.contactPersonName ?? '';
+          else if (f === 'email') value = company.user.email ?? '';
           else throw new ValidationError(`Field ${field} is not available for reveal`);
           break;
         }
@@ -303,7 +306,7 @@ export class StepUpController {
         case 'TAX_DOCUMENT': {
           const doc = await prisma.taxDocument.findUnique({ where: { id: entityId } });
           if (!doc) throw new NotFoundError('Tax document not found');
-          if (field === 'documentNumber') value = doc.documentNumber;
+          if (f === 'documentnumber' || field === 'documentNumber') value = doc.documentNumber;
           else throw new ValidationError(`Field ${field} is not available for reveal`);
           break;
         }
@@ -311,8 +314,8 @@ export class StepUpController {
         case 'VEHICLE': {
           const vehicle = await prisma.vehicle.findUnique({ where: { id: entityId } });
           if (!vehicle) throw new NotFoundError('Vehicle not found');
-          if (field === 'registrationNumber') value = vehicle.registrationNumber;
-          else if (field === 'rcNumber') value = vehicle.rcNumber ?? '';
+          if (f === 'registrationnumber' || field === 'registrationNumber') value = vehicle.registrationNumber;
+          else if (f === 'rcnumber' || field === 'rcNumber') value = vehicle.rcNumber ?? '';
           else throw new ValidationError(`Field ${field} is not available for reveal`);
           break;
         }

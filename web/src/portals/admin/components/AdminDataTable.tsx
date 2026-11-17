@@ -263,6 +263,7 @@ export function AdminDataTable<T extends { id: string }>({
               >
                 <span>{v.name}</span>
                 <button
+                  aria-label={`Delete view ${v.name}`}
                   onClick={(e) => handleDeleteView(v.id, e)}
                   className="hover:text-danger p-0.5 rounded"
                 >
@@ -274,6 +275,7 @@ export function AdminDataTable<T extends { id: string }>({
               <div className="flex items-center gap-1 bg-surfaceAlt px-2 py-1 rounded-lg border border-border">
                 <input
                   type="text"
+                  aria-label="View name"
                   placeholder="View name..."
                   value={newViewName}
                   onChange={(e) => setNewViewName(e.target.value)}
@@ -281,12 +283,14 @@ export function AdminDataTable<T extends { id: string }>({
                   autoFocus
                 />
                 <button
+                  aria-label="Confirm save view"
                   onClick={handleSaveView}
                   className="text-success hover:text-success/80 p-0.5"
                 >
                   <Check className="w-3.5 h-3.5" />
                 </button>
                 <button
+                  aria-label="Cancel save view"
                   onClick={() => setIsSavingView(false)}
                   className="text-textSecondary hover:text-textPrimary p-0.5 text-xs font-bold"
                 >
@@ -310,6 +314,7 @@ export function AdminDataTable<T extends { id: string }>({
             <Search className="w-4 h-4 text-textSecondary absolute left-2.5 pointer-events-none" />
             <input
               type="text"
+              aria-label="Filter list"
               placeholder="Filter list..."
               value={searchInputValue}
               onChange={(e) => setSearchInputValue(e.target.value)}
@@ -420,6 +425,7 @@ export function AdminDataTable<T extends { id: string }>({
               <th className="px-4 py-3 w-8">
                 <input
                   type="checkbox"
+                  aria-label="Select all rows"
                   checked={isAllSelected}
                   ref={(input) => {
                     if (input) input.indeterminate = isPartiallySelected;
@@ -484,6 +490,7 @@ export function AdminDataTable<T extends { id: string }>({
                     <td className="px-4 py-3 w-8" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
+                        aria-label={`Select row ${index + 1}`}
                         checked={isSelected}
                         onChange={(e) => toggleSelectRow(row.id, e as any)}
                         className="rounded border-border text-primary focus:ring-primary cursor-pointer"
@@ -511,6 +518,7 @@ export function AdminDataTable<T extends { id: string }>({
         <div className="flex items-center gap-2">
           <span>Rows per page:</span>
           <select
+            aria-label="Rows per page"
             value={limit}
             onChange={(e) => updateParam('limit', e.target.value)}
             className="bg-surface border border-border rounded px-2 py-1 text-xs text-textPrimary outline-none"
@@ -533,6 +541,7 @@ export function AdminDataTable<T extends { id: string }>({
           </span>
           <div className="flex items-center gap-1">
             <button
+              aria-label="Previous page"
               onClick={() => updateParam('page', String(page - 1))}
               disabled={page <= 1}
               className="p-1 rounded border border-border bg-surface text-textPrimary disabled:opacity-30 disabled:cursor-not-allowed hover:bg-surfaceAlt"
@@ -540,6 +549,7 @@ export function AdminDataTable<T extends { id: string }>({
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
+              aria-label="Next page"
               onClick={() => updateParam('page', String(page + 1))}
               disabled={page >= totalPages}
               className="p-1 rounded border border-border bg-surface text-textPrimary disabled:opacity-30 disabled:cursor-not-allowed hover:bg-surfaceAlt"
