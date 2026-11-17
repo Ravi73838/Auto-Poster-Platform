@@ -68,7 +68,8 @@ export function DailyPhotoReviewTab() {
     setError(null);
     try {
       const res = await api.getDailyPhotoQueue();
-      setQueue(res.items);
+      const items = Array.isArray(res) ? res : res?.items || [];
+      setQueue(items);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load daily photo queue');
     } finally {

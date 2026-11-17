@@ -58,7 +58,8 @@ export function PhotoReviewPage() {
     setError(null);
     try {
       const res = await api.getAdminInstallationQueue();
-      setQueue(res.items);
+      const items = Array.isArray(res) ? res : (res as any)?.items || [];
+      setQueue(items);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load installation queue');
     } finally {

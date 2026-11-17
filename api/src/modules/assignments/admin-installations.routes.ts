@@ -10,6 +10,7 @@ export function createAdminInstallationsRouter(): Router {
 
   // Reviewers (Moderator, Super Admin)
   router.get('/review-queue', requirePermission('campaign.review'), AdminInstallationsController.getReviewQueue);
+  router.get('/queue', requirePermission('campaign.review'), AdminInstallationsController.getReviewQueue);
   router.post('/:id/claim', requirePermission('campaign.review'), AdminInstallationsController.claim);
   router.post('/:id/release', requirePermission('campaign.review'), AdminInstallationsController.release);
   router.post('/:id/decision', requirePermission('campaign.review'), AdminInstallationsController.decide);

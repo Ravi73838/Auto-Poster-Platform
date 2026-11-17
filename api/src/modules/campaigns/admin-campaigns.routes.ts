@@ -13,7 +13,9 @@ export function createAdminCampaignsRouter(): Router {
 
   // Review queue & actions (Moderator, Super Admin)
   router.get('/review-queue', requirePermission('campaign.review'), AdminCampaignsController.getReviewQueue);
+  router.get('/review/queue', requirePermission('campaign.review'), AdminCampaignsController.getReviewQueue);
   router.post('/claim-next', requirePermission('campaign.review'), AdminCampaignsController.claimNext);
+  router.post('/review/claim-next', requirePermission('campaign.review'), AdminCampaignsController.claimNext);
   router.post('/:id/claim', requirePermission('campaign.review'), AdminCampaignsController.claim);
   router.post('/:id/release', requirePermission('campaign.review'), AdminCampaignsController.release);
 

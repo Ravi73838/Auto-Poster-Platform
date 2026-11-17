@@ -24,7 +24,7 @@ export class AdminDailyPhotosController {
       AdminDailyPhotosController.assertNotFinance(req);
       const query = listDailyPhotoQueueQuerySchema.parse(req.query);
       const result = await AdminDailyPhotosService.getQueue(req.auth!.userId, query);
-      res.status(200).json({ success: true, data: result.items, nextCursor: result.nextCursor });
+      res.status(200).json({ success: true, data: result });
     } catch (err) {
       next(err);
     }

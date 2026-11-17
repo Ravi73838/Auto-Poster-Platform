@@ -169,6 +169,7 @@ export function CampaignReviewPage() {
         <div className="flex flex-wrap items-center gap-3">
           {/* City Filter */}
           <select
+            aria-label="Filter campaigns by city"
             value={selectedCityId}
             onChange={(e) => setSelectedCityId(e.target.value)}
             className="px-3 py-1.5 text-xs bg-surface border border-border rounded-lg text-textPrimary focus:ring-2 focus:ring-primary focus:outline-none"
