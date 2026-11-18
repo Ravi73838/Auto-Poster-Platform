@@ -535,8 +535,9 @@ describe('Phase 7: Daily Photo Proof and Fraud Checks Integration Test Suite', {
       .set('Authorization', `Bearer ${adminAccessToken}`);
 
     expect(queueRes.status).toBe(200);
-    expect(queueRes.body.data.length).toBeGreaterThan(0);
-    const queuedItem = queueRes.body.data.find((p: any) => p.photoId === res.body.data.photoId);
+    const queueItems = Array.isArray(queueRes.body.data) ? queueRes.body.data : queueRes.body.data?.items ?? [];
+    expect(queueItems.length).toBeGreaterThan(0);
+    const queuedItem = queueItems.find((p: any) => p.photoId === res.body.data.photoId);
     expect(queuedItem).toBeDefined();
     expect(queuedItem.riskScore).toBeGreaterThan(0);
 
