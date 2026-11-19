@@ -22,7 +22,7 @@ export class PublicController {
         maintenanceMessage: maintenanceMessage || null,
         environment: env.NODE_ENV || 'development',
         auth: {
-          otpEnabled: env.AUTH_OTP_ENABLED,
+          otpEnabled: false,
           passwordLogin: true,
         },
       };

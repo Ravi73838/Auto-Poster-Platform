@@ -383,25 +383,10 @@ export class AuthService {
       },
     });
 
-    // When OTP is disabled, verify mobile immediately and allow login
-    if (!env.AUTH_OTP_ENABLED) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { mobileVerifiedAt: new Date() },
-      });
-
-      return {
-        message: 'Company registered successfully. You may log in directly with your email and password.',
-        mobile,
-      };
-    }
-
-    // Send REGISTER OTP to verify mobile
-    await OtpService.requestOtp({
-      target: mobile,
-      purpose: OTP_PURPOSES.REGISTER,
-      ipAddress: context?.ipAddress,
-      language: language as Language,
+    // Mobile is verified upon password registration
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { mobileVerifiedAt: new Date() },
     });
 
     await AuditService.log({
@@ -415,7 +400,7 @@ export class AuthService {
     });
 
     return {
-      message: 'Registration initiated. Verification code sent to your mobile.',
+      message: 'Company registered successfully. You may log in directly with your email and password.',
       mobile,
     };
   }
@@ -502,11 +487,7 @@ export class AuthService {
       throw new AccountBlockedError('Your account has been blocked. Please contact support.');
     }
 
-    if (!user.mobileVerifiedAt && env.AUTH_OTP_ENABLED) {
-      throw new MobileNotVerifiedError(
-        'Your mobile number has not been verified. Please complete mobile verification to proceed.',
-      );
-    }
+
 
     const { session, rawRefreshToken, accessToken } = await TokenService.createSession({
       userId: user.id,

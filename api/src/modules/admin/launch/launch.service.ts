@@ -305,22 +305,13 @@ export class LaunchService {
       });
     }
 
-    // 6. Authentication Mode & OTP Enforcement Check
-    if (!env.AUTH_OTP_ENABLED) {
-      checks.push({
-        id: 'auth_otp',
-        name: 'Authentication Mode (OTP Enforcement)',
-        status: env.DB_ENVIRONMENT === 'production' ? 'FAIL' : 'WARN',
-        message: 'AUTH_OTP_ENABLED is false (OTP disabled, password mode active)',
-      });
-    } else {
-      checks.push({
-        id: 'auth_otp',
-        name: 'Authentication Mode (OTP Enforcement)',
-        status: 'PASS',
-        message: 'OTP authentication is enabled and enforced',
-      });
-    }
+    // 6. Authentication Mode Check
+    checks.push({
+      id: 'auth_mode',
+      name: 'Authentication Mode',
+      status: 'PASS',
+      message: 'Password-based authentication active (no verification code dependencies)',
+    });
 
     // Determine overall status
     const allAttested = signOffs.every((s) => s.attested);

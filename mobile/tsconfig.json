@@ -79,8 +79,7 @@
   },
   "include": [
     "app/**/*",
-    "src/**/*",
-    "expo-env.d.ts"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",

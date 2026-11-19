@@ -12,6 +12,7 @@ import { LedgerInvariantService } from '../modules/ledger/ledger-invariant.servi
 import { SettingsService } from '../modules/settings/settings.service.js';
 import { SETTING_KEYS } from '@ap/shared-constants';
 import { logger } from '../shared/logger/index.js';
+import { TimeService } from '../shared/time/index.js';
 
 export class MoneyJobsService {
   /**
@@ -73,7 +74,7 @@ export class MoneyJobsService {
       3,
     );
 
-    const now = new Date();
+    const now = TimeService.now();
     const delayCutoff = new Date(now.getTime() - delayDays * 24 * 60 * 60 * 1000);
 
     const completedAssignments = await prisma.assignment.findMany({

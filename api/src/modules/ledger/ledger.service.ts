@@ -182,15 +182,29 @@ export class LedgerService {
       }
 
       // 2. Create the LedgerTransaction header
-      const transaction = await tx.ledgerTransaction.create({
-        data: {
-          refType: input.refType,
-          refId: input.refId,
-          description: input.description,
-          idempotencyKey: input.idempotencyKey,
-          metadata: (input.metadata as object) ?? undefined,
-        },
-      });
+      let transaction: LedgerTransaction;
+      try {
+        transaction = await tx.ledgerTransaction.create({
+          data: {
+            refType: input.refType,
+            refId: input.refId,
+            description: input.description,
+            idempotencyKey: input.idempotencyKey,
+            metadata: (input.metadata as object) ?? undefined,
+          },
+        });
+      } catch (err: any) {
+        if (err?.code === 'P2002' && input.idempotencyKey) {
+          const existing = await tx.ledgerTransaction.findUnique({
+            where: { idempotencyKey: input.idempotencyKey },
+            include: { entries: true },
+          });
+          if (existing && existing.refType === input.refType && existing.refId === input.refId) {
+            return existing;
+          }
+        }
+        throw err;
+      }
 
       const createdEntries: LedgerEntry[] = [];
 
@@ -258,15 +272,10 @@ export class LedgerService {
       };
     };
 
-    if (externalTx && '$transaction' in externalTx) {
-      return (
-        externalTx as {
-          $transaction: <T>(fn: (tx: TransactionClient) => Promise<T>) => Promise<T>;
-        }
-      ).$transaction(executeInTx);
-    }
-
     if (externalTx) {
+      if (externalTx === prisma) {
+        return withTransaction(executeInTx);
+      }
       return executeInTx(externalTx as TransactionClient);
     }
 

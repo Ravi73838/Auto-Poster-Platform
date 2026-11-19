@@ -64,7 +64,45 @@ export class PhotoChecksRunner {
     }
 
     // 5. GPS In Area Check
-    if (input.campaignCityId) {
+    if (input.campaignId) {
+      const campaignZones = await prisma.campaignZone.findMany({
+        where: { campaignId: input.campaignId },
+        include: { zone: true },
+      });
+
+      if (campaignZones.length > 0) {
+        let insideAnyZone = false;
+        for (const cz of campaignZones) {
+          const dist = haversineDistanceMeters(input.latitude, input.longitude, cz.zone.centerLat, cz.zone.centerLng);
+          if (dist <= cz.zone.radiusMeters + input.accuracyMeters) {
+            insideAnyZone = true;
+            break;
+          }
+        }
+        if (!insideAnyZone) {
+          flags.gpsInArea = false;
+          failureReasons.push('Photo was captured outside the authorized campaign operational area');
+        }
+      } else if (input.campaignCityId) {
+        const cityZones = await prisma.zone.findMany({
+          where: { cityId: input.campaignCityId, isActive: true },
+        });
+        if (cityZones.length > 0) {
+          let insideCity = false;
+          for (const z of cityZones) {
+            const dist = haversineDistanceMeters(input.latitude, input.longitude, z.centerLat, z.centerLng);
+            if (dist <= z.radiusMeters + 25000) {
+              insideCity = true;
+              break;
+            }
+          }
+          if (!insideCity) {
+            flags.gpsInArea = false;
+            failureReasons.push('Photo was captured outside the authorized campaign operational area');
+          }
+        }
+      }
+    } else if (input.campaignCityId) {
       const city = await prisma.city.findUnique({
         where: { id: input.campaignCityId },
       });

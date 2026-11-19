@@ -7,24 +7,23 @@ import { DisciplineController } from './discipline.controller.js';
 export function createAdminDisciplineRouter(): Router {
   const router = Router();
 
-  router.use(requireAuth);
-  router.use(requireRole(ROLES.SUPER_ADMIN, ROLES.MODERATOR));
+  const guard = [requireAuth, requireRole(ROLES.SUPER_ADMIN, ROLES.MODERATOR)];
 
   // Strikes
-  router.post('/strikes', requirePermission(PERMISSION_KEYS.STRIKE_MANAGE), DisciplineController.issueStrike);
-  router.get('/strikes', requirePermission(PERMISSION_KEYS.STRIKE_VIEW), DisciplineController.listStrikes);
-  router.post('/strikes/:id/revoke', requirePermission(PERMISSION_KEYS.STRIKE_MANAGE), DisciplineController.revokeStrike);
+  router.post('/strikes', ...guard, requirePermission(PERMISSION_KEYS.STRIKE_MANAGE), DisciplineController.issueStrike);
+  router.get('/strikes', ...guard, requirePermission(PERMISSION_KEYS.STRIKE_VIEW), DisciplineController.listStrikes);
+  router.post('/strikes/:id/revoke', ...guard, requirePermission(PERMISSION_KEYS.STRIKE_MANAGE), DisciplineController.revokeStrike);
 
   // Bans
-  router.get('/bans', requirePermission(PERMISSION_KEYS.STRIKE_VIEW), DisciplineController.listBans);
-  router.post('/bans/:id/lift', requirePermission(PERMISSION_KEYS.STRIKE_MANAGE), requireStepUp(), DisciplineController.liftBan);
+  router.get('/bans', ...guard, requirePermission(PERMISSION_KEYS.STRIKE_VIEW), DisciplineController.listBans);
+  router.post('/bans/:id/lift', ...guard, requirePermission(PERMISSION_KEYS.STRIKE_MANAGE), requireStepUp(), DisciplineController.liftBan);
 
   // Driver discipline details
-  router.get('/drivers/:driverId/discipline', requirePermission(PERMISSION_KEYS.STRIKE_VIEW), DisciplineController.getDriverDisciplineAdmin);
+  router.get('/drivers/:driverId/discipline', ...guard, requirePermission(PERMISSION_KEYS.STRIKE_VIEW), DisciplineController.getDriverDisciplineAdmin);
 
   // Assignment termination & reinstatement
-  router.post('/assignments/:id/terminate', requirePermission(PERMISSION_KEYS.STRIKE_MANAGE), DisciplineController.terminateAssignment);
-  router.post('/assignments/:id/reinstate', requirePermission(PERMISSION_KEYS.STRIKE_MANAGE), requireStepUp(), DisciplineController.reinstateAssignment);
+  router.post('/assignments/:id/terminate', ...guard, requirePermission(PERMISSION_KEYS.STRIKE_MANAGE), DisciplineController.terminateAssignment);
+  router.post('/assignments/:id/reinstate', ...guard, requirePermission(PERMISSION_KEYS.STRIKE_MANAGE), requireStepUp(), DisciplineController.reinstateAssignment);
 
   return router;
 }

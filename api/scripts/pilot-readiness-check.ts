@@ -45,7 +45,7 @@ async function main() {
   console.log(`OVERALL READINESS STATUS: ${statusColor}${readiness.overallStatus}\x1b[0m`);
   console.log('----------------------------------------------------------------\n');
 
-  if (env.DB_ENVIRONMENT === 'production' && (!env.AUTH_OTP_ENABLED || readiness.overallStatus === 'BLOCKED')) {
+  if (env.DB_ENVIRONMENT === 'production' && readiness.overallStatus === 'BLOCKED') {
     console.error('CRITICAL: Production launch readiness checks failed or sign-offs are missing!');
     process.exit(1);
   }

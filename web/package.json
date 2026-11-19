@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "preview": "vite preview",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "e2e:full": "playwright test e2e/full --project=\"Desktop Chrome\""
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

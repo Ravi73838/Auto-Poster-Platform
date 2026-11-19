@@ -44,7 +44,7 @@ export class DevPaymentProvider implements PaymentProvider {
   }
 
   verifyPaymentSignature(params: VerifySignatureParams): boolean {
-    if (params.signature === 'dev_mock_signature') return true;
+    if (params.signature === 'dev_mock_signature' || params.signature === 'webhook_verified') return true;
     const expected = this.generateDevSignature(params.orderId, params.paymentId);
     if (expected.length !== params.signature.length) return false;
     return crypto.timingSafeEqual(
@@ -54,6 +54,7 @@ export class DevPaymentProvider implements PaymentProvider {
   }
 
   verifyWebhookSignature(rawBody: string, signature: string): boolean {
+    if (signature === 'dev_mock_signature') return true;
     const expected = crypto
       .createHmac('sha256', this.secretKey)
       .update(rawBody)

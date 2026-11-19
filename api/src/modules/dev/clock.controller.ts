@@ -3,6 +3,7 @@ import { clock } from '../../shared/clock/index.js';
 import { env } from '../../config/env.js';
 import { ForbiddenError, ValidationError } from '../../shared/errors/index.js';
 import { logger } from '../../shared/logger/index.js';
+import { processJob, JOB_NAMES } from '../../jobs/index.js';
 
 export class DevClockController {
   private static assertAllowed(): void {
@@ -92,6 +93,32 @@ export class DevClockController {
           environment: env.DB_ENVIRONMENT,
         },
       });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async runDueJobs(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      DevClockController.assertAllowed();
+      const results: Record<string, any> = {};
+      const jobList = [
+        JOB_NAMES.CAMPAIGN_START,
+        JOB_NAMES.ASSIGNMENT_START,
+        JOB_NAMES.DAILY_DAY_ROLL,
+        JOB_NAMES.ASSIGNMENT_COMPLETE,
+        JOB_NAMES.CAMPAIGN_COMPLETE,
+        JOB_NAMES.SETTLEMENT_TRIGGER,
+        JOB_NAMES.CLOSEOUT_TRIGGER,
+      ];
+      for (const name of jobList) {
+        try {
+          results[name] = await processJob(name);
+        } catch (e: any) {
+          results[name] = { error: e.message };
+        }
+      }
+      res.json({ success: true, data: results });
     } catch (err) {
       next(err);
     }

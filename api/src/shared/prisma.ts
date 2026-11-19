@@ -20,10 +20,10 @@ function toReachableSupabaseUrl(rawUrl: string): string {
       u.port = '5432';
     }
     if (!u.searchParams.has('connection_limit')) {
-      u.searchParams.set('connection_limit', '5');
+      u.searchParams.set('connection_limit', '15');
     }
     if (!u.searchParams.has('pool_timeout')) {
-      u.searchParams.set('pool_timeout', '20');
+      u.searchParams.set('pool_timeout', '30');
     }
     return u.toString();
   } catch {
@@ -45,6 +45,10 @@ export const prisma =
       db: {
         url: effectiveDbUrl,
       },
+    },
+    transactionOptions: {
+      maxWait: 10000,
+      timeout: 30000,
     },
     log: env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
   });

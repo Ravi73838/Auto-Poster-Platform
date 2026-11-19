@@ -1,10 +1,12 @@
+import { clock as appClock } from '../clock/index.js';
+
 export interface Clock {
   now(): Date;
 }
 
 class SystemClock implements Clock {
   now(): Date {
-    return new Date();
+    return appClock.now();
   }
 }
 

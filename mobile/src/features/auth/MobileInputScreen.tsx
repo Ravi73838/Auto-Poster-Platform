@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -15,76 +15,47 @@ import { useMobileAuthStore } from '../../store/authStore';
 import { ApiError } from '@ap/api-client';
 
 interface Props {
-  onOtpSent: (mobile: string, devCode?: string) => void;
   onChangeLanguage: () => void;
   onLoginSuccess?: () => void;
 }
 
-export function MobileInputScreen({ onOtpSent, onChangeLanguage, onLoginSuccess }: Props) {
-  const { t } = useTranslation(['auth', 'common', 'errors']);
+export function MobileInputScreen({ onChangeLanguage, onLoginSuccess }: Props) {
+  const { t, i18n } = useTranslation(['auth', 'common', 'errors']);
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isOtpDisabled, setIsOtpDisabled] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    apiClient.getPublicAppConfig().then((config) => {
-      if (config.auth && config.auth.otpEnabled === false) {
-        setIsOtpDisabled(true);
-      }
-    }).catch(() => {
-      // fallback
-    });
-  }, []);
-
   const handleSubmit = async () => {
     const rawNumber = mobile.trim();
     if (!/^[6-9]\d{9}$/.test(rawNumber)) {
-      setError('Please enter a valid 10-digit Indian mobile number');
+      setError(t('errors:INVALID_MOBILE_FORMAT', { defaultValue: 'Please enter a valid 10-digit Indian mobile number' }));
       return;
     }
 
-    if (isOtpDisabled) {
-      if (!password || password.length < 6) {
-        setError('Please enter a password with at least 6 characters');
-        return;
-      }
-
-      setIsLoading(true);
-      setError(null);
-      try {
-        const fullMobile = `+91${rawNumber}`;
-        const res = isRegisterMode
-          ? await apiClient.driverPasswordRegister({ mobile: fullMobile, password, language: 'en' })
-          : await apiClient.driverPasswordLogin({ mobile: fullMobile, password });
-
-        await useMobileAuthStore.getState().login(res);
-        onLoginSuccess?.();
-      } catch (err: unknown) {
-        if (err instanceof ApiError) {
-          setError(t(`errors:${err.code}`, { defaultValue: err.message }));
-        } else {
-          setError('Authentication failed. Please check credentials and try again.');
-        }
-      } finally {
-        setIsLoading(false);
-      }
+    if (!password || password.length < 6) {
+      setError(t('errors:PASSWORD_TOO_SHORT', { defaultValue: 'Please enter a password with at least 6 characters' }));
       return;
     }
 
     setIsLoading(true);
     setError(null);
     try {
-      const res = await apiClient.driverOtpRequest({ mobile: rawNumber });
-      onOtpSent(rawNumber, res.devCode);
+      const fullMobile = `+91${rawNumber}`;
+      const currentLang = (i18n.language || 'en') as 'en' | 'hi' | 'gu';
+      const res = isRegisterMode
+        ? await apiClient.driverPasswordRegister({ mobile: fullMobile, password, language: currentLang })
+        : await apiClient.driverPasswordLogin({ mobile: fullMobile, password });
+
+      await useMobileAuthStore.getState().login(res);
+      onLoginSuccess?.();
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(t(`errors:${err.code}`, { defaultValue: err.message }));
       } else {
-        setError('Failed to send OTP. Please check connection and try again.');
+        setError(t('errors:AUTH_FAILED', { defaultValue: 'Authentication failed. Please check credentials and try again.' }));
       }
     } finally {
       setIsLoading(false);
@@ -97,29 +68,16 @@ export function MobileInputScreen({ onOtpSent, onChangeLanguage, onLoginSuccess 
       style={styles.container}
     >
       <View style={styles.content}>
-        {isOtpDisabled ? (
-          <View style={styles.warningBanner}>
-            <Text style={styles.warningBannerTitle}>⚠️ TESTING MODE</Text>
-            <Text style={styles.warningBannerText}>
-              OTP authentication is DISABLED. Log in or register with mobile and password.
-            </Text>
-          </View>
-        ) : null}
-
         <View style={styles.header}>
           <Text style={styles.title}>
-            {isOtpDisabled
-              ? isRegisterMode
-                ? 'Register Driver'
-                : 'Driver Sign In'
-              : t('auth:enterPhone', { defaultValue: 'Enter Mobile Number' })}
+            {isRegisterMode
+              ? t('auth:driverRegister', { defaultValue: 'Register Driver' })
+              : t('auth:driverSignIn', { defaultValue: 'Driver Sign In' })}
           </Text>
           <Text style={styles.subtitle}>
-            {isOtpDisabled
-              ? isRegisterMode
-                ? 'Create a driver account using your mobile number and password'
-                : 'Enter your 10-digit mobile number and password'
-              : 'We will send a 6-digit verification code to sign in or register'}
+            {isRegisterMode
+              ? t('auth:driverRegisterSubtitle', { defaultValue: 'Create a driver account using your mobile number and password' })
+              : t('auth:driverSignInSubtitle', { defaultValue: 'Enter your 10-digit mobile number and password' })}
           </Text>
         </View>
 
@@ -147,27 +105,25 @@ export function MobileInputScreen({ onOtpSent, onChangeLanguage, onLoginSuccess 
           />
         </View>
 
-        {isOtpDisabled ? (
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={styles.passwordInput}
-              secureTextEntry={!showPassword}
-              placeholder="Password"
-              placeholderTextColor="#94A3B8"
-              value={password}
-              onChangeText={(val) => {
-                setPassword(val);
-                if (error) setError(null);
-              }}
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.showHideButton}
-            >
-              <Text style={styles.showHideText}>{showPassword ? 'Hide' : 'Show'}</Text>
-            </TouchableOpacity>
-          </View>
-        ) : null}
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            secureTextEntry={!showPassword}
+            placeholder={t('auth:password', { defaultValue: 'Password' })}
+            placeholderTextColor="#94A3B8"
+            value={password}
+            onChangeText={(val) => {
+              setPassword(val);
+              if (error) setError(null);
+            }}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.showHideButton}
+          >
+            <Text style={styles.showHideText}>{showPassword ? 'Hide' : 'Show'}</Text>
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={[styles.button, isLoading && styles.buttonDisabled]}
@@ -179,33 +135,29 @@ export function MobileInputScreen({ onOtpSent, onChangeLanguage, onLoginSuccess 
             <ActivityIndicator color="#FFFFFF" />
           ) : (
             <Text style={styles.buttonText}>
-              {isOtpDisabled
-                ? isRegisterMode
-                  ? 'Register Account'
-                  : 'Sign In'
-                : t('auth:sendOtp', { defaultValue: 'Get OTP' })}
+              {isRegisterMode
+                ? t('auth:registerAccount', { defaultValue: 'Register Account' })
+                : t('auth:signIn', { defaultValue: 'Sign In' })}
             </Text>
           )}
         </TouchableOpacity>
 
-        {isOtpDisabled ? (
-          <TouchableOpacity
-            onPress={() => {
-              setIsRegisterMode(!isRegisterMode);
-              setError(null);
-            }}
-            style={styles.modeToggle}
-          >
-            <Text style={styles.modeToggleText}>
-              {isRegisterMode
-                ? 'Already have an account? Sign In'
-                : "New driver? Register Here"}
-            </Text>
-          </TouchableOpacity>
-        ) : null}
+        <TouchableOpacity
+          onPress={() => {
+            setIsRegisterMode(!isRegisterMode);
+            setError(null);
+          }}
+          style={styles.modeToggle}
+        >
+          <Text style={styles.modeToggleText}>
+            {isRegisterMode
+              ? t('auth:alreadyAccountSignInPrompt', { defaultValue: 'Already have an account? Sign In' })
+              : t('auth:newDriverRegisterPrompt', { defaultValue: 'New driver? Register Here' })}
+          </Text>
+        </TouchableOpacity>
 
         <TouchableOpacity onPress={onChangeLanguage} style={styles.langLink}>
-          <Text style={styles.langLinkText}>Change Language / भाषा बदलें</Text>
+          <Text style={styles.langLinkText}>Change Language / भाषा बदलें / ભાષા બદલો</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -255,7 +207,7 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     borderRadius: 12,
     backgroundColor: '#F8FAFC',
-    marginBottom: 20,
+    marginBottom: 16,
     overflow: 'hidden',
   },
   prefixBox: {
@@ -278,40 +230,6 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     fontWeight: '600',
     letterSpacing: 1,
-  },
-  button: {
-    backgroundColor: '#0284C7',
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  warningBanner: {
-    backgroundColor: '#FEF3C7',
-    borderColor: '#F59E0B',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 16,
-  },
-  warningBannerTitle: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#B45309',
-    marginBottom: 2,
-    letterSpacing: 0.5,
-  },
-  warningBannerText: {
-    fontSize: 11,
-    color: '#92400E',
-    lineHeight: 15,
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -338,6 +256,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#0284C7',
   },
+  button: {
+    backgroundColor: '#0284C7',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
   modeToggle: {
     marginTop: 16,
     alignItems: 'center',
@@ -358,4 +290,3 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
-

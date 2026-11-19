@@ -683,6 +683,22 @@ export class AssignmentsService {
       vehicleId: assignment.vehicleId,
     });
 
+    if (!checkResult.flags.mockLocation || input.isMockLocation) {
+      throw new AppError(
+        ERROR_CODES.MOCK_LOCATION_DETECTED,
+        400,
+        'Mock location or hardware GPS spoofing detected.',
+      );
+    }
+
+    if (!checkResult.flags.gpsInArea) {
+      throw new AppError(
+        ERROR_CODES.INSTALL_PHOTO_OUTSIDE_AREA,
+        400,
+        'The photo was captured outside the authorized campaign operational area.',
+      );
+    }
+
     const now = TimeService.now();
     const attemptNo = assignment.installAttempts + 1;
 

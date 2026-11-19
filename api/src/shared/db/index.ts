@@ -19,9 +19,14 @@ export async function withTransaction<T>(
     isolationLevel?: Prisma.TransactionIsolationLevel;
   },
 ): Promise<T> {
+  const mergedOptions = {
+    maxWait: 10000,
+    timeout: 30000,
+    ...options,
+  };
   return prisma.$transaction(async (tx) => {
     return fn(tx);
-  }, options);
+  }, mergedOptions);
 }
 
 export function mapPrismaError(error: unknown): AppError {

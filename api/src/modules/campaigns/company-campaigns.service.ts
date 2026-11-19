@@ -297,7 +297,10 @@ export class CompanyCampaignsService {
     const startDateStr = input.startDate ?? toISTDate(campaign.startDate);
     const endDateStr = input.endDate ?? toISTDate(campaign.endDate);
     const slots = input.slots ?? campaign.targetAutoCount;
-    const rentPer30DaysPaise = input.rentPer30DaysPaise ?? (campaign.dailyRentPaise * 30);
+    const rentPer30DaysPaise =
+      input.rentPer30DaysPaise ??
+      (campaign.pricingSnapshot as any)?.rentPer30DaysPaise ??
+      (campaign.dailyRentPaise * 30);
     const printingAllowancePaise = input.printingAllowancePaise ?? campaign.printingAllowancePaise;
 
     const preview = await this.calculatePricePreview({
@@ -440,7 +443,9 @@ export class CompanyCampaignsService {
     }
 
     // Rent
-    const rentPer30Days = campaign.dailyRentPaise * 30;
+    const rentPer30Days =
+      (campaign.pricingSnapshot as any)?.rentPer30DaysPaise ??
+      (campaign.dailyRentPaise * 30);
     if (rentPer30Days < rules.minRentPer30DaysPaise || rentPer30Days > rules.maxRentPer30DaysPaise) {
       throw new AppError(
         ERROR_CODES.CAMPAIGN_RENT_OUT_OF_RANGE,
