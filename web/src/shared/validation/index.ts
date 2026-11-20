@@ -623,9 +623,20 @@ export type DriverProfileInput = z.infer<typeof driverProfileInputSchema>;
 export const driverVehicleInputSchema = z
   .object({
     registrationNumber: vehicleNumberSchema,
-    isVehicleOwner: z.boolean(),
+    isVehicleOwner: z.boolean().optional(),
+    isOwner: z.boolean().optional(),
     ownerName: z.string().trim().min(2).max(100).optional(),
     ownerMobile: mobileSchema.optional(),
+  })
+  .transform((data) => {
+    const isVehicleOwner = data.isVehicleOwner ?? data.isOwner ?? true;
+    return {
+      registrationNumber: data.registrationNumber,
+      isVehicleOwner,
+      isOwner: isVehicleOwner,
+      ownerName: data.ownerName,
+      ownerMobile: data.ownerMobile,
+    };
   })
   .refine(
     (data) => {

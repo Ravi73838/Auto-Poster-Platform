@@ -1947,9 +1947,14 @@ export class ApiClient {
   }
 
   async updateDriverVehicle(input: UpdateDriverVehicleInput): Promise<any> {
+    const isOwner = input.isVehicleOwner ?? input.isOwner ?? true;
     return this.request('driver/vehicle', {
       method: 'PUT',
-      body: JSON.stringify(input),
+      body: JSON.stringify({
+        ...input,
+        isVehicleOwner: isOwner,
+        isOwner,
+      }),
     });
   }
 

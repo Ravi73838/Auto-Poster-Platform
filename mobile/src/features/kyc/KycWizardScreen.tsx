@@ -197,6 +197,7 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
       await apiClient.updateDriverVehicle({
         registrationNumber: normalized,
         isOwner,
+        isVehicleOwner: isOwner,
         ownerName: isOwner ? undefined : ownerName.trim(),
         ownerMobile: isOwner ? undefined : ownerMobile.trim(),
       });

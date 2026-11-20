@@ -1775,7 +1775,8 @@ export interface UpdateDriverProfileInput {
 
 export interface UpdateDriverVehicleInput {
   registrationNumber: string;
-  isOwner: boolean;
+  isOwner?: boolean;
+  isVehicleOwner?: boolean;
   ownerName?: string;
   ownerMobile?: string;
 }
