@@ -100,7 +100,13 @@ export class DriverCampaignsService {
       include: {
         campaignZones: { include: { zone: true } },
         city: true,
-        company: { include: { companyProfile: true } },
+        company: {
+          include: {
+            companyProfile: {
+              select: { companyName: true },
+            },
+          },
+        },
       },
     });
 
@@ -235,7 +241,13 @@ export class DriverCampaignsService {
       include: {
         campaignZones: { include: { zone: true } },
         city: true,
-        company: { include: { companyProfile: true } },
+        company: {
+          include: {
+            companyProfile: {
+              select: { companyName: true },
+            },
+          },
+        },
       },
     });
 

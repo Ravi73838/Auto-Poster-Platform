@@ -72,7 +72,13 @@ export class AdminCampaignsService {
         include: {
           campaignZones: { include: { zone: true } },
           city: true,
-          company: { include: { companyProfile: true } },
+          company: {
+            include: {
+              companyProfile: {
+                select: { companyName: true },
+              },
+            },
+          },
           assignedTo: true,
         },
       }),
@@ -125,7 +131,13 @@ export class AdminCampaignsService {
       orderBy: { lastSubmittedAt: 'asc' },
       include: {
         city: true,
-        company: { include: { companyProfile: true } },
+        company: {
+          include: {
+            companyProfile: {
+              select: { companyName: true },
+            },
+          },
+        },
         assignedTo: true,
       },
     });
@@ -323,7 +335,13 @@ export class AdminCampaignsService {
         city: true,
         company: {
           include: {
-            companyProfile: true,
+            companyProfile: {
+              select: {
+                companyName: true,
+                createdAt: true,
+                gstin: true,
+              },
+            },
           },
         },
         reviews: {

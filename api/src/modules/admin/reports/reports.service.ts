@@ -147,7 +147,16 @@ export class ReportsService {
           ];
           const campaigns = await prisma.campaign.findMany({
             take: maxRows + 1,
-            include: { company: { include: { companyProfile: true } }, city: true },
+            include: {
+              company: {
+                include: {
+                  companyProfile: {
+                    select: { companyName: true },
+                  },
+                },
+              },
+              city: true,
+            },
             orderBy: { createdAt: 'desc' },
           });
 

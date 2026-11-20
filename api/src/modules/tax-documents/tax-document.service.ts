@@ -73,7 +73,15 @@ export class TaxDocumentService {
       include: {
         campaign: true,
         company: {
-          include: { companyProfile: true },
+          include: {
+            companyProfile: {
+              select: {
+                gstin: true,
+                companyName: true,
+                legalName: true,
+              },
+            },
+          },
         },
       },
     });
@@ -155,7 +163,15 @@ export class TaxDocumentService {
       include: {
         campaign: true,
         company: {
-          include: { companyProfile: true },
+          include: {
+            companyProfile: {
+              select: {
+                gstin: true,
+                companyName: true,
+                legalName: true,
+              },
+            },
+          },
         },
       },
     });

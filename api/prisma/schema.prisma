@@ -870,7 +870,6 @@ model CompanyProfile {
   contactPersonName  String   @map("contact_person_name")
   contactPersonPhone String   @map("contact_person_phone")
   isVerified         Boolean  @default(false) @map("is_verified")
-  defaultInstallApprover InstallApprover @default(PLATFORM) @map("default_install_approver")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 

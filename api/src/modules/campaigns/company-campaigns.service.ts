@@ -764,7 +764,9 @@ export class CompanyCampaignsService {
         city: true,
         company: {
           include: {
-            companyProfile: true,
+            companyProfile: {
+              select: { companyName: true },
+            },
           },
         },
         reviews: {

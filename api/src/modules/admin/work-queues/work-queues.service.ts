@@ -293,7 +293,14 @@ export class WorkQueuesService {
     // 1. KYC assigned
     const kyc = await prisma.kycSubmission.findMany({
       where: { assignedToId: adminId, status: KYC_SUBMISSION_STATUS.SUBMITTED },
-      include: { user: { include: { driverProfile: true, companyProfile: true } } },
+      include: {
+        user: {
+          include: {
+            driverProfile: true,
+            companyProfile: { select: { companyName: true } },
+          },
+        },
+      },
       orderBy: { submittedAt: 'asc' },
       take: 25,
     });
@@ -319,7 +326,13 @@ export class WorkQueuesService {
     // 2. Campaigns assigned
     const campaigns = await prisma.campaign.findMany({
       where: { assignedToId: adminId, status: CAMPAIGN_STATUS.SUBMITTED },
-      include: { company: { include: { companyProfile: true } } },
+      include: {
+        company: {
+          include: {
+            companyProfile: { select: { companyName: true } },
+          },
+        },
+      },
       orderBy: { createdAt: 'asc' },
       take: 25,
     });

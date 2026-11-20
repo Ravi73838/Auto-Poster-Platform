@@ -303,7 +303,13 @@ export class AssignmentsService {
         campaign: {
           include: {
             city: true,
-            company: { include: { companyProfile: true } },
+            company: {
+              include: {
+                companyProfile: {
+                  select: { companyName: true },
+                },
+              },
+            },
             posterFile: true,
           },
         },
