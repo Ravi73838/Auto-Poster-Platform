@@ -1,5 +1,3 @@
-import { Queue, Worker, type Job, type ConnectionOptions } from 'bullmq';
-import { getBullMQRedisOptions } from '../shared/redis/index.js';
 import { CampaignJobsService } from './campaign-jobs.service.js';
 import { AssignmentJobsService } from './assignment-jobs.service.js';
 import { DailyProofJobsService } from './daily-proof-jobs.service.js';
@@ -11,13 +9,30 @@ import { logger } from '../shared/logger/index.js';
 
 export const QUEUE_NAME = 'autoposter-scheduled-jobs';
 
-export const scheduledQueue = new Queue(QUEUE_NAME, {
-  connection: getBullMQRedisOptions() as unknown as ConnectionOptions,
-});
+const scheduledTimers: NodeJS.Timeout[] = [];
 
-scheduledQueue.on('error', (err) => {
-  logger.warn({ err: err?.message }, '[BullMQ] Queue connection error');
-});
+export const scheduledQueue = {
+  name: QUEUE_NAME,
+  upsertJobScheduler: async (_name: string, _scheduler: any, _opts: any) => {
+    // Registered in-memory
+  },
+  add: async (name: string, _data?: any) => {
+    setImmediate(async () => {
+      try {
+        await processJob(name);
+      } catch (err: any) {
+        logger.error({ jobName: name, err: err?.message }, '[JobQueue] In-memory job failed');
+      }
+    });
+  },
+  on: (_event: string, _fn: any) => {},
+  close: async () => {
+    for (const timer of scheduledTimers) {
+      clearInterval(timer);
+    }
+    scheduledTimers.length = 0;
+  },
+};
 
 export const JOB_NAMES = {
   PAYMENT_EXPIRY: 'campaign-payment-expiry',
@@ -50,54 +65,7 @@ export const JOB_NAMES = {
 } as const;
 
 export async function registerRepeatableJobs(): Promise<void> {
-  const jobs = [
-    { name: JOB_NAMES.PAYMENT_EXPIRY, pattern: '*/15 * * * *' },
-    { name: JOB_NAMES.CAMPAIGN_START, pattern: '*/15 * * * *' },
-    { name: JOB_NAMES.CAMPAIGN_COMPLETE, pattern: '*/15 * * * *' },
-    { name: JOB_NAMES.ENROLMENT_CLOSE, pattern: '*/15 * * * *' },
-    { name: JOB_NAMES.REVIEW_SLA_ALERT, pattern: '0 * * * *' },
-    { name: JOB_NAMES.ASSIGNMENT_RESERVATION_EXPIRY, pattern: '*/5 * * * *' },
-    { name: JOB_NAMES.ASSIGNMENT_RESERVATION_REMINDER, pattern: '0 * * * *' },
-    { name: JOB_NAMES.ASSIGNMENT_INSTALLATION_ESCALATION, pattern: '0 * * * *' },
-    { name: JOB_NAMES.ASSIGNMENT_START, pattern: '*/15 * * * *' },
-    { name: JOB_NAMES.ASSIGNMENT_COMPLETE, pattern: '*/15 * * * *' },
-    { name: JOB_NAMES.DAILY_DAY_ROLL, pattern: '*/15 * * * *' },
-    { name: JOB_NAMES.DAILY_PHOTO_REMINDER, pattern: '0 * * * *' },
-    { name: JOB_NAMES.MISSED_DAY_NOTICE, pattern: '*/30 * * * *' },
-    { name: JOB_NAMES.DAILY_REVIEW_SLA_ALERT, pattern: '0 * * * *' },
-    { name: JOB_NAMES.STALE_UPLOAD_CLEANUP, pattern: '0 3 * * *' },
-    { name: JOB_NAMES.PHOTO_RETENTION, pattern: '0 4 * * 0' },
-    { name: JOB_NAMES.ALLOWANCE_BACKFILL, pattern: '*/15 * * * *' },
-    { name: JOB_NAMES.SETTLEMENT_TRIGGER, pattern: '*/15 * * * *' },
-    { name: JOB_NAMES.CLOSEOUT_TRIGGER, pattern: '*/30 * * * *' },
-    { name: JOB_NAMES.REFUND_RETRY, pattern: '*/15 * * * *' },
-    { name: JOB_NAMES.RECONCILIATION_CHECK, pattern: '0 2 * * *' },
-    { name: JOB_NAMES.POSTER_FIX_DEADLINE, pattern: '0 * * * *' },
-    { name: JOB_NAMES.BAN_EXPIRY, pattern: '0 * * * *' },
-    { name: JOB_NAMES.STRIKE_EXPIRY, pattern: '0 2 * * *' },
-    { name: JOB_NAMES.ABANDONMENT_CHECK, pattern: '0 3 * * *' },
-    { name: JOB_NAMES.DISPUTE_SLA, pattern: '0 * * * *' },
-    { name: JOB_NAMES.NOTIFICATION_RETENTION, pattern: '0 3 * * 0' },
-  ];
-
-  for (const job of jobs) {
-    await scheduledQueue.upsertJobScheduler(
-      job.name,
-      { pattern: job.pattern },
-      {
-        name: job.name,
-        data: {},
-        opts: {
-          attempts: 3,
-          backoff: { type: 'exponential', delay: 5000 },
-          removeOnComplete: 100,
-          removeOnFail: 500,
-        },
-      },
-    );
-  }
-
-  logger.info('Registered repeatable BullMQ scheduled jobs');
+  logger.info('Registered repeatable in-memory scheduled jobs');
 }
 
 export async function processJob(jobName: string): Promise<number> {
@@ -172,26 +140,70 @@ export async function processJob(jobName: string): Promise<number> {
   }
 }
 
-export function createWorker(): Worker {
-  const worker = new Worker(
-    QUEUE_NAME,
-    async (job: Job) => {
-      logger.info({ jobId: job.id, jobName: job.name }, 'Starting scheduled job execution');
-      const count = await processJob(job.name);
-      logger.info({ jobId: job.id, jobName: job.name, processedCount: count }, 'Completed scheduled job execution');
-      return { count };
-    },
-    {
-      connection: getBullMQRedisOptions() as unknown as ConnectionOptions,
-      concurrency: 2,
-    },
-  );
+export function createWorker() {
+  logger.info('Initializing in-memory background worker intervals');
 
-  worker.on('failed', (job, err) => {
-    logger.error({ jobId: job?.id, jobName: job?.name, err }, 'Job execution failed');
-  });
+  // 5-minute interval
+  const timer5m = setInterval(() => {
+    processJob(JOB_NAMES.ASSIGNMENT_RESERVATION_EXPIRY).catch(() => {});
+  }, 5 * 60 * 1000).unref();
+  scheduledTimers.push(timer5m);
 
-  return worker;
+  // 15-minute interval
+  const timer15m = setInterval(() => {
+    processJob(JOB_NAMES.PAYMENT_EXPIRY).catch(() => {});
+    processJob(JOB_NAMES.CAMPAIGN_START).catch(() => {});
+    processJob(JOB_NAMES.CAMPAIGN_COMPLETE).catch(() => {});
+    processJob(JOB_NAMES.ENROLMENT_CLOSE).catch(() => {});
+    processJob(JOB_NAMES.ASSIGNMENT_START).catch(() => {});
+    processJob(JOB_NAMES.ASSIGNMENT_COMPLETE).catch(() => {});
+    processJob(JOB_NAMES.DAILY_DAY_ROLL).catch(() => {});
+    processJob(JOB_NAMES.ALLOWANCE_BACKFILL).catch(() => {});
+    processJob(JOB_NAMES.SETTLEMENT_TRIGGER).catch(() => {});
+    processJob(JOB_NAMES.REFUND_RETRY).catch(() => {});
+  }, 15 * 60 * 1000).unref();
+  scheduledTimers.push(timer15m);
+
+  // 30-minute interval
+  const timer30m = setInterval(() => {
+    processJob(JOB_NAMES.MISSED_DAY_NOTICE).catch(() => {});
+    processJob(JOB_NAMES.CLOSEOUT_TRIGGER).catch(() => {});
+  }, 30 * 60 * 1000).unref();
+  scheduledTimers.push(timer30m);
+
+  // 1-hour interval
+  const timer1h = setInterval(() => {
+    processJob(JOB_NAMES.REVIEW_SLA_ALERT).catch(() => {});
+    processJob(JOB_NAMES.ASSIGNMENT_RESERVATION_REMINDER).catch(() => {});
+    processJob(JOB_NAMES.ASSIGNMENT_INSTALLATION_ESCALATION).catch(() => {});
+    processJob(JOB_NAMES.DAILY_PHOTO_REMINDER).catch(() => {});
+    processJob(JOB_NAMES.DAILY_REVIEW_SLA_ALERT).catch(() => {});
+    processJob(JOB_NAMES.POSTER_FIX_DEADLINE).catch(() => {});
+    processJob(JOB_NAMES.BAN_EXPIRY).catch(() => {});
+    processJob(JOB_NAMES.DISPUTE_SLA).catch(() => {});
+  }, 60 * 60 * 1000).unref();
+  scheduledTimers.push(timer1h);
+
+  // 24-hour interval
+  const timer24h = setInterval(() => {
+    processJob(JOB_NAMES.STALE_UPLOAD_CLEANUP).catch(() => {});
+    processJob(JOB_NAMES.PHOTO_RETENTION).catch(() => {});
+    processJob(JOB_NAMES.RECONCILIATION_CHECK).catch(() => {});
+    processJob(JOB_NAMES.STRIKE_EXPIRY).catch(() => {});
+    processJob(JOB_NAMES.ABANDONMENT_CHECK).catch(() => {});
+    processJob(JOB_NAMES.NOTIFICATION_RETENTION).catch(() => {});
+  }, 24 * 60 * 60 * 1000).unref();
+  scheduledTimers.push(timer24h);
+
+  return {
+    close: async () => {
+      for (const t of scheduledTimers) {
+        clearInterval(t);
+      }
+      scheduledTimers.length = 0;
+    },
+    on: (_event: string, _fn: any) => {},
+  };
 }
 
 /**

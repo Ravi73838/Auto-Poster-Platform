@@ -5,24 +5,21 @@ import { registerFinanceEventListeners } from '../events/listeners/finance.liste
 import { registerDisciplineEventListeners } from '../events/listeners/discipline.listeners.js';
 import { logger } from '../shared/logger/index.js';
 import { env } from '../config/env.js';
-import { ensureRedisServer } from '../shared/redis/index.js';
 
 logger.info({ env: env.NODE_ENV }, 'Starting Auto Poster Background Worker...');
-
-await ensureRedisServer();
 
 // Register event listeners so notifications are dispatched
 registerCampaignEventListeners();
 registerFinanceEventListeners();
 registerDisciplineEventListeners();
 
-// Register recurring jobs in BullMQ
+// Register recurring jobs in memory
 await registerRepeatableJobs();
 
-// Start the BullMQ worker
+// Start the in-memory workers
 const worker = createWorker();
 const notificationWorker = createNotificationDeliveryWorker();
-logger.info('BullMQ worker active and listening for scheduled jobs & notification deliveries');
+logger.info('Background worker active and listening for scheduled jobs & notification deliveries');
 
 async function shutdown(signal: string) {
   logger.info({ signal }, 'Shutting down worker gracefully...');

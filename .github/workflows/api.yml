@@ -32,16 +32,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -81,7 +71,6 @@ jobs:
           NODE_ENV: test
           PORT: 4000
           DATABASE_URL: postgresql://autoposter:autoposter_ci_secret@localhost:5432/autoposter_ci?schema=public
-          REDIS_URL: redis://localhost:6379
           JWT_SECRET: c1_very_secret_jwt_key_that_is_at_least_32_characters_long
           ENCRYPTION_KEY_32B: 12345678901234567890123456789012
         run: npm test

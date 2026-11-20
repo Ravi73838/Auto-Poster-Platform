@@ -3,9 +3,6 @@ import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { logger } from './shared/logger/index.js';
 import { disconnectPrisma } from './shared/prisma.js';
-import { disconnectRedis, ensureRedisServer } from './shared/redis.js';
-
-await ensureRedisServer();
 
 const app = createApp();
 
@@ -23,7 +20,6 @@ async function handleShutdown(signal: string) {
   server.close(async () => {
     logger.info('HTTP server closed');
     await disconnectPrisma();
-    await disconnectRedis();
     logger.info('Graceful shutdown completed');
     process.exit(0);
   });

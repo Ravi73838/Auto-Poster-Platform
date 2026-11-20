@@ -1,7 +1,6 @@
 import { beforeAll } from 'vitest';
-import { ensureRedisServer } from './shared/redis/index.js';
 
 beforeAll(async () => {
-  await ensureRedisServer();
+  // In-memory setup: zero external services required
 });
 

@@ -1,5 +1,3 @@
-import { Queue, Worker, type Job, type ConnectionOptions } from 'bullmq';
-import { getBullMQRedisOptions } from '../../shared/redis/index.js';
 import { prisma } from '../../shared/db/index.js';
 import { logger } from '../../shared/logger/index.js';
 import {
@@ -27,14 +25,32 @@ export interface NotificationDeliveryJobData {
   attempt: number;
 }
 
-export const notificationDeliveryQueue = new Queue<NotificationDeliveryJobData>(
-  NOTIFICATION_DELIVERY_QUEUE_NAME,
-  {
-    connection: getBullMQRedisOptions() as unknown as ConnectionOptions,
-  },
-);
+export const notificationDeliveryQueue = {
+  name: NOTIFICATION_DELIVERY_QUEUE_NAME,
+  add: async (
+    _name: string,
+    data: NotificationDeliveryJobData,
+    opts?: { delay?: number; attempts?: number; backoff?: any; removeOnComplete?: any; removeOnFail?: any },
+  ) => {
+    const delay = opts?.delay || 0;
+    const run = async () => {
+      try {
+        await processNotificationDelivery({ data } as any);
+      } catch (err: any) {
+        logger.error({ err: err?.message, deliveryId: data.deliveryId }, '[NotificationDelivery] In-memory job failed');
+      }
+    };
 
-export async function processNotificationDelivery(job: Job<NotificationDeliveryJobData>): Promise<void> {
+    if (delay > 0) {
+      setTimeout(run, delay).unref();
+    } else {
+      setImmediate(run);
+    }
+  },
+  close: async () => {},
+};
+
+export async function processNotificationDelivery(job: { data: NotificationDeliveryJobData }): Promise<void> {
   const { deliveryId, notificationId, userId, channel } = job.data;
 
   const delivery = await prisma.notificationDelivery.findUnique({
@@ -355,21 +371,9 @@ export async function processNotificationDelivery(job: Job<NotificationDeliveryJ
   }
 }
 
-export function createNotificationDeliveryWorker(): Worker<NotificationDeliveryJobData> {
-  const worker = new Worker<NotificationDeliveryJobData>(
-    NOTIFICATION_DELIVERY_QUEUE_NAME,
-    async (job) => {
-      await processNotificationDelivery(job);
-    },
-    {
-      connection: getBullMQRedisOptions() as unknown as ConnectionOptions,
-      concurrency: 10,
-    },
-  );
-
-  worker.on('failed', (job, err) => {
-    logger.error({ jobId: job?.id, err: err.message }, '[NotificationDeliveryWorker] Job failed');
-  });
-
-  return worker;
+export function createNotificationDeliveryWorker() {
+  return {
+    close: async () => {},
+    on: () => {},
+  };
 }

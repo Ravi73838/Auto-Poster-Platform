@@ -6,7 +6,7 @@ export class HealthService {
 
   async getHealthStatus(): Promise<HealthResponse> {
     const services = await this.repo.checkServices();
-    const isOk = services.database === 'connected' && services.redis === 'connected';
+    const isOk = services.database === 'connected' && (services.redis === 'connected' || services.redis === 'disabled');
 
     return {
       status: isOk ? 'ok' : 'degraded',

@@ -8,8 +8,6 @@
     "dev:worker": "npm --prefix api run worker",
     "dev:web": "npm --prefix web run dev",
     "dev:mobile": "npm --prefix mobile run start",
-    "db:up": "docker compose -f api/infra/docker-compose.dev.yml up -d",
-    "db:down": "docker compose -f api/infra/docker-compose.dev.yml down",
     "sync": "npm --prefix api run sync:shared",
     "sync:check": "npm --prefix api run sync:shared:check",
     "check:boundaries": "npm --prefix api run check:boundaries",
