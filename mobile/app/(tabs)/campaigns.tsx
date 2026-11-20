@@ -10,6 +10,9 @@ export default function DriverCampaignsTab() {
       onSelectCampaign={(id) => {
         router.push(`/campaigns/${id}`);
       }}
+      onNavigateToKyc={() => {
+        router.push('/(onboarding)/wizard');
+      }}
     />
   );
 }

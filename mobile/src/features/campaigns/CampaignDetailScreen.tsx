@@ -44,6 +44,18 @@ export function CampaignDetailScreen({
   const [showPosterModal, setShowPosterModal] = useState(false);
 
   const handleSelectCampaign = async () => {
+    if (!isApproved) {
+      Alert.alert(
+        'KYC Verification Compulsory',
+        'Campaign accept karne ke liye aapka Driving License aur Vehicle RC verify hona compulsory hai. Kripya pehle KYC verification complete karein.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Complete KYC →', onPress: onNavigateToKyc },
+        ],
+      );
+      return;
+    }
+
     try {
       setIsSelecting(true);
       const assignment = await apiClient.selectCampaign(campaignId);
@@ -254,7 +266,7 @@ export function CampaignDetailScreen({
         {!isApproved ? (
           <View style={styles.disabledActionBox}>
             <Text style={styles.disabledReasonText}>
-              Verification Required: Admin must verify your driving license and vehicle documents before you can accept campaigns.
+              ⚠️ KYC Verification Compulsory: Campaign banner accept karne aur print order karne ke liye aapka Driving License aur RC verified hona compulsory hai.
             </Text>
             {onNavigateToKyc ? (
               <TouchableOpacity
@@ -262,7 +274,7 @@ export function CampaignDetailScreen({
                 onPress={onNavigateToKyc}
                 activeOpacity={0.8}
               >
-                <Text style={styles.uploadKycBtnText}>Upload Documents for Approval →</Text>
+                <Text style={styles.uploadKycBtnText}>Complete KYC to Accept Campaign →</Text>
               </TouchableOpacity>
             ) : null}
           </View>

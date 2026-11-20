@@ -19,9 +19,10 @@ import { apiClient } from '../../services/api';
 
 interface CampaignsScreenProps {
   onSelectCampaign: (id: string) => void;
+  onNavigateToKyc?: () => void;
 }
 
-export function CampaignsScreen({ onSelectCampaign }: CampaignsScreenProps) {
+export function CampaignsScreen({ onSelectCampaign, onNavigateToKyc }: CampaignsScreenProps) {
   const { colors } = useMobileTheme();
   const { t: _t } = useTranslation(['common']);
   const user = useMobileAuthStore((s) => s.user);
@@ -148,10 +149,19 @@ export function CampaignsScreen({ onSelectCampaign }: CampaignsScreenProps) {
       {/* Driver Status Banner if not approved */}
       {!isApproved && (
         <View style={styles.warningBanner}>
-          <Text style={styles.warningBannerTitle}>KYC Verification Required</Text>
+          <Text style={styles.warningBannerTitle}>⚠️ KYC Verification Compulsory</Text>
           <Text style={styles.warningBannerText}>
-            Your account is currently {user?.status || 'PENDING'}. You can explore available campaigns, but you cannot select or participate until your KYC is approved by an administrator.
+            Aap campaigns explore kar sakte hain, par campaign banner accept karne ke liye aapka Driving License aur RC verify hona jaruri hai.
           </Text>
+          {onNavigateToKyc ? (
+            <TouchableOpacity
+              style={styles.bannerKycBtn}
+              onPress={onNavigateToKyc}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.bannerKycBtnText}>Complete KYC Verification →</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
       )}
 
@@ -281,6 +291,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#B45309',
     lineHeight: 16,
+  },
+  bannerKycBtn: {
+    marginTop: 8,
+    backgroundColor: '#D97706',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  bannerKycBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 12,
   },
   errorBanner: {
     backgroundColor: '#FEE2E2',

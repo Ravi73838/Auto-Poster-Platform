@@ -6,9 +6,11 @@ import { ACCOUNT_STATUS } from '@ap/shared-constants';
 
 interface Props {
   onOpenSettings: () => void;
+  onNavigateToKyc?: () => void;
+  onNavigateToCampaigns?: () => void;
 }
 
-export function DriverStatusHomeScreen({ onOpenSettings }: Props) {
+export function DriverStatusHomeScreen({ onOpenSettings, onNavigateToKyc, onNavigateToCampaigns }: Props) {
   const { t: _t } = useTranslation(['common', 'status']);
   const user = useMobileAuthStore((s) => s.user);
 
@@ -82,6 +84,40 @@ export function DriverStatusHomeScreen({ onOpenSettings }: Props) {
           </Text>
         ) : null}
       </View>
+
+      {/* KYC Compulsory Card for Unapproved Drivers */}
+      {user?.status !== ACCOUNT_STATUS.APPROVED && onNavigateToKyc ? (
+        <View style={[styles.card, styles.kycPromptCard]}>
+          <Text style={styles.kycPromptTitle}>⚠️ KYC Verification Compulsory</Text>
+          <Text style={styles.kycPromptText}>
+            Campaign banners select karne aur monthly auto rent earn karne ke liye aapka Driving License aur RC verify hona compulsory hai.
+          </Text>
+          <TouchableOpacity
+            style={styles.kycPromptBtn}
+            onPress={onNavigateToKyc}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.kycPromptBtnText}>Complete KYC Verification →</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+
+      {/* Browse Campaigns Card */}
+      {onNavigateToCampaigns ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Explore Active Campaigns</Text>
+          <Text style={styles.cardText}>
+            View advertising banners available in your city and check prospective payouts.
+          </Text>
+          <TouchableOpacity
+            style={styles.browseCampaignsBtn}
+            onPress={onNavigateToCampaigns}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.browseCampaignsBtnText}>Browse Available Campaigns →</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
 
       {/* Daily Photo Reminder Placeholder */}
       <View style={styles.card}>
@@ -206,5 +242,45 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#94A3B8',
     fontStyle: 'italic',
+  },
+  kycPromptCard: {
+    backgroundColor: '#FEF3C7',
+    borderColor: '#F59E0B',
+  },
+  kycPromptTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#B45309',
+    marginBottom: 6,
+  },
+  kycPromptText: {
+    fontSize: 13,
+    color: '#92400E',
+    lineHeight: 18,
+    marginBottom: 14,
+  },
+  kycPromptBtn: {
+    backgroundColor: '#D97706',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  kycPromptBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  browseCampaignsBtn: {
+    backgroundColor: '#2563EB',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  browseCampaignsBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
   },
 });

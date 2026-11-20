@@ -13,24 +13,9 @@ export default function LoginScreen() {
     setStep('auth');
   };
 
-  const handleLoginSuccess = async () => {
-    try {
-      const user = useMobileAuthStore.getState().user;
-      if (user?.status === 'APPROVED') {
-        router.replace('/(tabs)');
-        return;
-      }
-
-      // Check if driver has already submitted KYC
-      const kyc = await apiClient.getDriverKyc().catch(() => null);
-      if (kyc?.status === 'SUBMITTED' || kyc?.status === 'UNDER_REVIEW') {
-        router.replace('/(onboarding)/status');
-      } else {
-        router.replace('/(onboarding)/wizard');
-      }
-    } catch {
-      router.replace('/(tabs)');
-    }
+  const handleLoginSuccess = () => {
+    // Open portal tabs directly after login so driver can explore campaigns and banners
+    router.replace('/(tabs)');
   };
 
   return (

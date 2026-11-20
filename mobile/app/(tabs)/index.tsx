@@ -7,6 +7,8 @@ export default function DriverDashboardScreen() {
   return (
     <DriverStatusHomeScreen
       onOpenSettings={() => router.push('/(tabs)/profile')}
+      onNavigateToKyc={() => router.push('/(onboarding)/wizard')}
+      onNavigateToCampaigns={() => router.push('/(tabs)/campaigns')}
     />
   );
 }

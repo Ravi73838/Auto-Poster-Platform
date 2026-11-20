@@ -109,15 +109,31 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
 
   // Step 1: Personal Submit
   const handlePersonalNext = async () => {
-    if (!fullName.trim() || fullName.trim().length < 2) {
-      Alert.alert(t('common:error'), 'Please enter your full name as on government ID.');
+    const trimmedName = fullName.trim();
+    if (!trimmedName) {
+      const msg = 'Full Name is required: Please enter your official name as shown on your Driving License or government ID.';
+      setError(msg);
+      Alert.alert('Missing Full Name', msg);
       return;
     }
+    if (trimmedName.length < 2) {
+      const msg = 'Invalid Full Name: Name must be at least 2 characters long.';
+      setError(msg);
+      Alert.alert('Invalid Full Name', msg);
+      return;
+    }
+    if (!cityId) {
+      const msg = 'Operating City is required: Please select your operating city.';
+      setError(msg);
+      Alert.alert('City Required', msg);
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       setError(null);
       await apiClient.updateDriverProfile({
-        fullName: fullName.trim(),
+        fullName: trimmedName,
         cityId,
       });
       setCurrentStep('vehicle');
@@ -130,16 +146,49 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
 
   // Step 2: Vehicle Submit
   const handleVehicleNext = async () => {
-    const normalized = normalizeVehicleNumber(vehiclePlate);
-    const parseRes = vehicleNumberSchema.safeParse(normalized);
-    if (!parseRes.success) {
-      Alert.alert(t('common:error'), 'Please enter a valid vehicle registration number (e.g. GJ01AB1234 or 22BH1234AA).');
+    const trimmedPlate = vehiclePlate.trim();
+    if (!trimmedPlate) {
+      const msg = 'Registration Number is required: Please enter your auto-rickshaw registration number (e.g. GJ01AB1234 or 22BH1234AA).';
+      setError(msg);
+      Alert.alert('Missing Registration Number', msg);
       return;
     }
 
-    if (!isOwner && (!ownerName.trim() || !ownerMobile.trim())) {
-      Alert.alert(t('common:error'), 'Please provide vehicle owner name and contact number.');
+    const normalized = normalizeVehicleNumber(trimmedPlate);
+    const parseRes = vehicleNumberSchema.safeParse(normalized);
+    if (!parseRes.success) {
+      const msg = 'Invalid Registration Number: Please enter a valid Indian vehicle number (e.g. GJ01AB1234 or 22BH1234AA) without special characters.';
+      setError(msg);
+      Alert.alert('Invalid Registration Number', msg);
       return;
+    }
+
+    if (!isOwner) {
+      if (!ownerName.trim()) {
+        const msg = 'Owner Name is required: Please enter the vehicle owner\'s full name.';
+        setError(msg);
+        Alert.alert('Missing Owner Name', msg);
+        return;
+      }
+      if (ownerName.trim().length < 2) {
+        const msg = 'Invalid Owner Name: Owner name must be at least 2 characters long.';
+        setError(msg);
+        Alert.alert('Invalid Owner Name', msg);
+        return;
+      }
+      if (!ownerMobile.trim()) {
+        const msg = 'Owner Mobile Number is required: Please enter the vehicle owner\'s 10-digit mobile number.';
+        setError(msg);
+        Alert.alert('Missing Owner Mobile', msg);
+        return;
+      }
+      const cleanMobile = ownerMobile.replace(/\D/g, '');
+      if (cleanMobile.length !== 10 || !/^[6-9]\d{9}$/.test(cleanMobile)) {
+        const msg = 'Invalid Owner Mobile: Mobile number must be a valid 10-digit Indian number starting with 6-9 (e.g. 9876543210).';
+        setError(msg);
+        Alert.alert('Invalid Mobile Number', msg);
+        return;
+      }
     }
 
     try {
@@ -184,26 +233,77 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
     }
   };
 
+  const handleDocumentsNext = () => {
+    const hasDl = documents.some((d) => d.type === 'DRIVING_LICENSE');
+    const hasRc = documents.some((d) => d.type === 'VEHICLE_RC');
+    if (!hasDl || !hasRc) {
+      const missing = [];
+      if (!hasDl) missing.push('Driving License (DL)');
+      if (!hasRc) missing.push('Vehicle RC');
+      const msg = `Documents Missing: Both Driving License and Vehicle RC photos are required. Please attach ${missing.join(' and ')} before proceeding.`;
+      setError(msg);
+      Alert.alert('Required Documents Missing', msg);
+      return;
+    }
+    setError(null);
+    setCurrentStep('payout');
+  };
+
   // Step 4: Payout Submit
   const handlePayoutNext = async () => {
     if (payoutType === 'UPI') {
-      const upiRes = upiIdSchema.safeParse(upiId.trim());
+      const trimmedUpi = upiId.trim();
+      if (!trimmedUpi) {
+        const msg = 'UPI ID is required: Please enter your UPI ID (e.g. 9876543210@paytm or driver@okhdfcbank).';
+        setError(msg);
+        Alert.alert('Missing UPI ID', msg);
+        return;
+      }
+      const upiRes = upiIdSchema.safeParse(trimmedUpi);
       if (!upiRes.success) {
-        Alert.alert(t('common:error'), 'Please enter a valid UPI ID (e.g. 9876543210@paytm).');
+        const msg = 'Invalid UPI ID format: It must be in the format username@bank or mobilenumber@upi (e.g. 9876543210@paytm or ravi@oksbi).';
+        setError(msg);
+        Alert.alert('Invalid UPI ID', msg);
         return;
       }
     } else {
-      if (!accountNumber || accountNumber.length < 9) {
-        Alert.alert(t('common:error'), 'Please enter a valid bank account number.');
-        return;
-      }
-      const ifscRes = ifscSchema.safeParse(ifscCode.trim().toUpperCase());
-      if (!ifscRes.success) {
-        Alert.alert(t('common:error'), 'Please enter a valid 11-character IFSC code.');
-        return;
-      }
       if (!accountHolderName.trim()) {
-        Alert.alert(t('common:error'), 'Please enter account holder name.');
+        const msg = 'Account Holder Name is required: Please enter the full name as per bank records.';
+        setError(msg);
+        Alert.alert('Missing Account Holder Name', msg);
+        return;
+      }
+      if (accountHolderName.trim().length < 2) {
+        const msg = 'Invalid Holder Name: Account holder name must be at least 2 characters long.';
+        setError(msg);
+        Alert.alert('Invalid Holder Name', msg);
+        return;
+      }
+      const cleanAcc = accountNumber.trim();
+      if (!cleanAcc) {
+        const msg = 'Bank Account Number is required: Please enter your bank account number.';
+        setError(msg);
+        Alert.alert('Missing Account Number', msg);
+        return;
+      }
+      if (!/^\d{9,18}$/.test(cleanAcc)) {
+        const msg = 'Invalid Bank Account Number: Account number must be between 9 and 18 digits with numbers only.';
+        setError(msg);
+        Alert.alert('Invalid Account Number', msg);
+        return;
+      }
+      const trimmedIfsc = ifscCode.trim().toUpperCase();
+      if (!trimmedIfsc) {
+        const msg = 'IFSC Code is required: Please enter your 11-character bank IFSC code (e.g. SBIN0001234).';
+        setError(msg);
+        Alert.alert('Missing IFSC Code', msg);
+        return;
+      }
+      const ifscRes = ifscSchema.safeParse(trimmedIfsc);
+      if (!ifscRes.success) {
+        const msg = 'Invalid IFSC Code: IFSC must be exactly 11 characters starting with 4 letters, 5th character "0", and 6 alphanumeric characters (e.g. SBIN0001234).';
+        setError(msg);
+        Alert.alert('Invalid IFSC Code', msg);
         return;
       }
     }
@@ -228,8 +328,22 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
 
   // Step 5: Consents Submit
   const handleConsentsNext = async () => {
-    if (!termsAgreed || !privacyAgreed) {
-      Alert.alert(t('common:error'), 'You must agree to the Terms of Service and Privacy Policy to proceed.');
+    if (!termsAgreed && !privacyAgreed) {
+      const msg = 'Consents Required: Please accept both the Driver Partner Agreement and the Privacy Policy to proceed.';
+      setError(msg);
+      Alert.alert('Consents Required', msg);
+      return;
+    }
+    if (!termsAgreed) {
+      const msg = 'Agreement Required: Please accept the Driver Partner Agreement to proceed.';
+      setError(msg);
+      Alert.alert('Agreement Required', msg);
+      return;
+    }
+    if (!privacyAgreed) {
+      const msg = 'Privacy Policy Required: Please accept the Privacy Policy to proceed.';
+      setError(msg);
+      Alert.alert('Privacy Policy Required', msg);
       return;
     }
 
@@ -529,7 +643,7 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
 
               <TouchableOpacity
                 style={[styles.primaryBtn, { backgroundColor: colors.primary, flex: 2 }]}
-                onPress={() => setCurrentStep('payout')}
+                onPress={handleDocumentsNext}
                 testID="btn-documents-next"
               >
                 <Text style={styles.primaryBtnText}>Next: Payout Details →</Text>
@@ -697,7 +811,7 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
               <TouchableOpacity
                 style={[styles.primaryBtn, { backgroundColor: colors.primary, flex: 2 }]}
                 onPress={handleConsentsNext}
-                disabled={isSubmitting || !termsAgreed || !privacyAgreed}
+                disabled={isSubmitting}
                 testID="btn-consents-next"
               >
                 {isSubmitting ? (
