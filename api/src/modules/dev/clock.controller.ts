@@ -14,7 +14,21 @@ export class DevClockController {
 
   static async getClock(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      DevClockController.assertAllowed();
+      if (env.DB_ENVIRONMENT === 'production' || !env.CLOCK_CONTROL_ENABLED) {
+        res.json({
+          success: true,
+          data: {
+            simulatedTime: new Date().toISOString(),
+            simulatedTimeIst: new Date().toISOString(),
+            todayIst: new Date().toISOString().split('T')[0],
+            offsetMs: 0,
+            isRealTime: true,
+            environment: env.DB_ENVIRONMENT,
+          },
+        });
+        return;
+      }
+
       await clock.init();
 
       res.json({

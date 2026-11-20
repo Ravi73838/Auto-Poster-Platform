@@ -20,10 +20,13 @@ function toReachableSupabaseUrl(rawUrl: string): string {
       u.port = '5432';
     }
     if (!u.searchParams.has('connection_limit')) {
-      u.searchParams.set('connection_limit', '15');
+      u.searchParams.set('connection_limit', '20');
     }
     if (!u.searchParams.has('pool_timeout')) {
-      u.searchParams.set('pool_timeout', '30');
+      u.searchParams.set('pool_timeout', '60');
+    }
+    if (!u.searchParams.has('connect_timeout')) {
+      u.searchParams.set('connect_timeout', '30');
     }
     return u.toString();
   } catch {

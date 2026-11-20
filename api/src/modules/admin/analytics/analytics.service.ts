@@ -190,6 +190,51 @@ export class AnalyticsService {
       ? new Date(params.from)
       : new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
+    const runOverviewQueries = async () => {
+      return Promise.all([
+        prisma.user.count({ where: { role: ROLES.DRIVER, deletedAt: null } }),
+        prisma.user.count({ where: { role: ROLES.DRIVER, status: 'APPROVED', deletedAt: null } }),
+        prisma.campaign.count({ where: { status: { in: [CAMPAIGN_STATUS.RUNNING, CAMPAIGN_STATUS.LIVE] } } }),
+        prisma.assignment.count({ where: { status: ASSIGNMENT_STATUS.RUNNING } }),
+        prisma.photo.count({
+          where: {
+            status: 'VERIFIED',
+            uploadedAt: { gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) },
+          },
+        }),
+        prisma.dispute.count({ where: { status: { in: ['OPEN', 'UNDER_REVIEW'] } } }),
+        prisma.dailyMetric.findMany({
+          where: {
+            cityId: params.cityId || null,
+            date: { gte: from, lte: to },
+          },
+          orderBy: { date: 'asc' },
+        }),
+        prisma.city.findMany({
+          where: { isActive: true },
+          include: {
+            _count: {
+              select: {
+                campaigns: { where: { status: { in: [CAMPAIGN_STATUS.RUNNING, CAMPAIGN_STATUS.LIVE] } } },
+              },
+            },
+          },
+        }),
+      ]);
+    };
+
+    let queryResults: [number, number, number, number, number, number, any[], any[]];
+    try {
+      queryResults = (await runOverviewQueries()) as any;
+    } catch (err: any) {
+      if (err?.code === 'P1001' || err?.message?.includes("Can't reach database server")) {
+        await new Promise((r) => setTimeout(r, 1000));
+        queryResults = (await runOverviewQueries()) as any;
+      } else {
+        throw err;
+      }
+    }
+
     const [
       totalDrivers,
       activeDrivers,
@@ -199,36 +244,7 @@ export class AnalyticsService {
       disputesOpen,
       dailyMetricsRows,
       activeCities,
-    ] = await Promise.all([
-      prisma.user.count({ where: { role: ROLES.DRIVER, deletedAt: null } }),
-      prisma.user.count({ where: { role: ROLES.DRIVER, status: 'APPROVED', deletedAt: null } }),
-      prisma.campaign.count({ where: { status: { in: [CAMPAIGN_STATUS.RUNNING, CAMPAIGN_STATUS.LIVE] } } }),
-      prisma.assignment.count({ where: { status: ASSIGNMENT_STATUS.RUNNING } }),
-      prisma.photo.count({
-        where: {
-          status: 'VERIFIED',
-          uploadedAt: { gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) },
-        },
-      }),
-      prisma.dispute.count({ where: { status: { in: ['OPEN', 'UNDER_REVIEW'] } } }),
-      prisma.dailyMetric.findMany({
-        where: {
-          cityId: params.cityId || null,
-          date: { gte: from, lte: to },
-        },
-        orderBy: { date: 'asc' },
-      }),
-      prisma.city.findMany({
-        where: { isActive: true },
-        include: {
-          _count: {
-            select: {
-              campaigns: { where: { status: { in: [CAMPAIGN_STATUS.RUNNING, CAMPAIGN_STATUS.LIVE] } } },
-            },
-          },
-        },
-      }),
-    ]);
+    ] = queryResults;
 
     const cityBreakdown = await Promise.all(
       activeCities.map(async (c) => {
