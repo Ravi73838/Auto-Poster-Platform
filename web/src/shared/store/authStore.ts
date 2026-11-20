@@ -5,6 +5,7 @@ import type { AuthUser } from '@ap/shared-types';
 export interface AuthState {
   user: AuthUser | null;
   token: string | null;
+  refreshToken: string | null;
   permissions: string[];
   isAuthenticated: boolean;
   isInitialized: boolean;
@@ -12,9 +13,11 @@ export interface AuthState {
   setAuth: (payload: {
     user: AuthUser;
     token: string;
+    refreshToken?: string | null;
     permissions?: string[];
   }) => void;
   setToken: (token: string | null) => void;
+  setRefreshToken: (refreshToken: string | null) => void;
   setUser: (user: AuthUser) => void;
   setPermissions: (permissions: string[]) => void;
   setInitialized: (initialized: boolean) => void;
@@ -28,15 +31,17 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       token: null,
+      refreshToken: null,
       permissions: [],
       isAuthenticated: false,
       isInitialized: false,
       isLoading: false,
 
-      setAuth: ({ user, token, permissions = [] }) => {
+      setAuth: ({ user, token, refreshToken = null, permissions = [] }) => {
         set({
           user,
           token,
+          refreshToken,
           permissions,
           isAuthenticated: true,
           isInitialized: true,
@@ -49,6 +54,10 @@ export const useAuthStore = create<AuthState>()(
           token,
           isAuthenticated: Boolean(token),
         });
+      },
+
+      setRefreshToken: (refreshToken) => {
+        set({ refreshToken });
       },
 
       setUser: (user) => {
@@ -71,6 +80,7 @@ export const useAuthStore = create<AuthState>()(
         set({
           user: null,
           token: null,
+          refreshToken: null,
           permissions: [],
           isAuthenticated: false,
           isInitialized: true,
@@ -82,6 +92,7 @@ export const useAuthStore = create<AuthState>()(
         set({
           user: null,
           token: null,
+          refreshToken: null,
           permissions: [],
           isAuthenticated: false,
           isLoading: false,
@@ -93,6 +104,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         token: state.token,
+        refreshToken: state.refreshToken,
         permissions: state.permissions,
         isAuthenticated: state.isAuthenticated,
       }),

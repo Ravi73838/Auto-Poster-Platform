@@ -70,6 +70,7 @@ export function AdminLoginPage() {
         setAuth({
           user: loginRes.user,
           token: loginRes.accessToken,
+          refreshToken: loginRes.refreshToken,
           permissions: loginRes.user.role === 'SUPER_ADMIN' ? ['*'] : [],
         });
 
@@ -118,6 +119,7 @@ export function AdminLoginPage() {
       setAuth({
         user: response.user,
         token: response.accessToken,
+        refreshToken: (response as any).refreshToken,
         permissions: response.user.role === 'SUPER_ADMIN' ? ['*'] : [],
       });
 

@@ -55,6 +55,7 @@ export function VerifyMobilePage() {
       setAuth({
         user: response.user,
         token: response.accessToken,
+        refreshToken: (response as any).refreshToken,
         permissions: [],
       });
       navigate('/company/dashboard', { replace: true });

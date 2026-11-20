@@ -43,6 +43,7 @@ export function LoginPage() {
       setAuth({
         user: response.user,
         token: response.accessToken,
+        refreshToken: (response as any).refreshToken,
         permissions: [],
       });
 

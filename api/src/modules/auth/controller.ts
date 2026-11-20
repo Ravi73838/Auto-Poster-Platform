@@ -26,7 +26,7 @@ function setRefreshTokenCookie(res: Response, rawRefreshToken: string): void {
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
     sameSite: 'lax',
-    path: '/api/v1/auth/refresh',
+    path: '/',
     maxAge: env.REFRESH_TOKEN_TTL_DAYS * 86_400_000,
   });
 }
@@ -154,6 +154,7 @@ export class AuthController {
         success: true,
         data: {
           accessToken,
+          refreshToken: rawRefreshToken,
           user,
         },
       });
@@ -172,6 +173,7 @@ export class AuthController {
           success: true,
           data: {
             accessToken: (result as any).accessToken,
+            refreshToken: (result as any).rawRefreshToken,
             user: (result as any).user,
             mustChangePassword: (result as any).mustChangePassword,
           },
@@ -199,6 +201,7 @@ export class AuthController {
         success: true,
         data: {
           accessToken,
+          refreshToken: rawRefreshToken,
           user,
           mustChangePassword,
         },
@@ -231,25 +234,15 @@ export class AuthController {
       const { accessToken, rawRefreshToken: newRawToken, user } =
         await TokenService.rotateRefreshToken(rawRefreshToken, extractRequestContext(req));
 
-      if (isWebCookie) {
-        setRefreshTokenCookie(res, newRawToken);
-        res.status(200).json({
-          success: true,
-          data: {
-            accessToken,
-            user: AuthService.formatAuthUser(user),
-          },
-        });
-      } else {
-        res.status(200).json({
-          success: true,
-          data: {
-            accessToken,
-            refreshToken: newRawToken,
-            user: AuthService.formatAuthUser(user),
-          },
-        });
-      }
+      setRefreshTokenCookie(res, newRawToken);
+      res.status(200).json({
+        success: true,
+        data: {
+          accessToken,
+          refreshToken: newRawToken,
+          user: AuthService.formatAuthUser(user),
+        },
+      });
     } catch (err) {
       next(err);
     }

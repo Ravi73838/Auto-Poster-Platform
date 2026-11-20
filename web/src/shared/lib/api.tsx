@@ -15,6 +15,7 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
       baseUrl,
       getAuthToken: () => useAuthStore.getState().token,
       setAuthToken: (token) => useAuthStore.getState().setToken(token),
+      getRefreshToken: () => useAuthStore.getState().refreshToken,
       getLanguage: () => i18n.language as Language,
       onAuthLost: () => useAuthStore.getState().clearAuth(),
       credentials: 'include',
@@ -34,16 +35,43 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     initRanRef.current = true;
 
     async function initAuth() {
+      const state = useAuthStore.getState();
+
+      // 1. If we already have a valid session in localStorage, verify with getMe() first
+      if (state.token && state.user) {
+        try {
+          const me = await client.getMe();
+          useAuthStore.getState().setUser(me.user);
+          if (me.permissions) {
+            useAuthStore.getState().setPermissions(me.permissions);
+          }
+          useAuthStore.getState().setInitialized(true);
+          return;
+        } catch (err: any) {
+          // If network error or transient glitch, keep the restored session!
+          if (err?.status !== 401 && err?.statusCode !== 401) {
+            useAuthStore.getState().setInitialized(true);
+            return;
+          }
+          // Only fall through to refresh if token expired (401)
+        }
+      }
+
+      // 2. Token expired or not present: attempt token refresh
       useAuthStore.getState().setLoading(true);
       try {
-        // Validate or refresh tokens via cookie
-        const tokens = await client.refreshTokens();
+        const rfToken = useAuthStore.getState().refreshToken;
+        const tokens = await client.refreshTokens(rfToken ? { refreshToken: rfToken } : undefined);
         if (tokens?.accessToken) {
           useAuthStore.getState().setToken(tokens.accessToken);
+          if (tokens.refreshToken) {
+            useAuthStore.getState().setRefreshToken(tokens.refreshToken);
+          }
           const me = await client.getMe();
           useAuthStore.getState().setAuth({
             user: me.user,
             token: tokens.accessToken,
+            refreshToken: tokens.refreshToken || rfToken,
             permissions: me.permissions,
           });
         }
