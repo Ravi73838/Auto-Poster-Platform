@@ -321,10 +321,14 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
       setError(null);
       await apiClient.updateDriverPayoutDetails({
         type: payoutType,
+        method: payoutType === 'UPI' ? 'UPI' : 'BANK_ACCOUNT',
         upiId: payoutType === 'UPI' ? upiId.trim() : undefined,
         accountNumber: payoutType === 'BANK' ? accountNumber.trim() : undefined,
+        bankAccountNumber: payoutType === 'BANK' ? accountNumber.trim() : undefined,
         ifscCode: payoutType === 'BANK' ? ifscCode.trim().toUpperCase() : undefined,
+        bankIfsc: payoutType === 'BANK' ? ifscCode.trim().toUpperCase() : undefined,
         accountHolderName: payoutType === 'BANK' ? accountHolderName.trim() : undefined,
+        bankAccountHolder: payoutType === 'BANK' ? accountHolderName.trim() : undefined,
       });
       setCurrentStep('consents');
     } catch (err) {

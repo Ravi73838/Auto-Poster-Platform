@@ -1970,9 +1970,29 @@ export class ApiClient {
   }
 
   async updateDriverPayoutDetails(input: UpdateDriverPayoutDetailsInput): Promise<any> {
+    const isUpi = input.method === 'UPI' || input.type === 'UPI';
+    const payload = isUpi
+      ? {
+          method: 'UPI',
+          type: 'UPI',
+          upiId: input.upiId,
+          otpCode: input.otpCode,
+        }
+      : {
+          method: 'BANK_ACCOUNT',
+          type: 'BANK',
+          bankAccountHolder: input.bankAccountHolder ?? input.accountHolderName,
+          accountHolderName: input.bankAccountHolder ?? input.accountHolderName,
+          bankAccountNumber: input.bankAccountNumber ?? input.accountNumber,
+          accountNumber: input.bankAccountNumber ?? input.accountNumber,
+          bankIfsc: input.bankIfsc ?? input.ifscCode,
+          ifscCode: input.bankIfsc ?? input.ifscCode,
+          otpCode: input.otpCode,
+        };
+
     return this.request('driver/payout-details', {
       method: 'PUT',
-      body: JSON.stringify(input),
+      body: JSON.stringify(payload),
     });
   }
 

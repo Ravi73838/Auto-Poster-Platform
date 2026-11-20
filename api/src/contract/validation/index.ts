@@ -665,23 +665,41 @@ export const driverDocumentInputSchema = z.object({
 });
 export type DriverDocumentInput = z.infer<typeof driverDocumentInputSchema>;
 
-export const driverPayoutInputSchema = z.discriminatedUnion('method', [
-  z.object({
-    method: z.literal(PAYOUT_METHODS.UPI),
-    upiId: upiIdSchema,
-    otpCode: z.string().trim().optional(),
-  }),
-  z.object({
-    method: z.literal(PAYOUT_METHODS.BANK_ACCOUNT),
-    bankAccountHolder: z.string().trim().min(2).max(100),
-    bankAccountNumber: z
-      .string()
-      .trim()
-      .regex(/^\d{9,18}$/, { message: 'Bank account number must be 9-18 digits' }),
-    bankIfsc: ifscSchema,
-    otpCode: z.string().trim().optional(),
-  }),
-]);
+export const driverPayoutInputSchema = z.preprocess(
+  (val: any) => {
+    if (typeof val === 'object' && val !== null) {
+      let method = val.method;
+      if (!method && val.type) {
+        method = val.type === 'BANK' ? PAYOUT_METHODS.BANK_ACCOUNT : val.type;
+      }
+      return {
+        ...val,
+        method,
+        bankAccountHolder: val.bankAccountHolder ?? val.accountHolderName,
+        bankAccountNumber: val.bankAccountNumber ?? val.accountNumber,
+        bankIfsc: val.bankIfsc ?? val.ifscCode,
+      };
+    }
+    return val;
+  },
+  z.discriminatedUnion('method', [
+    z.object({
+      method: z.literal(PAYOUT_METHODS.UPI),
+      upiId: upiIdSchema,
+      otpCode: z.string().trim().optional(),
+    }),
+    z.object({
+      method: z.literal(PAYOUT_METHODS.BANK_ACCOUNT),
+      bankAccountHolder: z.string().trim().min(2).max(100),
+      bankAccountNumber: z
+        .string()
+        .trim()
+        .regex(/^\d{9,18}$/, { message: 'Bank account number must be 9-18 digits' }),
+      bankIfsc: ifscSchema,
+      otpCode: z.string().trim().optional(),
+    }),
+  ])
+);
 export type DriverPayoutInput = z.infer<typeof driverPayoutInputSchema>;
 
 export const singleConsentSchema = z.object({

@@ -1790,11 +1790,16 @@ export interface AddDriverDocumentInput {
 }
 
 export interface UpdateDriverPayoutDetailsInput {
-  type: 'UPI' | 'BANK';
+  type?: 'UPI' | 'BANK';
+  method?: 'UPI' | 'BANK_ACCOUNT';
   upiId?: string;
   accountNumber?: string;
+  bankAccountNumber?: string;
   ifscCode?: string;
+  bankIfsc?: string;
   accountHolderName?: string;
+  bankAccountHolder?: string;
+  otpCode?: string;
 }
 
 export interface SubmitDriverConsentsInput {
