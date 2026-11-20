@@ -51,43 +51,41 @@ export function CompanyLayout() {
   return (
     <div className="min-h-screen flex bg-background text-textPrimary">
       {/* Sidebar (Desktop) */}
-      <aside className="hidden md:flex w-64 border-e border-border bg-surface flex-col justify-between shrink-0">
-        <div>
-          <div className="p-5 border-b border-border flex items-center gap-3">
-            <img
-              src="/logo.png"
-              alt="Auto Poster"
-              className="w-10 h-10 rounded-xl object-cover shadow-sm shrink-0"
-            />
-            <div>
-              <h2 className="text-base font-bold text-primary leading-tight">{t('common:appName')}</h2>
-              <p className="text-xs text-textSecondary mt-0.5">Company Portal</p>
-            </div>
+      <aside className="hidden md:flex w-64 border-e border-border bg-surface flex-col shrink-0 h-screen sticky top-0 overflow-y-auto">
+        <div className="p-5 border-b border-border flex items-center gap-3 shrink-0">
+          <img
+            src="/logo.png"
+            alt="Auto Poster"
+            className="w-10 h-10 rounded-xl object-cover shadow-sm shrink-0"
+          />
+          <div>
+            <h2 className="text-base font-bold text-primary leading-tight">{t('common:appName')}</h2>
+            <p className="text-xs text-textSecondary mt-0.5">Company Portal</p>
           </div>
-          <nav className="p-4 space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-primary text-primaryText'
-                        : 'text-textSecondary hover:bg-surfaceAlt hover:text-textPrimary'
-                    }`
-                  }
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.label}</span>
-                </NavLink>
-              );
-            })}
-          </nav>
         </div>
+        <nav className="p-4 space-y-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-primary text-primaryText'
+                      : 'text-textSecondary hover:bg-surfaceAlt hover:text-textPrimary'
+                  }`
+                }
+              >
+                <Icon className="w-4 h-4" />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
 
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border shrink-0">
           <div className="mb-3 px-2">
             <p className="text-xs font-semibold text-textPrimary truncate">
               {user?.email || user?.mobile}
