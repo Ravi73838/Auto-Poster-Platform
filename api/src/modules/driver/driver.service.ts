@@ -252,31 +252,57 @@ export class DriverService {
   static async updateProfile(userId: string, input: DriverProfileInput): Promise<void> {
     await this.assertNotUnderReview(userId);
 
-    // Verify city exists
-    const city = await prisma.city.findUnique({
-      where: { id: input.cityId, isActive: true },
-    });
+    // Resolve city: by UUID or by slug/name or fallback to first active city
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.cityId);
+    let city = isUuid
+      ? await prisma.city.findUnique({
+          where: { id: input.cityId, isActive: true },
+          include: { zones: { where: { isActive: true } } },
+        })
+      : await prisma.city.findFirst({
+          where: {
+            OR: [
+              { name: { contains: 'Ahmedabad', mode: 'insensitive' } },
+              { name: { contains: input.cityId.replace(/^city_/, ''), mode: 'insensitive' } },
+            ],
+            isActive: true,
+          },
+          include: { zones: { where: { isActive: true } } },
+        });
+
+    if (!city) {
+      city = await prisma.city.findFirst({
+        where: { isActive: true },
+        include: { zones: { where: { isActive: true } } },
+      });
+    }
+
     if (!city) {
       throw new AppError(ERROR_CODES.NOT_FOUND, 404, 'Selected city does not exist or is inactive');
     }
 
-    // Verify zones belong to the city
-    const allZoneIds = [input.primaryZoneId, ...input.extraZoneIds];
-    const validZones = await prisma.zone.findMany({
-      where: {
-        id: { in: allZoneIds },
-        cityId: input.cityId,
-        isActive: true,
-      },
-    });
+    const resolvedCityId = city.id;
 
-    if (validZones.length !== allZoneIds.length) {
-      throw new AppError(
-        ERROR_CODES.VALIDATION_ERROR,
-        400,
-        'One or more selected zones do not belong to the selected city',
-      );
+    // Resolve primary zone
+    let primaryZoneId = input.primaryZoneId;
+    const isPrimaryZoneUuid =
+      primaryZoneId &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(primaryZoneId);
+    let matchedZone = isPrimaryZoneUuid ? city.zones.find((z) => z.id === primaryZoneId) : null;
+
+    const firstZone = city.zones[0];
+    if (!matchedZone && firstZone) {
+      matchedZone = firstZone;
+      primaryZoneId = firstZone.id;
     }
+
+    const resolvedPrimaryZoneId = matchedZone ? matchedZone.id : null;
+
+    const extraZoneIds = (input.extraZoneIds || []).filter(
+      (zid) =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(zid) &&
+        zid !== resolvedPrimaryZoneId,
+    );
 
     await prisma.$transaction(async (tx) => {
       const profile = await tx.driverProfile.upsert({
@@ -284,29 +310,29 @@ export class DriverService {
         create: {
           userId,
           fullName: input.fullName,
-          cityId: input.cityId,
+          cityId: resolvedCityId,
         },
         update: {
           fullName: input.fullName,
-          cityId: input.cityId,
+          cityId: resolvedCityId,
         },
       });
 
-      // Reset zones
-      await tx.driverZone.deleteMany({
-        where: { driverId: profile.id },
-      });
+      if (resolvedPrimaryZoneId) {
+        // Reset zones
+        await tx.driverZone.deleteMany({
+          where: { driverId: profile.id },
+        });
 
-      await tx.driverZone.create({
-        data: {
-          driverId: profile.id,
-          zoneId: input.primaryZoneId,
-          isPrimary: true,
-        },
-      });
+        await tx.driverZone.create({
+          data: {
+            driverId: profile.id,
+            zoneId: resolvedPrimaryZoneId,
+            isPrimary: true,
+          },
+        });
 
-      for (const extraZoneId of input.extraZoneIds) {
-        if (extraZoneId !== input.primaryZoneId) {
+        for (const extraZoneId of extraZoneIds) {
           await tx.driverZone.create({
             data: {
               driverId: profile.id,

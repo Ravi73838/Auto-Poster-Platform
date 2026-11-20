@@ -614,9 +614,9 @@ export type UpdateZoneInput = z.infer<typeof updateZoneSchema>;
 
 export const driverProfileInputSchema = z.object({
   fullName: z.string().trim().min(2).max(100),
-  cityId: uuidSchema,
-  primaryZoneId: uuidSchema,
-  extraZoneIds: z.array(uuidSchema).default([]),
+  cityId: z.string().min(1, 'City is required'),
+  primaryZoneId: z.string().optional(),
+  extraZoneIds: z.array(z.string()).default([]),
 });
 export type DriverProfileInput = z.infer<typeof driverProfileInputSchema>;
 

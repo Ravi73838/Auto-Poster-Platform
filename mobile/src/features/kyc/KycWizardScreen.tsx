@@ -39,7 +39,7 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
 
   // Form states
   const [fullName, setFullName] = useState('');
-  const [cityId, setCityId] = useState('city_ahmedabad');
+  const [cityId, setCityId] = useState('94fcbcc4-cc5c-4108-a313-2309cca922d8');
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [isOwner, setIsOwner] = useState(true);
   const [ownerName, setOwnerName] = useState('');
@@ -69,6 +69,15 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
       setIsLoading(true);
       setError(null);
       const data: DriverOnboardingDto = await apiClient.getDriverOnboarding();
+      try {
+        const citiesRes = await apiClient.listCities();
+        const firstCity = citiesRes?.[0];
+        if (firstCity) {
+          setCityId(firstCity.id);
+        }
+      } catch {
+        // keep default
+      }
       if (data.driverProfile?.fullName) {
         setFullName(data.driverProfile.fullName);
       }
