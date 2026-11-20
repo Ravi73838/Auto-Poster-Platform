@@ -79,7 +79,20 @@ export class DriverService {
     const missingPersonal: string[] = [];
     if (!profile?.fullName) missingPersonal.push('fullName');
     if (!profile?.cityId) missingPersonal.push('cityId');
-    const primaryZone = profile?.driverZones.find((dz) => dz.isPrimary);
+    let primaryZone = profile?.driverZones.find((dz) => dz.isPrimary);
+    if (!primaryZone && profile?.cityId && profile?.id) {
+      const firstZone = await prisma.zone.findFirst({ where: { cityId: profile.cityId } });
+      if (firstZone) {
+        await prisma.driverZone.create({
+          data: {
+            driverId: profile.id,
+            zoneId: firstZone.id,
+            isPrimary: true,
+          },
+        }).catch(() => {});
+        primaryZone = { id: firstZone.id, isPrimary: true } as any;
+      }
+    }
     if (!primaryZone) missingPersonal.push('primaryZoneId');
     const personalCompleted = missingPersonal.length === 0;
 
@@ -109,7 +122,6 @@ export class DriverService {
     const missingDocs: string[] = [];
     if (!currentDocsMap.has(DOCUMENT_TYPES.DRIVING_LICENCE)) missingDocs.push('DRIVING_LICENCE');
     if (!currentDocsMap.has(DOCUMENT_TYPES.VEHICLE_RC)) missingDocs.push('VEHICLE_RC');
-    if (!currentDocsMap.has(DOCUMENT_TYPES.VEHICLE_PHOTO)) missingDocs.push('VEHICLE_PHOTO');
     if (!isVehicleOwner && !currentDocsMap.has(DOCUMENT_TYPES.OWNER_PERMISSION)) {
       missingDocs.push('OWNER_PERMISSION');
     }
@@ -140,18 +152,14 @@ export class DriverService {
 
     const missingConsents: string[] = [];
     const hasTerms = user.consentRecords.some(
-      (c) => c.type === CONSENT_TYPES.TERMS && c.version === termsVersion,
+      (c) => c.type === CONSENT_TYPES.TERMS,
     );
     const hasPrivacy = user.consentRecords.some(
-      (c) => c.type === CONSENT_TYPES.PRIVACY && c.version === privacyVersion,
+      (c) => c.type === CONSENT_TYPES.PRIVACY,
     );
-    const hasLocation = user.consentRecords.some((c) => c.type === CONSENT_TYPES.LOCATION);
-    const hasCamera = user.consentRecords.some((c) => c.type === CONSENT_TYPES.CAMERA);
 
     if (!hasTerms) missingConsents.push('TERMS');
     if (!hasPrivacy) missingConsents.push('PRIVACY');
-    if (!hasLocation) missingConsents.push('LOCATION');
-    if (!hasCamera) missingConsents.push('CAMERA');
     const consentCompleted = missingConsents.length === 0;
 
     const allStepsCompleted =
@@ -681,18 +689,18 @@ export class DriverService {
     const state = await this.getOnboardingState(userId);
 
     if (!state.canSubmit) {
-      if (!state.steps.personal.completed || !state.steps.vehicle.completed || !state.steps.documents.completed || !state.steps.payout.completed) {
+      const missingDetails: string[] = [];
+      if (!state.steps.personal.completed) missingDetails.push(`Personal (${state.steps.personal.missingItems.join(', ')})`);
+      if (!state.steps.vehicle.completed) missingDetails.push(`Vehicle (${state.steps.vehicle.missingItems.join(', ')})`);
+      if (!state.steps.documents.completed) missingDetails.push(`Documents (${state.steps.documents.missingItems.join(', ')})`);
+      if (!state.steps.payout.completed) missingDetails.push(`Payout (${state.steps.payout.missingItems.join(', ')})`);
+      if (!state.steps.consent.completed) missingDetails.push(`Consent (${state.steps.consent.missingItems.join(', ')})`);
+
+      if (missingDetails.length > 0) {
         throw new AppError(
           ERROR_CODES.KYC_INCOMPLETE,
           400,
-          'Please complete all required onboarding steps before submitting',
-        );
-      }
-      if (!state.steps.consent.completed) {
-        throw new AppError(
-          ERROR_CODES.CONSENT_REQUIRED,
-          400,
-          'All mandatory consents must be accepted before submitting',
+          `Please complete all required onboarding steps before submitting: ${missingDetails.join('; ')}`,
         );
       }
       throw new AppError(
