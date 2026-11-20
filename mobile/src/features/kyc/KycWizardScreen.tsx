@@ -13,6 +13,7 @@ import * as ScreenCapture from 'expo-screen-capture';
 import { useTranslation } from 'react-i18next';
 import { useMobileTheme } from '../../theme/ThemeProvider';
 import { apiClient } from '../../services/api';
+import { CONSENT_TYPES } from '@ap/shared-constants';
 import {
   normalizeVehicleNumber,
   vehicleNumberSchema,
@@ -364,8 +365,8 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
       setError(null);
       await apiClient.submitDriverConsents({
         consents: [
-          { type: 'DRIVER_AGREEMENT', version: '1.0' },
-          { type: 'PRIVACY_POLICY', version: '1.0' },
+          { type: CONSENT_TYPES.TERMS, version: '1.0' },
+          { type: CONSENT_TYPES.PRIVACY, version: '1.0' },
         ],
       });
       setCurrentStep('review');

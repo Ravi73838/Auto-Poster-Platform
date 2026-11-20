@@ -706,13 +706,21 @@ export const driverPayoutInputSchema = z.preprocess(
 export type DriverPayoutInput = z.infer<typeof driverPayoutInputSchema>;
 
 export const singleConsentSchema = z.object({
-  type: z.enum([
-    CONSENT_TYPES.TERMS,
-    CONSENT_TYPES.PRIVACY,
-    CONSENT_TYPES.LOCATION,
-    CONSENT_TYPES.CAMERA,
-    CONSENT_TYPES.POSTER_POLICY,
-  ]),
+  type: z
+    .enum([
+      CONSENT_TYPES.TERMS,
+      CONSENT_TYPES.PRIVACY,
+      CONSENT_TYPES.LOCATION,
+      CONSENT_TYPES.CAMERA,
+      CONSENT_TYPES.POSTER_POLICY,
+      'DRIVER_AGREEMENT',
+      'PRIVACY_POLICY',
+    ])
+    .transform((val) => {
+      if (val === 'DRIVER_AGREEMENT') return CONSENT_TYPES.TERMS;
+      if (val === 'PRIVACY_POLICY') return CONSENT_TYPES.PRIVACY;
+      return val;
+    }),
   version: z.string().min(1),
 });
 export type SingleConsentInput = z.infer<typeof singleConsentSchema>;
