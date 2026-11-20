@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { KeyRound, Loader2, AlertCircle } from 'lucide-react';
+import { KeyRound, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useApiClient } from '../lib/api';
 
 interface StepUpModalProps {
@@ -19,6 +19,7 @@ export function StepUpModal({
 }: StepUpModalProps) {
   const client = useApiClient();
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,14 +70,26 @@ export function StepUpModal({
             <label className="block text-xs font-semibold text-textSecondary mb-1.5">
               Account Password
             </label>
-            <input
-              type="password"
-              autoFocus
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your account password"
-              className="w-full px-3.5 py-2.5 bg-surfaceAlt border border-border rounded-lg text-sm focus:outline-none focus:border-primary text-textPrimary"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                autoFocus
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your account password"
+                className="w-full pl-3.5 pr-10 py-2.5 bg-surfaceAlt border border-border rounded-lg text-sm focus:outline-none focus:border-primary text-textPrimary"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Hide password' : 'Show password'}
+                tabIndex={-1}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-textSecondary hover:text-textPrimary transition-colors focus:outline-none rounded cursor-pointer"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4 shrink-0" /> : <Eye className="w-4 h-4 shrink-0" />}
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-4 border-t border-border">

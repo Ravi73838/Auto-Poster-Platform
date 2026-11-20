@@ -120,8 +120,10 @@ export function MobileInputScreen({ onChangeLanguage, onLoginSuccess }: Props) {
           <TouchableOpacity
             onPress={() => setShowPassword(!showPassword)}
             style={styles.showHideButton}
+            accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+            accessibilityRole="button"
           >
-            <Text style={styles.showHideText}>{showPassword ? 'Hide' : 'Show'}</Text>
+            <Text style={styles.showHideIcon}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
           </TouchableOpacity>
         </View>
 
@@ -250,11 +252,11 @@ const styles = StyleSheet.create({
   showHideButton: {
     paddingVertical: 6,
     paddingHorizontal: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  showHideText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#0284C7',
+  showHideIcon: {
+    fontSize: 18,
   },
   button: {
     backgroundColor: '#0284C7',
