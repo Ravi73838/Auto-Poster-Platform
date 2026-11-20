@@ -4,19 +4,43 @@ import { useAuthStore } from '../store/authStore';
 import { useTranslation } from 'react-i18next';
 import type { Language } from '@ap/shared-constants';
 
-const ApiContext = createContext<ApiClient | undefined>(undefined);
+let defaultClientInstance: ApiClient | null = null;
+
+export function getDefaultApiClient(): ApiClient {
+  if (!defaultClientInstance) {
+    const baseUrl =
+      import.meta.env.VITE_API_BASE_URL ||
+      import.meta.env.VITE_API_URL ||
+      'http://localhost:4000/api/v1';
+    defaultClientInstance = new ApiClient({
+      baseUrl,
+      getAuthToken: () => useAuthStore.getState().token,
+      setAuthToken: (token) => useAuthStore.getState().setToken(token),
+      getRefreshToken: () => useAuthStore.getState().refreshToken,
+      getLanguage: () => 'en',
+      onAuthLost: () => useAuthStore.getState().clearAuth(),
+      credentials: 'include',
+    });
+  }
+  return defaultClientInstance;
+}
+
+const ApiContext = createContext<ApiClient>(getDefaultApiClient());
 
 export function ApiProvider({ children }: { children: React.ReactNode }) {
   const { i18n } = useTranslation();
 
   const client = useMemo(() => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
+    const baseUrl =
+      import.meta.env.VITE_API_BASE_URL ||
+      import.meta.env.VITE_API_URL ||
+      'http://localhost:4000/api/v1';
     return new ApiClient({
       baseUrl,
       getAuthToken: () => useAuthStore.getState().token,
       setAuthToken: (token) => useAuthStore.getState().setToken(token),
       getRefreshToken: () => useAuthStore.getState().refreshToken,
-      getLanguage: () => i18n.language as Language,
+      getLanguage: () => (i18n.language as Language) || 'en',
       onAuthLost: () => useAuthStore.getState().clearAuth(),
       credentials: 'include',
     });
@@ -25,7 +49,6 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   const initRanRef = useRef(false);
 
   useEffect(() => {
-    // If we already have restored auth state from localStorage, initialize immediately
     const current = useAuthStore.getState();
     if (current.isAuthenticated && current.user && current.token) {
       useAuthStore.getState().setInitialized(true);
@@ -57,10 +80,17 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // 2. Token expired or not present: attempt token refresh
+      // 2. If no tokens exist at all, user is not logged in — do not make unnecessary refresh request
+      const rfToken = useAuthStore.getState().refreshToken;
+      if (!rfToken && !state.token) {
+        useAuthStore.getState().setInitialized(true);
+        useAuthStore.getState().setLoading(false);
+        return;
+      }
+
+      // 3. Token expired but refreshToken exists: attempt token refresh
       useAuthStore.getState().setLoading(true);
       try {
-        const rfToken = useAuthStore.getState().refreshToken;
         const tokens = await client.refreshTokens(rfToken ? { refreshToken: rfToken } : undefined);
         if (tokens?.accessToken) {
           useAuthStore.getState().setToken(tokens.accessToken);
@@ -76,7 +106,6 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
           });
         }
       } catch (err: any) {
-        // Only clear credentials if the session was explicitly rejected/revoked
         if (
           err?.status === 401 ||
           err?.statusCode === 401 ||
@@ -99,10 +128,7 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 
 export function useApiClient(): ApiClient {
   const client = useContext(ApiContext);
-  if (!client) {
-    throw new Error('useApiClient must be used within an ApiProvider');
-  }
-  return client;
+  return client || getDefaultApiClient();
 }
 
 export const useApi = useApiClient;
