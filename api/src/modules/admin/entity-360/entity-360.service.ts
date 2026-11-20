@@ -178,7 +178,7 @@ export class Entity360Service {
       throw new NotFoundError('Driver not found');
     }
 
-    const [kycSubmissions, assignments, strikes, disputes, auditLogs, payouts] =
+    const [kycSubmissions, assignments, strikes, disputes, auditLogs, payouts, documents] =
       await Promise.all([
         prisma.kycSubmission.findMany({
           where: { userId: driver.userId },
@@ -215,6 +215,10 @@ export class Entity360Service {
           where: { driverId: driver.userId },
           orderBy: { requestedAt: 'desc' },
           take: 10,
+        }),
+        prisma.document.findMany({
+          where: { userId: driver.userId },
+          orderBy: { createdAt: 'desc' },
         }),
       ]);
 
@@ -284,6 +288,13 @@ export class Entity360Service {
         missedDays: a.missedDays,
         rentPaidPaise: a.rentPaidPaise.toString(),
         createdAt: a.createdAt.toISOString(),
+      })),
+      documents: documents.map((d) => ({
+        id: d.id,
+        type: d.documentType,
+        status: d.status,
+        fileUrl: d.fileUrl,
+        createdAt: d.createdAt.toISOString(),
       })),
       strikes: strikes.map((s) => ({
         id: s.id,
@@ -672,6 +683,16 @@ export class Entity360Service {
         data: { isVerified: true },
       });
     }
+
+    // Approve all current documents uploaded by the driver
+    await prisma.document.updateMany({
+      where: { userId: profile.userId },
+      data: {
+        status: 'APPROVED',
+        verifiedAt: new Date(),
+        verifiedByUserId: params.actorUserId || null,
+      },
+    });
 
     // Audit log
     await prisma.auditLog.create({

@@ -241,6 +241,69 @@ export function Driver360Drawer({ driverId, onClose, onDriverUpdated }: Driver36
                 </div>
               </div>
 
+              {/* Uploaded Documents (Driving License, RC, etc.) */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-textSecondary mb-3 flex items-center gap-2">
+                  <FileText className="w-3.5 h-3.5" /> Uploaded KYC Documents ({data.documents?.length || 0})
+                </h3>
+                {!data.documents || data.documents.length === 0 ? (
+                  <p className="text-xs text-textSecondary p-3 border border-border rounded-xl">
+                    No documents uploaded yet by this driver.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {data.documents.map((doc: any) => (
+                      <div
+                        key={doc.id}
+                        className="p-3 rounded-xl border border-border bg-surface flex items-center justify-between text-xs"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <FileText className="w-4 h-4 text-primary shrink-0" />
+                          <div>
+                            <span className="font-semibold text-textPrimary block">
+                              {doc.type === 'DRIVING_LICENCE' || doc.type === 'DRIVING_LICENSE'
+                                ? 'Driving License (DL)'
+                                : doc.type === 'VEHICLE_RC'
+                                ? 'Vehicle Registration (RC)'
+                                : doc.type === 'ID_PROOF'
+                                ? 'Identity Proof / Aadhaar'
+                                : doc.type}
+                            </span>
+                            <span className="text-[10px] text-textSecondary mt-0.5 block">
+                              Uploaded: {new Date(doc.createdAt).toLocaleDateString('en-IN')}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              doc.status === 'APPROVED'
+                                ? 'bg-success/10 text-success'
+                                : doc.status === 'REJECTED'
+                                ? 'bg-danger/10 text-danger'
+                                : 'bg-warning/10 text-warning'
+                            }`}
+                          >
+                            {doc.status}
+                          </span>
+                          {doc.fileUrl && (
+                            <a
+                              href={doc.fileUrl.startsWith('http') ? doc.fileUrl : `/api/v1/uploads/${doc.fileUrl}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-1.5 hover:bg-surfaceAlt rounded-md text-primary flex items-center gap-1 font-semibold text-[11px]"
+                              title="View Document"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" /> View
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Financial Snapshot */}
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-textSecondary mb-3 flex items-center gap-2">

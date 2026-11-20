@@ -22,6 +22,7 @@ interface CampaignDetailScreenProps {
   campaignId: string;
   onBack: () => void;
   onSelectSuccess?: (assignmentId: string) => void;
+  onNavigateToKyc?: () => void;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -30,6 +31,7 @@ export function CampaignDetailScreen({
   campaignId,
   onBack,
   onSelectSuccess,
+  onNavigateToKyc,
 }: CampaignDetailScreenProps) {
   const { colors } = useMobileTheme();
   const { t: _t } = useTranslation(['common']);
@@ -251,7 +253,18 @@ export function CampaignDetailScreen({
       <View style={[styles.footerBar, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
         {!isApproved ? (
           <View style={styles.disabledActionBox}>
-            <Text style={styles.disabledReasonText}>KYC Approval Required to Select Campaign</Text>
+            <Text style={styles.disabledReasonText}>
+              Verification Required: Admin must verify your driving license and vehicle documents before you can accept campaigns.
+            </Text>
+            {onNavigateToKyc ? (
+              <TouchableOpacity
+                style={[styles.uploadKycBtn, { backgroundColor: colors.primary }]}
+                onPress={onNavigateToKyc}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.uploadKycBtnText}>Upload Documents for Approval →</Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         ) : (
           <View style={styles.actionContainer}>
@@ -479,6 +492,20 @@ const styles = StyleSheet.create({
     color: '#92400E',
     fontWeight: '700',
     fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  uploadKycBtn: {
+    marginTop: 10,
+    width: '100%',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  uploadKycBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
   },
   actionContainer: {
     alignItems: 'center',

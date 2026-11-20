@@ -12,6 +12,9 @@ export default function DriverCampaignDetailRoute() {
       onBack={() => {
         router.back();
       }}
+      onNavigateToKyc={() => {
+        router.push('/(onboarding)/wizard');
+      }}
     />
   );
 }

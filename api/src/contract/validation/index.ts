@@ -648,14 +648,17 @@ export const driverVehicleInputSchema = z
 export type DriverVehicleInput = z.infer<typeof driverVehicleInputSchema>;
 
 export const driverDocumentInputSchema = z.object({
-  type: z.enum([
-    DOCUMENT_TYPES.DRIVING_LICENCE,
-    DOCUMENT_TYPES.VEHICLE_RC,
-    DOCUMENT_TYPES.VEHICLE_PHOTO,
-    DOCUMENT_TYPES.OWNER_PERMISSION,
-    DOCUMENT_TYPES.ID_PROOF,
-    DOCUMENT_TYPES.OTHER,
-  ]),
+  type: z
+    .enum([
+      DOCUMENT_TYPES.DRIVING_LICENCE,
+      'DRIVING_LICENSE',
+      DOCUMENT_TYPES.VEHICLE_RC,
+      DOCUMENT_TYPES.VEHICLE_PHOTO,
+      DOCUMENT_TYPES.OWNER_PERMISSION,
+      DOCUMENT_TYPES.ID_PROOF,
+      DOCUMENT_TYPES.OTHER,
+    ])
+    .transform((val) => (val === 'DRIVING_LICENSE' ? DOCUMENT_TYPES.DRIVING_LICENCE : val)),
   uploadedFileId: uuidSchema,
 });
 export type DriverDocumentInput = z.infer<typeof driverDocumentInputSchema>;

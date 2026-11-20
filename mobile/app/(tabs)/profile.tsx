@@ -67,6 +67,47 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      {/* KYC & Document Verification */}
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={styles.headerRow}>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>
+            Documents & Verification
+          </Text>
+          <View
+            style={[
+              styles.badgeChip,
+              { backgroundColor: user?.status === 'APPROVED' ? '#DCFCE7' : '#FEF3C7' },
+            ]}
+          >
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: '700',
+                color: user?.status === 'APPROVED' ? '#166534' : '#B45309',
+              }}
+            >
+              {user?.status === 'APPROVED' ? '✓ VERIFIED' : '⏳ PENDING'}
+            </Text>
+          </View>
+        </View>
+
+        <Text style={[styles.helperText, { color: colors.textSecondary, marginTop: 8, marginBottom: 14 }]}>
+          {user?.status === 'APPROVED'
+            ? 'Your driving license and vehicle registration (RC) are verified. You can browse and accept campaigns!'
+            : 'Please upload your Driving License and Vehicle RC. Admin will review and verify your documents so you can accept campaigns.'}
+        </Text>
+
+        <TouchableOpacity
+          style={[styles.kycActionBtn, { backgroundColor: colors.primary }]}
+          onPress={() => router.push('/(onboarding)/wizard')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.kycActionBtnText}>
+            {user?.status === 'APPROVED' ? 'View / Update Documents' : 'Upload Documents (License / RC)'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Language Selector */}
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{t('settings:language')}</Text>
@@ -267,6 +308,30 @@ const styles = StyleSheet.create({
   logoutText: {
     color: '#FFFFFF',
     fontSize: 15,
+    fontWeight: '700',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  badgeChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  helperText: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  kycActionBtn: {
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  kycActionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
     fontWeight: '700',
   },
 });

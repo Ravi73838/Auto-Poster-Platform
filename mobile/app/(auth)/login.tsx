@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LanguageSelectScreen, MobileInputScreen } from '../../src/features/auth';
+import { useMobileAuthStore } from '../../src/store/authStore';
+import { apiClient } from '../../src/services/api';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -11,8 +13,24 @@ export default function LoginScreen() {
     setStep('auth');
   };
 
-  const handleLoginSuccess = () => {
-    router.replace('/(tabs)');
+  const handleLoginSuccess = async () => {
+    try {
+      const user = useMobileAuthStore.getState().user;
+      if (user?.status === 'APPROVED') {
+        router.replace('/(tabs)');
+        return;
+      }
+
+      // Check if driver has already submitted KYC
+      const kyc = await apiClient.getDriverKyc().catch(() => null);
+      if (kyc?.status === 'SUBMITTED' || kyc?.status === 'UNDER_REVIEW') {
+        router.replace('/(onboarding)/status');
+      } else {
+        router.replace('/(onboarding)/wizard');
+      }
+    } catch {
+      router.replace('/(tabs)');
+    }
   };
 
   return (
