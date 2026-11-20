@@ -44,49 +44,25 @@ export interface TeamWorkloadMember {
   queuesBreakdown: Record<string, number>;
 }
 
+const summaryCache = new Map<string, { expiresAt: number; data: { queues: QueueSummaryItem[]; totalPending: number } }>();
+
 export class WorkQueuesService {
   /**
    * Summarizes pending item counts and SLA status across all queues.
    */
   static async getSummary(adminId?: string): Promise<{ queues: QueueSummaryItem[]; totalPending: number }> {
+    const cacheKey = adminId || 'all';
+    const cached = summaryCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.data;
+    }
+
     const now = new Date();
     const h24Ago = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const h48Ago = new Date(now.getTime() - 48 * 60 * 60 * 1000);
-    const h72Ago = new Date(now.getTime() - 72 * 60 * 60 * 1000);
 
-    const [
-      kycCount,
-      kycOldest,
-      kycBreached,
-      kycMy,
-      campaignCount,
-      campaignOldest,
-      campaignBreached,
-      campaignMy,
-      installCount,
-      installOldest,
-      installBreached,
-      installMy,
-      dailyPhotoCount,
-      dailyPhotoOldest,
-      dailyPhotoBreached,
-      dailyPhotoMy,
-      flagCount,
-      flagOldest,
-      disputeCount,
-      disputeOldest,
-      disputeBreached,
-      disputeMy,
-      refundCount,
-      refundOldest,
-      settlementCount,
-      settlementOldest,
-      adjCount,
-      adjOldest,
-      settingsCount,
-      settingsOldest,
-    ] = await Promise.all([
-      // 1. KYC
+    // Batch 1: KYC
+    const [kycCount, kycOldest, kycBreached, kycMy] = await Promise.all([
       prisma.kycSubmission.count({ where: { status: KYC_SUBMISSION_STATUS.SUBMITTED } }),
       prisma.kycSubmission.findFirst({
         where: { status: KYC_SUBMISSION_STATUS.SUBMITTED },
@@ -101,8 +77,10 @@ export class WorkQueuesService {
             where: { status: KYC_SUBMISSION_STATUS.SUBMITTED, assignedToId: adminId },
           })
         : 0,
+    ]);
 
-      // 2. Campaigns
+    // Batch 2: Campaigns
+    const [campaignCount, campaignOldest, campaignBreached, campaignMy] = await Promise.all([
       prisma.campaign.count({ where: { status: CAMPAIGN_STATUS.SUBMITTED } }),
       prisma.campaign.findFirst({
         where: { status: CAMPAIGN_STATUS.SUBMITTED },
@@ -117,8 +95,10 @@ export class WorkQueuesService {
             where: { status: CAMPAIGN_STATUS.SUBMITTED, assignedToId: adminId },
           })
         : 0,
+    ]);
 
-      // 3. Installations
+    // Batch 3: Installations
+    const [installCount, installOldest, installBreached, installMy] = await Promise.all([
       prisma.assignment.count({ where: { status: ASSIGNMENT_STATUS.INSTALL_SUBMITTED } }),
       prisma.assignment.findFirst({
         where: { status: ASSIGNMENT_STATUS.INSTALL_SUBMITTED },
@@ -133,8 +113,10 @@ export class WorkQueuesService {
             where: { status: ASSIGNMENT_STATUS.INSTALL_SUBMITTED, reviewClaimedById: adminId },
           })
         : 0,
+    ]);
 
-      // 4. Daily Photos (Manual Review)
+    // Batch 4: Daily Photos (Manual Review)
+    const [dailyPhotoCount, dailyPhotoOldest, dailyPhotoBreached, dailyPhotoMy] = await Promise.all([
       prisma.photo.count({ where: { kind: 'DAILY', status: 'MANUAL_REVIEW' } }),
       prisma.photo.findFirst({
         where: { kind: 'DAILY', status: 'MANUAL_REVIEW' },
@@ -149,16 +131,16 @@ export class WorkQueuesService {
             where: { kind: 'DAILY', status: 'MANUAL_REVIEW', reviewClaimedById: adminId },
           })
         : 0,
+    ]);
 
-      // 5. Photo Flags
+    // Batch 5: Photo Flags & Disputes
+    const [flagCount, flagOldest, disputeCount, disputeOldest, disputeBreached, disputeMy] = await Promise.all([
       prisma.photoFlag.count({ where: { status: PHOTO_FLAG_STATUSES.OPEN } }),
       prisma.photoFlag.findFirst({
         where: { status: PHOTO_FLAG_STATUSES.OPEN },
         orderBy: { createdAt: 'asc' },
         select: { createdAt: true },
       }),
-
-      // 6. Disputes
       prisma.dispute.count({ where: { status: { in: ['OPEN', 'UNDER_REVIEW'] } } }),
       prisma.dispute.findFirst({
         where: { status: { in: ['OPEN', 'UNDER_REVIEW'] } },
@@ -173,32 +155,37 @@ export class WorkQueuesService {
             where: { status: { in: ['OPEN', 'UNDER_REVIEW'] }, assignedToId: adminId },
           })
         : 0,
+    ]);
 
-      // 7. Refunds
+    // Batch 6: Refunds, Settlements, Adjustments, Settings
+    const [
+      refundCount,
+      refundOldest,
+      settlementCount,
+      settlementOldest,
+      adjCount,
+      adjOldest,
+      settingsCount,
+      settingsOldest,
+    ] = await Promise.all([
       prisma.refund.count({ where: { status: REFUND_STATUS.PENDING } }),
       prisma.refund.findFirst({
         where: { status: REFUND_STATUS.PENDING },
         orderBy: { createdAt: 'asc' },
         select: { createdAt: true },
       }),
-
-      // 8. Settlements
       prisma.assignmentSettlement.count({ where: { status: SETTLEMENT_STATUS.PENDING } }),
       prisma.assignmentSettlement.findFirst({
         where: { status: SETTLEMENT_STATUS.PENDING },
         orderBy: { createdAt: 'asc' },
         select: { createdAt: true },
       }),
-
-      // 9. Ledger Adjustments
       prisma.adjustment.count({ where: { status: ADJUSTMENT_STATUS.PENDING } }),
       prisma.adjustment.findFirst({
         where: { status: ADJUSTMENT_STATUS.PENDING },
         orderBy: { createdAt: 'asc' },
         select: { createdAt: true },
       }),
-
-      // 10. Setting Changes
       prisma.settingChangeRequest.count({ where: { status: 'REQUESTED' } }),
       prisma.settingChangeRequest.findFirst({
         where: { status: 'REQUESTED' },
@@ -292,7 +279,9 @@ export class WorkQueuesService {
 
     const totalPending = queues.reduce((sum, q) => sum + q.count, 0);
 
-    return { queues, totalPending };
+    const result = { queues, totalPending };
+    summaryCache.set(cacheKey, { expiresAt: Date.now() + 15000, data: result });
+    return result;
   }
 
   /**

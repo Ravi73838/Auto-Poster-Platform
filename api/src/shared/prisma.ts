@@ -19,9 +19,9 @@ function toReachableSupabaseUrl(rawUrl: string): string {
       u.username = `postgres.${ref}`;
       u.port = '5432';
     }
-    if (!u.searchParams.has('connection_limit')) {
-      u.searchParams.set('connection_limit', '20');
-    }
+    // Supabase pooler in session mode has a strict limit of 15 connections.
+    // Setting Prisma connection_limit to 5 prevents EMAXCONNSESSION.
+    u.searchParams.set('connection_limit', '5');
     if (!u.searchParams.has('pool_timeout')) {
       u.searchParams.set('pool_timeout', '60');
     }

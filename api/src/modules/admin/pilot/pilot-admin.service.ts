@@ -4,30 +4,57 @@ import { LaunchService } from '../launch/launch.service.js';
 import { NotFoundError, ValidationError } from '../../../shared/errors/index.js';
 import type { PilotCommandCenter } from '@ap/shared-types';
 
+let commandCenterCache: { expiresAt: number; data: PilotCommandCenter } | null = null;
+
 export class PilotAdminService {
   static async getCommandCenterData(): Promise<PilotCommandCenter> {
-    const [counters, readiness, anomalies, pendingSecondLooks, feedbacks, supportRequests] =
-      await Promise.all([
-        PilotCountersService.getCounters(),
-        LaunchService.getLaunchReadiness(),
-        prisma.anomalyFinding.groupBy({
-          by: ['severity'],
-          _count: true,
-          where: { status: 'OPEN' },
-        }),
-        prisma.reviewSecondLook.count({
-          where: { status: 'PENDING' },
-        }),
-        prisma.feedback.findMany({
-          take: 10,
-          orderBy: { createdAt: 'desc' },
-          include: { user: { select: { id: true, email: true, mobile: true, role: true } } },
-        }),
-        prisma.supportRequest.groupBy({
-          by: ['type', 'status'],
-          _count: true,
-        }),
-      ]);
+    if (commandCenterCache && Date.now() < commandCenterCache.expiresAt) {
+      return commandCenterCache.data;
+    }
+
+    const counters = await PilotCountersService.getCounters();
+    const readiness = await LaunchService.getLaunchReadiness();
+
+    let anomalies: Array<{ severity: string; _count: number }> = [];
+    try {
+      anomalies = (await prisma.anomalyFinding.groupBy({
+        by: ['severity'],
+        _count: true,
+        where: { status: 'OPEN' },
+      })) as any;
+    } catch {
+      // Table may not exist yet in database
+    }
+
+    let pendingSecondLooks = 0;
+    try {
+      pendingSecondLooks = await prisma.reviewSecondLook.count({
+        where: { status: 'PENDING' },
+      });
+    } catch {
+      // Table may not exist yet in database
+    }
+
+    let feedbacks: any[] = [];
+    try {
+      feedbacks = await prisma.feedback.findMany({
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: { user: { select: { id: true, email: true, mobile: true, role: true } } },
+      });
+    } catch {
+      // Table may not exist yet in database
+    }
+
+    let supportRequests: Array<{ type: string; status: string; _count: number }> = [];
+    try {
+      supportRequests = (await prisma.supportRequest.groupBy({
+        by: ['type', 'status'],
+        _count: true,
+      })) as any;
+    } catch {
+      // Table may not exist yet in database
+    }
 
     const anomalySummary = {
       totalOpen: anomalies.reduce((acc, curr) => acc + curr._count, 0),
@@ -60,7 +87,7 @@ export class PilotAdminService {
       .filter((s) => s.type === 'CALLBACK_REQUEST' && (s.status === 'OPEN' || s.status === 'IN_PROGRESS'))
       .reduce((acc, curr) => acc + curr._count, 0);
 
-    return {
+    const result: PilotCommandCenter = {
       counters,
       readiness,
       anomalies: anomalySummary,
@@ -75,6 +102,9 @@ export class PilotAdminService {
         openCallbacks,
       },
     };
+
+    commandCenterCache = { expiresAt: Date.now() + 15000, data: result };
+    return result;
   }
 
   // --- ANOMALIES ---
@@ -92,18 +122,21 @@ export class PilotAdminService {
     if (params.status) where.status = params.status;
     if (params.severity) where.severity = params.severity;
 
-    const [items, total] = await Promise.all([
-      prisma.anomalyFinding.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: [{ severity: 'desc' }, { createdAt: 'desc' }],
-        include: { resolvedBy: { select: { id: true, email: true } } },
-      }),
-      prisma.anomalyFinding.count({ where }),
-    ]);
-
-    return { items, total, page, limit };
+    try {
+      const [items, total] = await Promise.all([
+        prisma.anomalyFinding.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: [{ severity: 'desc' }, { createdAt: 'desc' }],
+          include: { resolvedBy: { select: { id: true, email: true } } },
+        }),
+        prisma.anomalyFinding.count({ where }),
+      ]);
+      return { items, total, page, limit };
+    } catch {
+      return { items: [], total: 0, page, limit };
+    }
   }
 
   static async resolveAnomaly(params: {
@@ -139,27 +172,30 @@ export class PilotAdminService {
     const where: any = {};
     if (params.status) where.status = params.status;
 
-    const [items, total] = await Promise.all([
-      prisma.reviewSecondLook.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          photo: {
-            include: {
-              driver: { select: { id: true, mobile: true, email: true } },
-              assignment: { select: { id: true, campaign: { select: { id: true, title: true } } } },
+    try {
+      const [items, total] = await Promise.all([
+        prisma.reviewSecondLook.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            photo: {
+              include: {
+                driver: { select: { id: true, mobile: true, email: true } },
+                assignment: { select: { id: true, campaign: { select: { id: true, title: true } } } },
+              },
             },
+            originalReviewer: { select: { id: true, email: true } },
+            secondReviewer: { select: { id: true, email: true } },
           },
-          originalReviewer: { select: { id: true, email: true } },
-          secondReviewer: { select: { id: true, email: true } },
-        },
-      }),
-      prisma.reviewSecondLook.count({ where }),
-    ]);
-
-    return { items, total, page, limit };
+        }),
+        prisma.reviewSecondLook.count({ where }),
+      ]);
+      return { items, total, page, limit };
+    } catch {
+      return { items: [], total: 0, page, limit };
+    }
   }
 
   static async decideSecondLook(params: {
@@ -194,10 +230,14 @@ export class PilotAdminService {
     if (params.cityName) where.cityName = params.cityName;
     if (params.status) where.status = params.status;
 
-    return prisma.printShop.findMany({
-      where,
-      orderBy: { name: 'asc' },
-    });
+    try {
+      return await prisma.printShop.findMany({
+        where,
+        orderBy: { name: 'asc' },
+      });
+    } catch {
+      return [];
+    }
   }
 
   static async createPrintShop(input: {

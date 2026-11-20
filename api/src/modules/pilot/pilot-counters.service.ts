@@ -85,28 +85,58 @@ export class PilotCountersService {
     });
     const todayPayoutsPaise = payoutAggregate._sum?.amountPaise ?? BigInt(0);
 
-    // 4. Read configured caps from Settings table
-    const [
-      maxDrivers,
-      maxCompanies,
-      maxActiveCampaigns,
-      maxSlotsPerCampaign,
-      maxTotalEscrowPaise,
-      maxDailyPayoutsPaise,
-      maxDriverDailyPayoutPaise,
-      isInviteOnlyDrivers,
-      isInviteOnlyCompanies,
-    ] = await Promise.all([
-      this.getSettingNumber(SETTING_KEYS.PILOT_MAX_DRIVERS, 50),
-      this.getSettingNumber(SETTING_KEYS.PILOT_MAX_COMPANIES, 10),
-      this.getSettingNumber(SETTING_KEYS.PILOT_MAX_ACTIVE_CAMPAIGNS, 5),
-      this.getSettingNumber(SETTING_KEYS.PILOT_MAX_SLOTS_PER_CAMPAIGN, 20),
-      this.getSettingBigInt(SETTING_KEYS.PILOT_MAX_TOTAL_ESCROW_PAISE, BigInt(50000000)), // ₹5,00,000
-      this.getSettingBigInt(SETTING_KEYS.PILOT_MAX_PAYOUT_PER_DAY_PAISE, BigInt(10000000)), // ₹1,00,000
-      this.getSettingBigInt(SETTING_KEYS.PILOT_MAX_WITHDRAWAL_PER_DRIVER_PER_DAY_PAISE, BigInt(500000)), // ₹5,000
-      prisma.setting.findUnique({ where: { key: SETTING_KEYS.PILOT_INVITE_ONLY } }).then((s) => (s ? Boolean(s.value) : true)),
-      prisma.setting.findUnique({ where: { key: SETTING_KEYS.PILOT_INVITE_ONLY } }).then((s) => (s ? Boolean(s.value) : true)),
-    ]);
+    // 4. Read configured caps from Settings table in a single query
+    const settings = await prisma.setting.findMany({
+      where: {
+        key: {
+          in: [
+            SETTING_KEYS.PILOT_MAX_DRIVERS,
+            SETTING_KEYS.PILOT_MAX_COMPANIES,
+            SETTING_KEYS.PILOT_MAX_ACTIVE_CAMPAIGNS,
+            SETTING_KEYS.PILOT_MAX_SLOTS_PER_CAMPAIGN,
+            SETTING_KEYS.PILOT_MAX_TOTAL_ESCROW_PAISE,
+            SETTING_KEYS.PILOT_MAX_PAYOUT_PER_DAY_PAISE,
+            SETTING_KEYS.PILOT_MAX_WITHDRAWAL_PER_DRIVER_PER_DAY_PAISE,
+            SETTING_KEYS.PILOT_INVITE_ONLY,
+            SETTING_KEYS.PILOT_MODE_ENABLED,
+          ],
+        },
+      },
+    });
+
+    const settingMap = new Map<string, any>(settings.map((s) => [s.key, s.value]));
+
+    const getNum = (key: string, def: number): number => {
+      const v = settingMap.get(key);
+      if (v === undefined || v === null) return def;
+      const n = Number(v);
+      return isNaN(n) ? def : n;
+    };
+
+    const getBig = (key: string, def: bigint): bigint => {
+      const v = settingMap.get(key);
+      if (v === undefined || v === null) return def;
+      try {
+        return BigInt(String(v));
+      } catch {
+        return def;
+      }
+    };
+
+    const maxDrivers = getNum(SETTING_KEYS.PILOT_MAX_DRIVERS, 50);
+    const maxCompanies = getNum(SETTING_KEYS.PILOT_MAX_COMPANIES, 10);
+    const maxActiveCampaigns = getNum(SETTING_KEYS.PILOT_MAX_ACTIVE_CAMPAIGNS, 5);
+    const maxSlotsPerCampaign = getNum(SETTING_KEYS.PILOT_MAX_SLOTS_PER_CAMPAIGN, 20);
+    const maxTotalEscrowPaise = getBig(SETTING_KEYS.PILOT_MAX_TOTAL_ESCROW_PAISE, BigInt(50000000)); // ₹5,00,000
+    const maxDailyPayoutsPaise = getBig(SETTING_KEYS.PILOT_MAX_PAYOUT_PER_DAY_PAISE, BigInt(10000000)); // ₹1,00,000
+    const maxDriverDailyPayoutPaise = getBig(SETTING_KEYS.PILOT_MAX_WITHDRAWAL_PER_DRIVER_PER_DAY_PAISE, BigInt(500000)); // ₹5,000
+    const isInviteOnlyDrivers = settingMap.has(SETTING_KEYS.PILOT_INVITE_ONLY)
+      ? Boolean(settingMap.get(SETTING_KEYS.PILOT_INVITE_ONLY))
+      : true;
+    const isInviteOnlyCompanies = isInviteOnlyDrivers;
+    const isPilotActive = settingMap.has(SETTING_KEYS.PILOT_MODE_ENABLED)
+      ? Boolean(settingMap.get(SETTING_KEYS.PILOT_MODE_ENABLED))
+      : true;
 
     return {
       activeDrivers,
@@ -123,7 +153,7 @@ export class PilotCountersService {
       maxDriverDailyPayoutPaise: maxDriverDailyPayoutPaise.toString(),
       isInviteOnlyDrivers,
       isInviteOnlyCompanies,
-      isPilotActive: await this.isPilotModeActive(),
+      isPilotActive,
     };
   }
 
