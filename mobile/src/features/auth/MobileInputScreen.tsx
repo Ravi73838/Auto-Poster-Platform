@@ -54,7 +54,20 @@ export function MobileInputScreen({ onChangeLanguage, onLoginSuccess }: Props) {
       onLoginSuccess?.();
     } catch (err: unknown) {
       if (err instanceof ApiError) {
-        setError(t(`errors:${err.code}`, { defaultValue: err.message }));
+        const details = err.details as {
+          fieldErrors?: Record<string, string[]>;
+          formErrors?: string[];
+          issues?: Array<{ message?: string }>;
+        } | null;
+
+        const firstFieldError = details?.fieldErrors
+          ? Object.values(details.fieldErrors).flat()[0]
+          : undefined;
+        const firstFormError = details?.formErrors?.[0];
+        const firstIssue = Array.isArray(details?.issues) ? details.issues[0]?.message : undefined;
+
+        const specificMsg = firstFieldError || firstFormError || firstIssue;
+        setError(specificMsg || t(`errors:${err.code}`, { defaultValue: err.message }));
       } else {
         setError(t('errors:AUTH_FAILED', { defaultValue: 'Authentication failed. Please check credentials and try again.' }));
       }
@@ -118,7 +131,11 @@ export function MobileInputScreen({ onChangeLanguage, onLoginSuccess }: Props) {
           <TextInput
             style={styles.passwordInput}
             secureTextEntry={!showPassword}
-            placeholder={t('auth:password', { defaultValue: 'Password' })}
+            placeholder={
+              isRegisterMode
+                ? t('auth:enterPasswordRegister', { defaultValue: 'Password (min. 6 characters)' })
+                : t('auth:password', { defaultValue: 'Password' })
+            }
             placeholderTextColor="#94A3B8"
             value={password}
             onChangeText={(val) => {

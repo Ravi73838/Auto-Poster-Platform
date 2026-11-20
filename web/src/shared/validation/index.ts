@@ -361,7 +361,7 @@ export type DriverOtpVerifyInput = z.infer<typeof driverOtpVerifySchema>;
 
 export const driverPasswordRegisterSchema = z.object({
   mobile: mobileSchema,
-  password: passwordSchema,
+  password: z.string().min(6, { message: 'Password must be at least 6 characters long.' }),
   language: languageSchema.optional().default('en'),
 });
 export type DriverPasswordRegisterInput = z.infer<typeof driverPasswordRegisterSchema>;
