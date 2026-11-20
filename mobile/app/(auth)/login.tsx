@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LanguageSelectScreen, MobileInputScreen } from '../../src/features/auth';
@@ -8,6 +8,13 @@ import { apiClient } from '../../src/services/api';
 export default function LoginScreen() {
   const router = useRouter();
   const [step, setStep] = useState<'language' | 'auth'>('auth');
+  const isAuthenticated = useMobileAuthStore((s) => s.isAuthenticated);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/(tabs)');
+    }
+  }, [isAuthenticated, router]);
 
   const handleLanguageSelected = () => {
     setStep('auth');

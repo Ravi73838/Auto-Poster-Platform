@@ -2,6 +2,7 @@ import { container } from './container';
 
 const REFRESH_TOKEN_KEY = 'ap_driver_refresh_token';
 const ACCESS_TOKEN_KEY = 'ap_driver_access_token';
+const USER_DATA_KEY = 'ap_driver_user_data';
 
 export async function saveSecureItem(key: string, value: string): Promise<void> {
   await container.secureStore.setItem(key, value);
@@ -24,8 +25,20 @@ export const tokenStorage = {
   getAccessToken: () => getSecureItem(ACCESS_TOKEN_KEY),
   deleteAccessToken: () => deleteSecureItem(ACCESS_TOKEN_KEY),
 
+  saveUserData: (user: any) => saveSecureItem(USER_DATA_KEY, JSON.stringify(user)),
+  getUserData: async (): Promise<any | null> => {
+    try {
+      const data = await getSecureItem(USER_DATA_KEY);
+      return data ? JSON.parse(data) : null;
+    } catch {
+      return null;
+    }
+  },
+  deleteUserData: () => deleteSecureItem(USER_DATA_KEY),
+
   clearAll: async () => {
     await deleteSecureItem(REFRESH_TOKEN_KEY);
     await deleteSecureItem(ACCESS_TOKEN_KEY);
+    await deleteSecureItem(USER_DATA_KEY);
   },
 };
