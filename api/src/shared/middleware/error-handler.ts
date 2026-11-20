@@ -37,12 +37,19 @@ export function errorHandler(
 
   if (err instanceof ZodError) {
     logger.warn({ requestId: req.id, issues: err.issues }, 'Validation error');
+    const flattened = err.flatten();
+    const firstFieldError = flattened.fieldErrors
+      ? Object.values(flattened.fieldErrors).flat()[0]
+      : undefined;
+    const firstFormError = flattened.formErrors?.[0];
+    const specificMessage = firstFieldError || firstFormError || err.issues[0]?.message || 'Validation failed';
+
     const failure: ApiFailureResponse = {
       success: false,
       error: {
         code: ERROR_CODES.VALIDATION_ERROR,
-        message: 'Validation failed',
-        details: err.flatten(),
+        message: specificMessage,
+        details: flattened,
       },
     };
     res.status(400).json(failure);

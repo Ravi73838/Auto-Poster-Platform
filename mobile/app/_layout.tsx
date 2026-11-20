@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as ScreenCapture from 'expo-screen-capture';
 import { initI18n } from '../src/i18n';
 import { MobileThemeProvider, useMobileTheme } from '../src/theme/ThemeProvider';
 import { useMobileAuthStore } from '../src/store/authStore';
@@ -36,6 +37,7 @@ export default function RootLayout() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    ScreenCapture.allowScreenCaptureAsync().catch(() => {});
     Promise.all([
       initI18n(),
       useMobileAuthStore.getState().initialize().catch(() => {}),

@@ -59,12 +59,9 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
   const [termsAgreed, setTermsAgreed] = useState(false);
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
 
-  // Prevent screenshots on sensitive KYC wizard
+  // Allow screenshots across wizard during development and testing
   useEffect(() => {
-    ScreenCapture.preventScreenCaptureAsync().catch(() => {});
-    return () => {
-      ScreenCapture.allowScreenCaptureAsync().catch(() => {});
-    };
+    ScreenCapture.allowScreenCaptureAsync().catch(() => {});
   }, []);
 
   const loadOnboardingData = useCallback(async () => {

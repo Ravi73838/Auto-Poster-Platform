@@ -51,7 +51,13 @@ export function RegisterPage() {
       });
     } catch (err: unknown) {
       if (err instanceof ApiError) {
-        setServerError(t(`errors:${err.code}`, { defaultValue: err.message }));
+        const details = err.details as {
+          fieldErrors?: Record<string, string[]>;
+          formErrors?: string[];
+        } | null;
+        const firstField = details?.fieldErrors ? Object.values(details.fieldErrors).flat()[0] : undefined;
+        const firstForm = details?.formErrors?.[0];
+        setServerError(firstField || firstForm || err.message || t(`errors:${err.code}`));
       } else {
         setServerError('Registration failed. Please check your details and try again.');
       }
@@ -110,7 +116,7 @@ export function RegisterPage() {
           <Input
             label="Password"
             type="password"
-            placeholder="Min. 10 chars, letters and digits"
+            placeholder="Min. 6 characters"
             error={errors.password?.message}
             {...register('password')}
           />

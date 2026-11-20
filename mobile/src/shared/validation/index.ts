@@ -121,16 +121,7 @@ export const COMMON_PASSWORDS = new Set([
 
 export const passwordSchema = z
   .string()
-  .min(10, { message: 'Password must be at least 10 characters long.' })
-  .refine((pwd) => /[a-zA-Z]/.test(pwd), {
-    message: 'Password must contain at least one letter.',
-  })
-  .refine((pwd) => /\d/.test(pwd), {
-    message: 'Password must contain at least one digit.',
-  })
-  .refine((pwd) => !COMMON_PASSWORDS.has(pwd.toLowerCase()), {
-    message: 'Password is too common or easily guessable.',
-  });
+  .min(6, { message: 'Password must be at least 6 characters long.' });
 
 export const indianMobilePhoneSchema = mobileSchema;
 
