@@ -71,9 +71,11 @@ export function ChangePasswordPage() {
     <div className="w-full max-w-md">
       <Card className="shadow-lg">
         <div className="text-center mb-6">
-          <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-            <KeyRound className="w-6 h-6 text-primary" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="Auto Poster"
+            className="w-16 h-16 rounded-2xl object-cover shadow-md mx-auto mb-3"
+          />
           <h2 className="text-2xl font-bold text-textPrimary">Change Password</h2>
           <p className="text-sm text-textSecondary mt-1">
             Choose a strong new password for your account

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useMobileAuthStore } from '../../store/authStore';
 import { ACCOUNT_STATUS } from '@ap/shared-constants';
@@ -28,9 +28,16 @@ export function DriverStatusHomeScreen({ onOpenSettings }: Props) {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.topBar}>
-        <View>
-          <Text style={styles.greeting}>Auto Poster Driver</Text>
-          <Text style={styles.mobileText}>{user?.mobile}</Text>
+        <View style={styles.headerBrand}>
+          <Image
+            source={require('../../../assets/logo.png')}
+            style={styles.headerLogo}
+            resizeMode="cover"
+          />
+          <View>
+            <Text style={styles.greeting}>Auto Poster Driver</Text>
+            <Text style={styles.mobileText}>{user?.mobile}</Text>
+          </View>
         </View>
         <TouchableOpacity onPress={onOpenSettings} style={styles.settingsBtn}>
           <Text style={styles.settingsBtnText}>Settings</Text>
@@ -104,6 +111,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 24,
+  },
+  headerBrand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerLogo: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
   },
   greeting: {
     fontSize: 20,

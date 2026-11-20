@@ -111,12 +111,19 @@ export function AdminLayout() {
       {/* Sidebar */}
       <aside className="w-64 border-e border-border bg-surface flex flex-col justify-between shrink-0">
         <div>
-          <div className="p-6 border-b border-border">
-            <h2 className="text-lg font-bold text-primary">{t('common:appName')}</h2>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs px-2 py-0.5 rounded bg-surfaceAlt text-textSecondary font-semibold">
-                {user?.role}
-              </span>
+          <div className="p-5 border-b border-border flex items-center gap-3">
+            <img
+              src="/logo.png"
+              alt="Auto Poster"
+              className="w-10 h-10 rounded-xl object-cover shadow-sm shrink-0"
+            />
+            <div>
+              <h2 className="text-base font-bold text-primary leading-tight">{t('common:appName')}</h2>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-surfaceAlt text-textSecondary font-semibold">
+                  {user?.role}
+                </span>
+              </div>
             </div>
           </div>
           <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-200px)]">

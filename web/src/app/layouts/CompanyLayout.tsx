@@ -53,9 +53,16 @@ export function CompanyLayout() {
       {/* Sidebar (Desktop) */}
       <aside className="hidden md:flex w-64 border-e border-border bg-surface flex-col justify-between shrink-0">
         <div>
-          <div className="p-6 border-b border-border">
-            <h2 className="text-lg font-bold text-primary">{t('common:appName')}</h2>
-            <p className="text-xs text-textSecondary mt-1">Company Portal</p>
+          <div className="p-5 border-b border-border flex items-center gap-3">
+            <img
+              src="/logo.png"
+              alt="Auto Poster"
+              className="w-10 h-10 rounded-xl object-cover shadow-sm shrink-0"
+            />
+            <div>
+              <h2 className="text-base font-bold text-primary leading-tight">{t('common:appName')}</h2>
+              <p className="text-xs text-textSecondary mt-0.5">Company Portal</p>
+            </div>
           </div>
           <nav className="p-4 space-y-1">
             {navItems.map((item) => {
@@ -101,8 +108,15 @@ export function CompanyLayout() {
       <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
         <EnvironmentRibbon />
         <header className="h-16 px-4 md:px-8 border-b border-border bg-surface flex items-center justify-between shrink-0">
-          <div className="text-sm font-medium text-textSecondary truncate">
-            {user?.email || user?.mobile}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <img
+              src="/logo.png"
+              alt="Auto Poster"
+              className="md:hidden w-8 h-8 rounded-lg object-cover shadow-sm shrink-0"
+            />
+            <div className="text-sm font-medium text-textSecondary truncate">
+              {user?.email || user?.mobile}
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <LanguageSwitcher />

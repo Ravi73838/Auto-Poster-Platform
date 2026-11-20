@@ -8,6 +8,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../services/api';
@@ -68,6 +69,14 @@ export function MobileInputScreen({ onChangeLanguage, onLoginSuccess }: Props) {
       style={styles.container}
     >
       <View style={styles.content}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('../../../assets/logo.png')}
+            style={styles.logoImage}
+            resizeMode="cover"
+          />
+        </View>
+
         <View style={styles.header}>
           <Text style={styles.title}>
             {isRegisterMode
@@ -175,6 +184,20 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     justifyContent: 'center',
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  logoImage: {
+    width: 96,
+    height: 96,
+    borderRadius: 22,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   header: {
     marginBottom: 32,
