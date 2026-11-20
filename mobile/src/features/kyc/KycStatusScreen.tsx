@@ -10,6 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useMobileTheme } from '../../theme/ThemeProvider';
 import { apiClient } from '../../services/api';
+import { useMobileAuthStore } from '../../store/authStore';
 import type { KycSubmissionStatus } from '@ap/shared-constants';
 
 export interface KycStatusScreenProps {
@@ -39,6 +40,9 @@ export function KycStatusScreen({
       setError(null);
       const res = await apiClient.getDriverKyc();
       setKycData(res);
+      if (res?.status === 'APPROVED') {
+        useMobileAuthStore.getState().refreshUser().catch(() => {});
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load verification status');
     } finally {

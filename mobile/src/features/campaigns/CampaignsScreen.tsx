@@ -26,6 +26,7 @@ export function CampaignsScreen({ onSelectCampaign, onNavigateToKyc }: Campaigns
   const { colors } = useMobileTheme();
   const { t: _t } = useTranslation(['common']);
   const user = useMobileAuthStore((s) => s.user);
+  const refreshUser = useMobileAuthStore((s) => s.refreshUser);
 
   const [campaigns, setCampaigns] = useState<DriverCampaignDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +39,7 @@ export function CampaignsScreen({ onSelectCampaign, onNavigateToKyc }: Campaigns
   const fetchCampaigns = useCallback(async () => {
     try {
       setError(null);
+      refreshUser().catch(() => {});
       const res = await apiClient.listDriverCampaigns({
         sort: selectedSort,
         limit: 20,

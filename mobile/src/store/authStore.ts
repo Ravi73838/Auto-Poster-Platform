@@ -18,6 +18,7 @@ interface MobileAuthState {
   login: (res: LoginResponse) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (user: AuthUser) => void;
+  refreshUser: () => Promise<AuthUser | null>;
   registerPushToken: (expoToken: string) => Promise<void>;
 }
 
@@ -191,6 +192,20 @@ export const useMobileAuthStore = create<MobileAuthState>((set) => ({
   updateUser: (user) => {
     tokenStorage.saveUserData(user).catch(() => {});
     set({ user });
+  },
+
+  refreshUser: async () => {
+    try {
+      const me = await apiClient.getMe();
+      if (me?.user) {
+        await tokenStorage.saveUserData(me.user);
+        set({ user: me.user });
+        return me.user;
+      }
+    } catch {
+      // Ignore network errors during silent refresh
+    }
+    return null;
   },
 
   registerPushToken: async (expoToken: string) => {

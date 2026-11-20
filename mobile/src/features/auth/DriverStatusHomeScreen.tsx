@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, RefreshControl } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useMobileAuthStore } from '../../store/authStore';
 import { ACCOUNT_STATUS } from '@ap/shared-constants';
@@ -13,6 +13,21 @@ interface Props {
 export function DriverStatusHomeScreen({ onOpenSettings, onNavigateToKyc, onNavigateToCampaigns }: Props) {
   const { t: _t } = useTranslation(['common', 'status']);
   const user = useMobileAuthStore((s) => s.user);
+  const refreshUser = useMobileAuthStore((s) => s.refreshUser);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshUser();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refreshUser]);
+
+  useEffect(() => {
+    refreshUser().catch(() => {});
+  }, [refreshUser]);
 
   const getStatusColor = (status?: string) => {
     switch (status) {
@@ -27,7 +42,13 @@ export function DriverStatusHomeScreen({ onOpenSettings, onNavigateToKyc, onNavi
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} colors={['#2563EB']} />
+      }
+    >
       {/* Header */}
       <View style={styles.topBar}>
         <View style={styles.headerBrand}>
@@ -48,7 +69,12 @@ export function DriverStatusHomeScreen({ onOpenSettings, onNavigateToKyc, onNavi
 
       {/* Account Status Card */}
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>Account Status</Text>
+        <View style={styles.statusHeaderRow}>
+          <Text style={styles.cardLabel}>Account Status</Text>
+          <TouchableOpacity onPress={handleRefresh} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Text style={styles.refreshText}>{isRefreshing ? 'Refreshing...' : '↻ Refresh Status'}</Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.statusBadge}>
           <View
             style={[
@@ -198,7 +224,17 @@ const styles = StyleSheet.create({
     color: '#64748B',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  statusHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
+  },
+  refreshText: {
+    fontSize: 12,
+    color: '#2563EB',
+    fontWeight: '600',
   },
   statusBadge: {
     flexDirection: 'row',

@@ -37,7 +37,12 @@ export function DriverWalletScreen() {
         apiClient.getDriverWalletStatement(1, 50),
       ]);
       setWallet(walletRes);
-      setStatement(statementRes.data);
+      const entries = Array.isArray(statementRes)
+        ? statementRes
+        : Array.isArray((statementRes as any)?.data)
+        ? (statementRes as any).data
+        : [];
+      setStatement(entries);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load wallet');
     } finally {
@@ -173,15 +178,16 @@ export function DriverWalletScreen() {
       <View style={styles.statementSection}>
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Statement & Transactions</Text>
 
-        {statement.length === 0 ? (
+        {(!statement || statement.length === 0) ? (
           <View style={[styles.emptyBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
               No transactions yet. Your printing allowance and campaign daily rent will be credited here.
             </Text>
           </View>
         ) : (
-          statement.map((entry) => {
+          (statement || []).map((entry) => {
             const isCredit = entry.direction === 'CREDIT';
+            const dateVal = entry.postedAt || (entry as any).createdAt;
             return (
               <View
                 key={entry.id}
@@ -189,16 +195,18 @@ export function DriverWalletScreen() {
               >
                 <View style={styles.entryInfo}>
                   <Text style={[styles.entryDesc, { color: colors.textPrimary }]}>
-                    {entry.description || entry.refType}
+                    {entry.description || (entry as any).refType || 'Transaction'}
                   </Text>
                   <Text style={[styles.entryDate, { color: colors.textSecondary }]}>
-                    {new Date(entry.postedAt).toLocaleDateString('en-IN', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                    {dateVal
+                      ? new Date(dateVal).toLocaleDateString('en-IN', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                      : ''}
                   </Text>
                 </View>
                 <View style={styles.entryAmountBox}>

@@ -18,7 +18,7 @@ const LANGUAGE_OPTIONS: { lang: Language; label: string }[] = [
 export default function ProfileScreen() {
   const { colors, theme, setTheme } = useMobileTheme();
   const { t, i18n } = useTranslation(['settings', 'common', 'auth']);
-  const { user, logout } = useMobileAuthStore();
+  const { user, logout, refreshUser } = useMobileAuthStore();
   const router = useRouter();
 
   const currentLang = (i18n.language?.slice(0, 2) as Language) || LANGUAGES.EN;
@@ -33,6 +33,7 @@ export default function ProfileScreen() {
   const loadSessions = async () => {
     setIsLoadingSessions(true);
     try {
+      refreshUser().catch(() => {});
       const data = await apiClient.listSessions();
       setSessions(data);
     } catch {
