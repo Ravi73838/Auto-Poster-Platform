@@ -48,8 +48,8 @@ export class DriverController {
     try {
       if (!req.auth) throw new AppError(ERROR_CODES.UNAUTHORIZED, 'Unauthorized', 401);
       const input = driverDocumentInputSchema.parse(req.body);
-      await DriverService.addDocument(req.auth.userId, input);
-      res.status(201).json({ success: true, message: 'Document added' });
+      const doc = await DriverService.addDocument(req.auth.userId, input);
+      res.status(201).json({ success: true, message: 'Document added', data: doc });
     } catch (err) {
       next(err);
     }

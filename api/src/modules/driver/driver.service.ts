@@ -433,7 +433,7 @@ export class DriverService {
   /**
    * Uploads and links a confirmed KYC document to the driver's current documents.
    */
-  static async addDocument(userId: string, input: DriverDocumentInput): Promise<void> {
+  static async addDocument(userId: string, input: DriverDocumentInput): Promise<{ id: string; type: string; status: string }> {
     await this.assertNotUnderReview(userId);
 
     const file = await prisma.uploadedFile.findUnique({
@@ -467,7 +467,7 @@ export class DriverService {
       where: { userId },
     });
 
-    await prisma.$transaction(async (tx) => {
+    const created = await prisma.$transaction(async (tx) => {
       // Mark existing current document of this type as not current
       await tx.document.updateMany({
         where: {
@@ -479,7 +479,7 @@ export class DriverService {
       });
 
       // Create new current document
-      await tx.document.create({
+      return tx.document.create({
         data: {
           userId,
           vehicleId: profile?.currentVehicleId ?? null,
@@ -492,6 +492,12 @@ export class DriverService {
         },
       });
     });
+
+    return {
+      id: created.id,
+      type: created.documentType,
+      status: created.status,
+    };
   }
 
   /**
