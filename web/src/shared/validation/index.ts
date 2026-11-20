@@ -360,17 +360,24 @@ export const driverOtpVerifySchema = z.object({
 export type DriverOtpVerifyInput = z.infer<typeof driverOtpVerifySchema>;
 
 export const driverPasswordRegisterSchema = z.object({
+  name: z.string().trim().min(2, { message: 'Name must be at least 2 characters long.' }).optional(),
   mobile: mobileSchema,
+  email: emailSchema.optional().or(z.literal('')),
   password: z.string().min(6, { message: 'Password must be at least 6 characters long.' }),
   language: languageSchema.optional().default('en'),
 });
 export type DriverPasswordRegisterInput = z.infer<typeof driverPasswordRegisterSchema>;
 
-export const driverPasswordLoginSchema = z.object({
-  mobile: mobileSchema,
-  password: z.string().min(1, { message: 'Password is required' }),
-  device: deviceMetadataSchema.optional(),
-});
+export const driverPasswordLoginSchema = z
+  .object({
+    identifier: z.string().trim().min(1, { message: 'Mobile number or email is required' }).optional(),
+    mobile: z.string().trim().optional(),
+    password: z.string().min(1, { message: 'Password is required' }),
+    device: deviceMetadataSchema.optional(),
+  })
+  .refine((data) => Boolean(data.identifier || data.mobile), {
+    message: 'Mobile number or email is required',
+  });
 export type DriverPasswordLoginInput = z.infer<typeof driverPasswordLoginSchema>;
 
 export const adminUserResetPasswordSchema = z.object({
@@ -389,6 +396,7 @@ export const stepUpVerifySchema = z
 export type StepUpVerifyInput = z.infer<typeof stepUpVerifySchema>;
 
 export const companyRegisterSchema = z.object({
+  name: z.string().trim().min(2, { message: 'Name must be at least 2 characters long.' }).optional(),
   email: emailSchema,
   mobile: mobileSchema,
   password: passwordSchema,
@@ -402,10 +410,15 @@ export const companyVerifyMobileSchema = z.object({
 });
 export type CompanyVerifyMobileInput = z.infer<typeof companyVerifyMobileSchema>;
 
-export const companyLoginSchema = z.object({
-  email: emailSchema,
-  password: z.string().min(1, { message: 'Password is required' }),
-});
+export const companyLoginSchema = z
+  .object({
+    identifier: z.string().trim().min(1, { message: 'Email or mobile number is required' }).optional(),
+    email: z.string().trim().optional(),
+    password: z.string().min(1, { message: 'Password is required' }),
+  })
+  .refine((data) => Boolean(data.identifier || data.email), {
+    message: 'Email or mobile number is required',
+  });
 export type CompanyLoginInput = z.infer<typeof companyLoginSchema>;
 
 export const adminLoginSchema = z.object({

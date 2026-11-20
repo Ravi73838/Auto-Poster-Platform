@@ -198,6 +198,51 @@ describe('AG-1: Simplified Authentication Suite (AUTH_OTP_ENABLED = false)', () 
       expect(res.body.data.user.role).toBe(ROLES.DRIVER);
     });
 
+    it('registers driver with name, mobile, email and allows login with both email and mobile', async () => {
+      const fullDriverMobile = '+919876541122';
+      const fullDriverEmail = 'driver.test@autoposter.com';
+      const regRes = await request(app)
+        .post('/api/v1/auth/driver/register')
+        .send({
+          name: 'Ramesh Patel',
+          mobile: fullDriverMobile,
+          email: fullDriverEmail,
+          password: 'Password123!',
+        });
+      expect(regRes.status).toBe(201);
+      expect(regRes.body.success).toBe(true);
+
+      // Verify DB record has full name in driverProfile
+      const dbUser = await prisma.user.findUnique({
+        where: { mobile: fullDriverMobile },
+        include: { driverProfile: true },
+      });
+      expect(dbUser?.driverProfile?.fullName).toBe('Ramesh Patel');
+      expect(dbUser?.email).toBe(fullDriverEmail);
+
+      // Login using email
+      const emailLoginRes = await request(app)
+        .post('/api/v1/auth/driver/login')
+        .send({
+          identifier: fullDriverEmail,
+          password: 'Password123!',
+        });
+      expect(emailLoginRes.status).toBe(200);
+      expect(emailLoginRes.body.success).toBe(true);
+      expect(emailLoginRes.body.data.accessToken).toBeDefined();
+
+      // Login using mobile
+      const mobileLoginRes = await request(app)
+        .post('/api/v1/auth/driver/login')
+        .send({
+          identifier: fullDriverMobile,
+          password: 'Password123!',
+        });
+      expect(mobileLoginRes.status).toBe(200);
+      expect(mobileLoginRes.body.success).toBe(true);
+      expect(mobileLoginRes.body.data.accessToken).toBeDefined();
+    });
+
     it('rejects driver login with wrong password and locks account after repeated attempts', async () => {
       const attackerMobile = '+919876540099';
       // Register test driver

@@ -26,6 +26,7 @@ export function RegisterPage() {
   } = useForm<CompanyRegisterInput>({
     resolver: zodResolver(companyRegisterSchema),
     defaultValues: {
+      name: '',
       email: '',
       mobile: '',
       password: '',
@@ -82,6 +83,14 @@ export function RegisterPage() {
         ) : null}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <Input
+            label="Full Name / Company Name"
+            type="text"
+            placeholder="John Doe / Acme Enterprises"
+            error={errors.name?.message}
+            {...register('name')}
+          />
+
           <Input
             label="Business Email"
             type="email"

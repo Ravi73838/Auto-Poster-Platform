@@ -30,7 +30,7 @@ export function LoginPage() {
   } = useForm<CompanyLoginInput>({
     resolver: zodResolver(companyLoginSchema),
     defaultValues: {
-      email: '',
+      identifier: '',
       password: '',
     },
   });
@@ -93,11 +93,11 @@ export function LoginPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
-            label="Email Address"
-            type="email"
-            placeholder="name@company.com"
-            error={errors.email?.message}
-            {...register('email')}
+            label="Email Address or Mobile Number"
+            type="text"
+            placeholder="name@company.com or 9876543210"
+            error={errors.identifier?.message}
+            {...register('identifier')}
           />
 
           <div>
