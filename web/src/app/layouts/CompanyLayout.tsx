@@ -49,9 +49,9 @@ export function CompanyLayout() {
   ];
 
   return (
-    <div className="min-h-screen flex bg-background text-textPrimary">
+    <div className="h-screen w-screen flex bg-background text-textPrimary overflow-hidden">
       {/* Sidebar (Desktop) */}
-      <aside className="hidden md:flex w-64 border-e border-border bg-surface flex-col shrink-0 h-screen sticky top-0 overflow-y-auto">
+      <aside className="hidden md:flex w-64 border-e border-border bg-surface flex-col shrink-0 h-full overflow-hidden select-none">
         <div className="p-5 border-b border-border flex items-center gap-3 shrink-0">
           <img
             src="/logo.png"
@@ -63,7 +63,7 @@ export function CompanyLayout() {
             <p className="text-xs text-textSecondary mt-0.5">Company Portal</p>
           </div>
         </div>
-        <nav className="p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto min-h-0">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -78,8 +78,8 @@ export function CompanyLayout() {
                   }`
                 }
               >
-                <Icon className="w-4 h-4" />
-                <span>{item.label}</span>
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="truncate">{item.label}</span>
               </NavLink>
             );
           })}
@@ -96,14 +96,14 @@ export function CompanyLayout() {
             onClick={handleLogout}
             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-surfaceAlt rounded-lg transition-colors"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-4 h-4 shrink-0" />
             <span>{t('auth:logout')}</span>
           </button>
         </div>
       </aside>
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden pb-16 md:pb-0">
         <EnvironmentRibbon />
         <header className="h-16 px-4 md:px-8 border-b border-border bg-surface flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -132,7 +132,7 @@ export function CompanyLayout() {
 
         {/* Account status banners */}
         {user?.status === ACCOUNT_STATUS.PENDING ? (
-          <div className="bg-warning/10 border-b border-warning/20 px-4 md:px-8 py-3 flex items-center gap-3 text-warning">
+          <div className="bg-warning/10 border-b border-warning/20 px-4 md:px-8 py-3 flex items-center gap-3 text-warning shrink-0">
             <Clock className="w-5 h-5 shrink-0" />
             <p className="text-sm">
               Your company account is pending review by the admin team. Certain features will be enabled once approved.
@@ -141,7 +141,7 @@ export function CompanyLayout() {
         ) : null}
 
         {user?.status === ACCOUNT_STATUS.SUSPENDED ? (
-          <div className="bg-danger/10 border-b border-danger/20 px-4 md:px-8 py-3 flex items-center gap-3 text-danger">
+          <div className="bg-danger/10 border-b border-danger/20 px-4 md:px-8 py-3 flex items-center gap-3 text-danger shrink-0">
             <AlertCircle className="w-5 h-5 shrink-0" />
             <p className="text-sm">
               Your account has been suspended. Modification actions are disabled. Please contact support.
@@ -149,7 +149,7 @@ export function CompanyLayout() {
           </div>
         ) : null}
 
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto min-h-0">
           <Outlet />
         </main>
       </div>
