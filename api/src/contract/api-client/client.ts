@@ -686,7 +686,14 @@ export class ApiClient {
     if (query?.limit) params.append('limit', String(query.limit));
     if (query?.cursor) params.append('cursor', query.cursor);
     const qs = params.toString();
-    return this.request(`driver/campaigns${qs ? `?${qs}` : ''}`, { method: 'GET' });
+    const res = await this.request<any>(`driver/campaigns${qs ? `?${qs}` : ''}`, { method: 'GET' });
+    if (Array.isArray(res)) {
+      return { items: res, isBanned: false };
+    }
+    if (res && Array.isArray(res.items)) {
+      return { items: res.items, isBanned: Boolean(res.isBanned) };
+    }
+    return { items: [], isBanned: false };
   }
 
   async getDriverCampaignDetail(id: string): Promise<DriverCampaignDto> {

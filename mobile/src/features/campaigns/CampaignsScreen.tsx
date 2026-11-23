@@ -44,15 +44,22 @@ export function CampaignsScreen({ onSelectCampaign, onNavigateToKyc }: Campaigns
         sort: selectedSort,
         limit: 20,
       });
-      setCampaigns(res.items || []);
-      setIsBanned(Boolean(res.isBanned));
+      const items: DriverCampaignDto[] = Array.isArray(res)
+        ? res
+        : Array.isArray((res as any)?.items)
+        ? (res as any).items
+        : Array.isArray((res as any)?.data)
+        ? (res as any).data
+        : [];
+      setCampaigns(items);
+      setIsBanned(Boolean((res as any)?.isBanned));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load campaigns');
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [selectedSort]);
+  }, [selectedSort, refreshUser]);
 
   useEffect(() => {
     fetchCampaigns();
