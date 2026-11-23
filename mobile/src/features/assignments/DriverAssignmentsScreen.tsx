@@ -35,9 +35,17 @@ export function DriverAssignmentsScreen({
     try {
       setError(null);
       const res = await apiClient.listDriverAssignments();
-      setAssignments(res.items);
+      const items = Array.isArray(res)
+        ? res
+        : Array.isArray((res as any)?.items)
+        ? (res as any).items
+        : Array.isArray((res as any)?.data)
+        ? (res as any).data
+        : [];
+      setAssignments(items);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load assignments');
+      setAssignments([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -86,11 +94,12 @@ export function DriverAssignmentsScreen({
     );
   }
 
-  const activeAssignment = assignments.find((a) =>
+  const assignmentList = Array.isArray(assignments) ? assignments : [];
+  const activeAssignment = assignmentList.find((a) =>
     ['RESERVED', 'INSTALLING', 'INSTALL_SUBMITTED', 'INSTALL_APPROVED', 'RUNNING'].includes(a.status),
   );
 
-  const pastAssignments = assignments.filter((a) =>
+  const pastAssignments = assignmentList.filter((a) =>
     ['COMPLETED', 'PAID', 'RELEASED', 'TERMINATED', 'RESERVATION_EXPIRED'].includes(a.status),
   );
 

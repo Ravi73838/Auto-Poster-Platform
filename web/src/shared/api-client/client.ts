@@ -842,7 +842,14 @@ export class ApiClient {
     const params = new URLSearchParams();
     if (query?.status) params.append('status', query.status);
     const qs = params.toString();
-    return this.request(`driver/assignments${qs ? `?${qs}` : ''}`, { method: 'GET' });
+    const res = await this.request<any>(`driver/assignments${qs ? `?${qs}` : ''}`, { method: 'GET' });
+    if (Array.isArray(res)) {
+      return { items: res };
+    }
+    if (res && Array.isArray(res.items)) {
+      return { items: res.items };
+    }
+    return { items: [] };
   }
 
   async getDriverAssignment(assignmentId: string): Promise<AssignmentDetailDto> {
