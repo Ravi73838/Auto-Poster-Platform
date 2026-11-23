@@ -86,7 +86,6 @@ export class S3StorageProvider implements StorageProvider {
       Bucket: this.bucket,
       Key: key,
       ContentType: mimeType,
-      ContentLength: sizeBytes,
     });
 
     const uploadUrl = await getSignedUrl(this.client, command, {

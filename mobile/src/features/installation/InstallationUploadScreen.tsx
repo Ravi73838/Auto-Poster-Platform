@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import { useMobileTheme } from '../../theme/ThemeProvider';
 import { apiClient } from '../../services/api';
 import { container } from '../../services/container';
@@ -189,41 +190,48 @@ export function InstallationUploadScreen({
         // Fallback to default location
       }
 
-      // 2. Presign upload
+      // 2. Measure actual file size
+      let fileSize = 250000;
+      try {
+        const fileInfo = await FileSystem.getInfoAsync(selectedImageUri);
+        if (fileInfo.exists && typeof fileInfo.size === 'number' && fileInfo.size > 0) {
+          fileSize = fileInfo.size;
+        }
+      } catch {
+        // Fallback
+      }
+
+      // 3. Presign upload
       const uploadInit = await apiClient.presignUpload({
         purpose: 'INSTALLATION_PHOTO',
         mimeType: 'image/jpeg',
-        sizeBytes: 250000,
+        sizeBytes: fileSize,
         fileName: 'auto_installation.jpg',
       });
 
-      // 3. Upload binary to storage
-      if (uploadInit.uploadUrl) {
-        try {
-          const resp = await fetch(selectedImageUri);
-          const blob = await resp.blob();
-          await fetch(uploadInit.uploadUrl, {
-            method: 'PUT',
-            body: blob,
-            headers: { 'Content-Type': 'image/jpeg' },
-          });
-        } catch {
-          // Fall through
-        }
+      // 4. Upload binary to storage using FileSystem.uploadAsync
+      const uploadResult = await FileSystem.uploadAsync(uploadInit.uploadUrl, selectedImageUri, {
+        httpMethod: 'PUT',
+        uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+        headers: {
+          'Content-Type': 'image/jpeg',
+        },
+      });
+
+      if (uploadResult.status < 200 || uploadResult.status >= 300) {
+        throw new Error(
+          `Failed to upload photo to storage (Status ${uploadResult.status}): ${uploadResult.body || ''}`,
+        );
       }
 
-      // 4. Confirm upload
+      // 5. Confirm upload
       const fileId = uploadInit.fileId || uploadInit.fileKey;
-      try {
-        await apiClient.confirmUpload({
-          fileId,
-          fileKey: uploadInit.fileKey,
-        });
-      } catch {
-        // Confirm might be auto or already handled
-      }
+      await apiClient.confirmUpload({
+        fileId,
+        fileKey: uploadInit.fileKey,
+      });
 
-      // 5. Submit installation verification proof
+      // 6. Submit installation verification proof
       await apiClient.submitInstallationPhoto(assignmentId, {
         uploadedFileId: fileId,
         latitude: lat,
