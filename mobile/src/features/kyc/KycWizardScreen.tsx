@@ -92,7 +92,12 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
         if (data.vehicle.ownerMobile) setOwnerMobile(data.vehicle.ownerMobile);
       }
       if (data.documents) {
-        setDocuments(data.documents);
+        const mapped = (data.documents || []).map((d: any) => ({
+          id: d?.id ?? `doc_${Date.now()}`,
+          type: d?.documentType === 'DRIVING_LICENCE' ? 'DRIVING_LICENSE' : (d?.type ?? d?.documentType ?? ''),
+          status: d?.status ?? 'ATTACHED',
+        }));
+        setDocuments(mapped);
       }
       if (data.payoutDetails) {
         setPayoutType(data.payoutDetails.type);
@@ -232,7 +237,14 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
 
       const docId = doc?.id || fileId || `doc_${Date.now()}`;
       setDocuments((prev) => [
-        ...(prev || []).filter((d) => d && d.type !== type),
+        ...(prev || []).filter((d) => {
+          if (!d) return false;
+          const currentType = d.type || (d as any).documentType;
+          if (type === 'DRIVING_LICENSE' || type === 'DRIVING_LICENCE') {
+            return currentType !== 'DRIVING_LICENSE' && currentType !== 'DRIVING_LICENCE';
+          }
+          return currentType !== type;
+        }),
         { id: docId, type, status: 'ATTACHED' },
       ]);
     } catch (err) {
@@ -243,8 +255,16 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
   };
 
   const handleDocumentsNext = () => {
-    const hasDl = documents.some((d) => d.type === 'DRIVING_LICENSE');
-    const hasRc = documents.some((d) => d.type === 'VEHICLE_RC');
+    const hasDl = documents.some((d) => {
+      if (!d) return false;
+      const t = d.type || (d as any).documentType;
+      return t === 'DRIVING_LICENSE' || t === 'DRIVING_LICENCE';
+    });
+    const hasRc = documents.some((d) => {
+      if (!d) return false;
+      const t = d.type || (d as any).documentType;
+      return t === 'VEHICLE_RC';
+    });
     if (!hasDl || !hasRc) {
       const missing = [];
       if (!hasDl) missing.push('Driving License (DL)');
@@ -609,7 +629,14 @@ export function KycWizardScreen({ onSuccess, onCancel }: KycWizardScreenProps) {
             </Text>
 
             {['DRIVING_LICENSE', 'VEHICLE_RC'].map((docType) => {
-              const isAttached = documents.some((d) => d.type === docType);
+              const isAttached = documents.some((d) => {
+                if (!d) return false;
+                const t = d.type || (d as any).documentType;
+                if (docType === 'DRIVING_LICENSE') {
+                  return t === 'DRIVING_LICENSE' || t === 'DRIVING_LICENCE';
+                }
+                return t === docType;
+              });
               return (
                 <View
                   key={docType}
