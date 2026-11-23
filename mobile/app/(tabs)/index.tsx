@@ -9,6 +9,7 @@ export default function DriverDashboardScreen() {
       onOpenSettings={() => router.push('/(tabs)/profile')}
       onNavigateToKyc={() => router.push('/(onboarding)/wizard')}
       onNavigateToCampaigns={() => router.push('/(tabs)/campaigns')}
+      onNavigateToAssignments={() => router.push('/assignments')}
     />
   );
 }

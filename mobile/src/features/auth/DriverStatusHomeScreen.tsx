@@ -8,9 +8,10 @@ interface Props {
   onOpenSettings: () => void;
   onNavigateToKyc?: () => void;
   onNavigateToCampaigns?: () => void;
+  onNavigateToAssignments?: () => void;
 }
 
-export function DriverStatusHomeScreen({ onOpenSettings, onNavigateToKyc, onNavigateToCampaigns }: Props) {
+export function DriverStatusHomeScreen({ onOpenSettings, onNavigateToKyc, onNavigateToCampaigns, onNavigateToAssignments }: Props) {
   const { t: _t } = useTranslation(['common', 'status']);
   const user = useMobileAuthStore((s) => s.user);
   const refreshUser = useMobileAuthStore((s) => s.refreshUser);
@@ -145,15 +146,21 @@ export function DriverStatusHomeScreen({ onOpenSettings, onNavigateToKyc, onNavi
         </View>
       ) : null}
 
-      {/* Daily Photo Reminder Placeholder */}
+      {/* My Active Campaigns & Photo Upload */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Daily Proof of Poster</Text>
+        <Text style={styles.cardTitle}>My Campaigns & Proof Photos</Text>
         <Text style={styles.cardText}>
-          Upload a live photo with GPS every day between 06:00 and 22:00 to earn rent.
+          View your reserved slots, download print-ready artwork, and upload installation or daily verification photos.
         </Text>
-        <View style={styles.bannerPlaceholder}>
-          <Text style={styles.bannerText}>Daily camera check opens in Phase 5</Text>
-        </View>
+        {onNavigateToAssignments ? (
+          <TouchableOpacity
+            style={[styles.browseCampaignsBtn, { backgroundColor: '#10B981', marginTop: 12 }]}
+            onPress={onNavigateToAssignments}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.browseCampaignsBtnText}>📷 Open My Campaigns & Camera →</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
     </ScrollView>
   );

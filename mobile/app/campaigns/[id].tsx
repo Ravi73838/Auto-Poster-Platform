@@ -12,6 +12,9 @@ export default function DriverCampaignDetailRoute() {
       onBack={() => {
         router.back();
       }}
+      onSelectSuccess={(assignmentId) => {
+        router.push(`/assignments/${assignmentId}/install`);
+      }}
       onNavigateToKyc={() => {
         router.push('/(onboarding)/wizard');
       }}
