@@ -54,11 +54,7 @@ export class CampaignPaymentController {
 
   static async listAllCompanyPayments(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const member = await prisma.companyMember.findFirst({
-        where: { userId: req.auth!.userId, status: 'ACTIVE' },
-        include: { company: true },
-      });
-      const effectiveCompanyId = member?.company?.userId ?? req.auth!.userId;
+      const effectiveCompanyId = req.auth!.userId;
 
       const payments = await prisma.campaignPayment.findMany({
         where: {
@@ -78,8 +74,8 @@ export class CampaignPaymentController {
             id: p.id,
             campaignId: p.campaignId,
             campaign: p.campaign,
-            amountPaise: p.amountPaise.toString(),
-            gatewayFeePaise: p.gatewayFeePaise.toString(),
+            amountPaise: p.amountPaise != null ? p.amountPaise.toString() : '0',
+            gatewayFeePaise: p.gatewayFeePaise != null ? p.gatewayFeePaise.toString() : '0',
             currency: p.currency,
             gateway: p.gateway,
             gatewayOrderId: p.gatewayOrderId,
@@ -88,11 +84,11 @@ export class CampaignPaymentController {
             method: p.method,
             capturedAt: p.capturedAt,
             createdAt: p.createdAt,
-            taxDocuments: p.taxDocuments.map((td) => ({
+            taxDocuments: (p.taxDocuments || []).map((td) => ({
               id: td.id,
               documentNumber: td.documentNumber,
               documentType: td.documentType,
-              totalAmountPaise: td.totalAmountPaise.toString(),
+              totalAmountPaise: td.totalAmountPaise != null ? td.totalAmountPaise.toString() : '0',
             })),
           })),
         },
