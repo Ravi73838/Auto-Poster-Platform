@@ -24,6 +24,7 @@ export function createApp(): Express {
   const app = express();
 
   app.set('trust proxy', 1);
+  app.set('etag', false);
 
   app.use(helmet());
   app.use(
@@ -58,6 +59,14 @@ export function createApp(): Express {
       version: '0.1.0',
       health: '/api/v1/health',
     });
+  });
+
+  // Disable caching for dynamic API responses to prevent 304 empty payload issues on mobile/web
+  app.use('/api', (_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
   });
 
   app.use('/api/v1', createApiRouter());

@@ -243,6 +243,10 @@ export class ApiClient {
       headers.set('Accept-Language', language);
     }
 
+    if (!headers.has('Cache-Control')) {
+      headers.set('Cache-Control', 'no-cache');
+    }
+
     if (this.getAuthToken) {
       const token = await this.getAuthToken();
       if (token && !headers.has('Authorization')) {
