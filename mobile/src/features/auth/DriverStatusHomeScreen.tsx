@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, RefreshCon
 import { useTranslation } from 'react-i18next';
 import { useMobileAuthStore } from '../../store/authStore';
 import { ACCOUNT_STATUS } from '@ap/shared-constants';
+import logoImg from '../../../assets/logo.png';
 
 interface Props {
   onOpenSettings: () => void;
@@ -12,7 +13,7 @@ interface Props {
 }
 
 export function DriverStatusHomeScreen({ onOpenSettings, onNavigateToKyc, onNavigateToCampaigns, onNavigateToAssignments }: Props) {
-  const { t: _t } = useTranslation(['common', 'status']);
+  const { t } = useTranslation(['common', 'status', 'kyc', 'campaigns', 'settings']);
   const user = useMobileAuthStore((s) => s.user);
   const refreshUser = useMobileAuthStore((s) => s.refreshUser);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -54,26 +55,26 @@ export function DriverStatusHomeScreen({ onOpenSettings, onNavigateToKyc, onNavi
       <View style={styles.topBar}>
         <View style={styles.headerBrand}>
           <Image
-            source={require('../../../assets/logo.png')}
+            source={logoImg}
             style={styles.headerLogo}
             resizeMode="cover"
           />
           <View>
-            <Text style={styles.greeting}>Auto Poster Driver</Text>
+            <Text style={styles.greeting}>{t('common:appName', { defaultValue: 'Auto Poster Driver' })}</Text>
             <Text style={styles.mobileText}>{user?.mobile}</Text>
           </View>
         </View>
         <TouchableOpacity onPress={onOpenSettings} style={styles.settingsBtn}>
-          <Text style={styles.settingsBtnText}>Settings</Text>
+          <Text style={styles.settingsBtnText}>{t('settings:title', { defaultValue: 'Settings' })}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Account Status Card */}
       <View style={styles.card}>
         <View style={styles.statusHeaderRow}>
-          <Text style={styles.cardLabel}>Account Status</Text>
+          <Text style={styles.cardLabel}>{t('status:accountStatus', { defaultValue: 'Account Status' })}</Text>
           <TouchableOpacity onPress={handleRefresh} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Text style={styles.refreshText}>{isRefreshing ? 'Refreshing...' : '↻ Refresh Status'}</Text>
+            <Text style={styles.refreshText}>{isRefreshing ? t('common:loading', { defaultValue: 'Refreshing...' }) : t('common:refreshStatus', { defaultValue: '↻ Refresh Status' })}</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.statusBadge}>
@@ -89,25 +90,25 @@ export function DriverStatusHomeScreen({ onOpenSettings, onNavigateToKyc, onNavi
               { color: getStatusColor(user?.status) },
             ]}
           >
-            {user?.status || 'PENDING'}
+            {user?.status ? t(`status:account.${user.status}`, { defaultValue: user.status }) : t('status:account.PENDING', { defaultValue: 'PENDING' })}
           </Text>
         </View>
 
         {user?.status === ACCOUNT_STATUS.PENDING ? (
           <Text style={styles.statusDesc}>
-            Your documents are under review. Once approved by the moderator, you will be able to select campaigns.
+            {t('status:documentsUnderReview', { defaultValue: 'Your documents are under review. Once approved by the moderator, you will be able to select campaigns.' })}
           </Text>
         ) : null}
 
         {user?.status === ACCOUNT_STATUS.APPROVED ? (
           <Text style={styles.statusDesc}>
-            Your account is verified and active. You are eligible for campaign assignments.
+            {t('status:accountVerified', { defaultValue: 'Your account is verified and active. You are eligible for campaign assignments.' })}
           </Text>
         ) : null}
 
         {user?.status === ACCOUNT_STATUS.SUSPENDED ? (
           <Text style={styles.statusDesc}>
-            Your account has been suspended. Please check with customer support.
+            {t('status:accountSuspended', { defaultValue: 'Your account has been suspended. Please check with customer support.' })}
           </Text>
         ) : null}
       </View>
@@ -115,16 +116,16 @@ export function DriverStatusHomeScreen({ onOpenSettings, onNavigateToKyc, onNavi
       {/* KYC Compulsory Card for Unapproved Drivers */}
       {user?.status !== ACCOUNT_STATUS.APPROVED && onNavigateToKyc ? (
         <View style={[styles.card, styles.kycPromptCard]}>
-          <Text style={styles.kycPromptTitle}>⚠️ KYC Verification Compulsory</Text>
+          <Text style={styles.kycPromptTitle}>{t('kyc:verificationCompulsory', { defaultValue: '⚠️ KYC Verification Compulsory' })}</Text>
           <Text style={styles.kycPromptText}>
-            Campaign banners select karne aur monthly auto rent earn karne ke liye aapka Driving License aur RC verify hona compulsory hai.
+            {t('kyc:kycPromptDescription', { defaultValue: 'Driving License and Vehicle RC verification is mandatory to select campaigns and receive monthly auto rent.' })}
           </Text>
           <TouchableOpacity
             style={styles.kycPromptBtn}
             onPress={onNavigateToKyc}
             activeOpacity={0.8}
           >
-            <Text style={styles.kycPromptBtnText}>Complete KYC Verification →</Text>
+            <Text style={styles.kycPromptBtnText}>{t('kyc:completeVerification', { defaultValue: 'Complete KYC Verification →' })}</Text>
           </TouchableOpacity>
         </View>
       ) : null}
@@ -132,25 +133,25 @@ export function DriverStatusHomeScreen({ onOpenSettings, onNavigateToKyc, onNavi
       {/* Browse Campaigns Card */}
       {onNavigateToCampaigns ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Explore Active Campaigns</Text>
+          <Text style={styles.cardTitle}>{t('campaigns:exploreActive', { defaultValue: 'Explore Active Campaigns' })}</Text>
           <Text style={styles.cardText}>
-            View advertising banners available in your city and check prospective payouts.
+            {t('campaigns:exploreDescription', { defaultValue: 'View advertising banners available in your city and check prospective payouts.' })}
           </Text>
           <TouchableOpacity
             style={styles.browseCampaignsBtn}
             onPress={onNavigateToCampaigns}
             activeOpacity={0.8}
           >
-            <Text style={styles.browseCampaignsBtnText}>Browse Available Campaigns →</Text>
+            <Text style={styles.browseCampaignsBtnText}>{t('campaigns:browseAvailable', { defaultValue: 'Browse Available Campaigns →' })}</Text>
           </TouchableOpacity>
         </View>
       ) : null}
 
       {/* My Active Campaigns & Photo Upload */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>My Campaigns & Proof Photos</Text>
+        <Text style={styles.cardTitle}>{t('campaigns:myCampaignsTitle', { defaultValue: 'My Campaigns & Proof Photos' })}</Text>
         <Text style={styles.cardText}>
-          View your reserved slots, download print-ready artwork, and upload installation or daily verification photos.
+          {t('campaigns:myCampaignsDescription', { defaultValue: 'View your reserved slots, download print-ready artwork, and upload installation or daily verification photos.' })}
         </Text>
         {onNavigateToAssignments ? (
           <TouchableOpacity
@@ -158,7 +159,7 @@ export function DriverStatusHomeScreen({ onOpenSettings, onNavigateToKyc, onNavi
             onPress={onNavigateToAssignments}
             activeOpacity={0.8}
           >
-            <Text style={styles.browseCampaignsBtnText}>📷 Open My Campaigns & Camera →</Text>
+            <Text style={styles.browseCampaignsBtnText}>{t('campaigns:openCampaignsCamera', { defaultValue: '📷 Open My Campaigns & Camera →' })}</Text>
           </TouchableOpacity>
         ) : null}
       </View>
