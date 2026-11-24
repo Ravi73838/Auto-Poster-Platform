@@ -64,6 +64,16 @@ export async function authenticate(
     return next();
   }
 
+  const isPublicRoute =
+    req.path.endsWith('/refresh') ||
+    req.path.includes('/auth/refresh') ||
+    req.path.includes('/auth/driver/') ||
+    req.path.includes('/auth/company/login') ||
+    req.path.includes('/auth/company/register') ||
+    req.path.includes('/auth/admin/login') ||
+    req.path.includes('/health') ||
+    req.path.includes('/public');
+
   try {
     const payload = await TokenService.verifyAccessToken(token);
 
@@ -128,6 +138,9 @@ export async function authenticate(
 
     next();
   } catch (err) {
+    if (isPublicRoute) {
+      return next();
+    }
     next(err);
   }
 }

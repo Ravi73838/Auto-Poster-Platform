@@ -88,16 +88,25 @@ export function MobileInputScreen({ onChangeLanguage, onLoginSuccess }: Props) {
         return;
       }
 
-      if (/^\d+$/.test(rawId)) {
-        if (!/^[6-9]\d{9}$/.test(rawId)) {
-          setError(t('errors:INVALID_MOBILE_FORMAT', { defaultValue: 'Please enter a valid 10-digit Indian mobile number' }));
-          return;
-        }
-      } else if (rawId.includes('@')) {
+      let loginIdentifier = rawId;
+      let mobilePayload: string | undefined;
+
+      if (rawId.includes('@')) {
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawId)) {
           setError(t('errors:INVALID_EMAIL', { defaultValue: 'Please enter a valid email address' }));
           return;
         }
+        loginIdentifier = rawId.toLowerCase();
+      } else {
+        // Mobile number mode - robustly handle raw 10-digits, +91, leading 0, spaces, dashes
+        const digits = rawId.replace(/\D/g, '');
+        const last10 = digits.slice(-10);
+        if (digits.length < 10 || !/^[6-9]\d{9}$/.test(last10)) {
+          setError(t('errors:INVALID_MOBILE_FORMAT', { defaultValue: 'Please enter a valid 10-digit Indian mobile number' }));
+          return;
+        }
+        loginIdentifier = last10;
+        mobilePayload = `+91${last10}`;
       }
 
       if (!password || password.length < 1) {
@@ -108,7 +117,8 @@ export function MobileInputScreen({ onChangeLanguage, onLoginSuccess }: Props) {
       setIsLoading(true);
       try {
         const res = await apiClient.driverPasswordLogin({
-          identifier: rawId,
+          identifier: loginIdentifier,
+          mobile: mobilePayload,
           password,
         });
 

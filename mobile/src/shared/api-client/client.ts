@@ -196,6 +196,8 @@ export interface ApiClientConfig {
   getAuthToken?: () => string | null | Promise<string | null>;
   setAuthToken?: (token: string | null) => void | Promise<void>;
   getRefreshToken?: () => string | null | Promise<string | null>;
+  setRefreshToken?: (token: string | null) => void | Promise<void>;
+  onTokensRefreshed?: (tokens: AuthTokens) => void | Promise<void>;
   getLanguage?: () => Language;
   onAuthLost?: () => void;
   credentials?: 'omit' | 'same-origin' | 'include';
@@ -210,6 +212,8 @@ export class ApiClient {
   private getAuthToken?: () => string | null | Promise<string | null>;
   private setAuthToken?: (token: string | null) => void | Promise<void>;
   private getRefreshToken?: () => string | null | Promise<string | null>;
+  private setRefreshToken?: (token: string | null) => void | Promise<void>;
+  private onTokensRefreshed?: (tokens: AuthTokens) => void | Promise<void>;
   private getLanguage: () => Language;
   private onAuthLost?: () => void;
   private credentials?: 'omit' | 'same-origin' | 'include';
@@ -221,6 +225,8 @@ export class ApiClient {
     this.getAuthToken = config.getAuthToken;
     this.setAuthToken = config.setAuthToken;
     this.getRefreshToken = config.getRefreshToken;
+    this.setRefreshToken = config.setRefreshToken;
+    this.onTokensRefreshed = config.onTokensRefreshed;
     this.getLanguage = config.getLanguage ?? (() => DEFAULT_LANGUAGE);
     this.onAuthLost = config.onAuthLost;
     this.credentials = config.credentials ?? 'include';
@@ -247,9 +253,20 @@ export class ApiClient {
       headers.set('Cache-Control', 'no-cache');
     }
 
-    if (this.getAuthToken) {
+    const isPublicEndpoint =
+      path.includes('auth/refresh') ||
+      path.includes('auth/driver/otp') ||
+      path.includes('auth/driver/login') ||
+      path.includes('auth/driver/register') ||
+      path.includes('auth/company/login') ||
+      path.includes('auth/company/register') ||
+      path.includes('auth/admin/login') ||
+      path.includes('health') ||
+      path.includes('public/');
+
+    if (this.getAuthToken && !isPublicEndpoint) {
       const token = await this.getAuthToken();
-      if (token && !headers.has('Authorization')) {
+      if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
     }
@@ -293,14 +310,20 @@ export class ApiClient {
     }
 
     if (!data.success) {
-      // Check if access token expired and we can attempt single-flight refresh
+      // Check if access token expired / unauthorized and we can attempt single-flight refresh
+      const isAuthError =
+        (data.error.code === ERROR_CODES.TOKEN_EXPIRED ||
+          data.error.code === ERROR_CODES.TOKEN_INVALID ||
+          data.error.code === ERROR_CODES.UNAUTHORIZED ||
+          response.status === 401) &&
+        data.error.code !== ERROR_CODES.SESSION_EXPIRED_IDLE &&
+        data.error.code !== ERROR_CODES.ACCOUNT_BLOCKED &&
+        data.error.code !== ERROR_CODES.ACCOUNT_SUSPENDED;
+
       if (
-        data.error.code === ERROR_CODES.TOKEN_EXPIRED &&
+        isAuthError &&
         !options._isRetry &&
-        !path.includes('auth/refresh') &&
-        !path.includes('auth/driver/otp') &&
-        !path.includes('auth/company/login') &&
-        !path.includes('auth/admin/login')
+        !isPublicEndpoint
       ) {
         try {
           await this.executeRefreshToken();
@@ -430,12 +453,25 @@ export class ApiClient {
           if (this.setAuthToken) {
             await this.setAuthToken(tokens.accessToken);
           }
+          if (this.setRefreshToken && tokens.refreshToken) {
+            await this.setRefreshToken(tokens.refreshToken);
+          }
+          if (this.onTokensRefreshed) {
+            await this.onTokensRefreshed(tokens);
+          }
           return tokens;
         } catch (err) {
-          if (this.setAuthToken) {
-            await this.setAuthToken(null);
+          const isDefiniteAuthFailure =
+            err instanceof ApiError && (err.status === 401 || err.status === 403);
+          if (isDefiniteAuthFailure) {
+            if (this.setAuthToken) {
+              await this.setAuthToken(null);
+            }
+            if (this.setRefreshToken) {
+              await this.setRefreshToken(null);
+            }
+            this.onAuthLost?.();
           }
-          this.onAuthLost?.();
           throw err;
         } finally {
           this.refreshPromise = null;

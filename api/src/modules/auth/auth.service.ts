@@ -292,34 +292,55 @@ export class AuthService {
     const { password, device } = input;
     const rawIdentifier = (input.identifier || input.mobile || '').trim();
 
-    await PasswordService.checkLockout(rawIdentifier);
-
     let user;
+    let lookupKey: string;
     if (rawIdentifier.includes('@')) {
       const email = rawIdentifier.toLowerCase();
+      lookupKey = email;
+      await PasswordService.checkLockout(email);
       user = await prisma.user.findFirst({
         where: { email, role: ROLES.DRIVER, deletedAt: null },
       });
     } else {
-      const normalizedMobile = normalizeIndianMobile(rawIdentifier);
+      const cleanedDigits = rawIdentifier.replace(/\D/g, '');
+      const last10 = cleanedDigits.slice(-10);
+      lookupKey = `+91${last10}`;
+      await PasswordService.checkLockout(lookupKey);
+
+      const candidates = Array.from(
+        new Set(
+          [
+            normalizeIndianMobile(rawIdentifier),
+            `+91${last10}`,
+            last10,
+            `91${last10}`,
+            rawIdentifier,
+          ].filter(Boolean),
+        ),
+      );
+
       user = await prisma.user.findFirst({
-        where: { mobile: normalizedMobile, role: ROLES.DRIVER, deletedAt: null },
+        where: {
+          mobile: { in: candidates },
+          role: ROLES.DRIVER,
+          deletedAt: null,
+        },
       });
     }
 
     if (!user || !user.passwordHash) {
       await PasswordService.performDummyVerify(password);
-      await PasswordService.recordFailedAttempt(rawIdentifier);
+      await PasswordService.recordFailedAttempt(lookupKey);
       throw new InvalidCredentialsError('Invalid mobile number, email, or password');
     }
 
     const isValid = await PasswordService.verify(password, user.passwordHash);
     if (!isValid) {
-      await PasswordService.recordFailedAttempt(rawIdentifier);
+      await PasswordService.recordFailedAttempt(lookupKey);
       throw new InvalidCredentialsError('Invalid mobile number, email, or password');
     }
 
-    await PasswordService.clearFailedAttempts(rawIdentifier);
+    await PasswordService.clearFailedAttempts(lookupKey);
 
     if (user.status === ACCOUNT_STATUS.BLOCKED) {
       throw new AccountBlockedError('Driver account has been blocked or deactivated');
@@ -491,34 +512,55 @@ export class AuthService {
     const { password } = input;
     const rawIdentifier = (input.identifier || input.email || '').trim();
 
-    await PasswordService.checkLockout(rawIdentifier);
-
     let user;
+    let lookupKey: string;
     if (rawIdentifier.includes('@')) {
       const email = rawIdentifier.toLowerCase();
+      lookupKey = email;
+      await PasswordService.checkLockout(email);
       user = await prisma.user.findFirst({
         where: { email, role: ROLES.COMPANY, deletedAt: null },
       });
     } else {
-      const normalizedMobile = normalizeIndianMobile(rawIdentifier);
+      const cleanedDigits = rawIdentifier.replace(/\D/g, '');
+      const last10 = cleanedDigits.slice(-10);
+      lookupKey = `+91${last10}`;
+      await PasswordService.checkLockout(lookupKey);
+
+      const candidates = Array.from(
+        new Set(
+          [
+            normalizeIndianMobile(rawIdentifier),
+            `+91${last10}`,
+            last10,
+            `91${last10}`,
+            rawIdentifier,
+          ].filter(Boolean),
+        ),
+      );
+
       user = await prisma.user.findFirst({
-        where: { mobile: normalizedMobile, role: ROLES.COMPANY, deletedAt: null },
+        where: {
+          mobile: { in: candidates },
+          role: ROLES.COMPANY,
+          deletedAt: null,
+        },
       });
     }
 
     if (!user || !user.passwordHash) {
       await PasswordService.performDummyVerify(password);
-      await PasswordService.recordFailedAttempt(rawIdentifier);
+      await PasswordService.recordFailedAttempt(lookupKey);
       throw new InvalidCredentialsError('Invalid email, mobile number, or password');
     }
 
     const isValid = await PasswordService.verify(password, user.passwordHash);
     if (!isValid) {
-      await PasswordService.recordFailedAttempt(rawIdentifier);
+      await PasswordService.recordFailedAttempt(lookupKey);
       throw new InvalidCredentialsError('Invalid email, mobile number, or password');
     }
 
-    await PasswordService.clearFailedAttempts(rawIdentifier);
+    await PasswordService.clearFailedAttempts(lookupKey);
 
     if (user.status === ACCOUNT_STATUS.BLOCKED) {
       throw new AccountBlockedError('Your account has been blocked. Please contact support.');

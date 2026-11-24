@@ -1,16 +1,6 @@
-import { ApiClient } from '@ap/api-client';
-import { mobileConfig } from '../config/index';
-import { useMobileAuthStore } from '../store/authStore';
-import i18n from '../i18n/index';
-import type { Language } from '@ap/shared-constants';
-
 export * from './container';
 export * from './adapters/types';
 export * from './adapters/fakes';
 export * from './secureStore';
+export { apiClient, setApiLanguage, registerAuthCallbacks } from './api';
 
-export const apiClient = new ApiClient({
-  baseUrl: mobileConfig.apiBaseUrl,
-  getAuthToken: () => useMobileAuthStore.getState().token,
-  getLanguage: () => i18n.language as Language,
-});

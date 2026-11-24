@@ -11,7 +11,7 @@
   "LEDGER_UNBALANCED": "Ledger transaction is unbalanced. Debits must equal credits.",
   "DUPLICATE_REQUEST": "Duplicate request detected. Action has already been processed.",
   "SETTING_NOT_FOUND": "The requested configuration setting was not found.",
-  "INVALID_CREDENTIALS": "Invalid email or password. Please verify your credentials and try again.",
+  "INVALID_CREDENTIALS": "Invalid mobile number, email, or password. Please verify your credentials and try again.",
   "OTP_INVALID": "Invalid verification code. Please check and try again.",
   "OTP_EXPIRED": "Verification code has expired. Please request a new code.",
   "OTP_TOO_MANY_ATTEMPTS": "Too many incorrect attempts. Please request a new verification code.",
